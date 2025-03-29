@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '../../../lib/dbConn';
-import User from '../../../modal/User';
-import bcrypt from 'bcryptjs';
-import { sendVerificationEmail } from '../../../utils/mailer';
+import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "../../../../lib/dbConn";
+import User from "../../../../modal/User";
+import bcrypt from "bcryptjs";
+import { sendVerificationEmail } from "../../../../utils/mailer";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
     // Generate verification code
     const verificationCode = generateVerificationCode();
-    
+
     // Set expiration time (15 minutes from now)
     const verificationExpiry = new Date();
     verificationExpiry.setMinutes(verificationExpiry.getMinutes() + 15);
@@ -52,39 +52,40 @@ export async function POST(req: NextRequest) {
       password: hashedPassword,
       verificationCode,
       verificationExpiry,
-      verified: false
+      verified: false,
     });
 
     // Log for debugging
-    console.log(`Created user: ${user._id} with verification code: ${verificationCode}`);
+    console.log(
+      `Created user: ${user._id} with verification code: ${verificationCode}`
+    );
 
     // Send verification email
     try {
-      await sendVerificationEmail(
-        email,
-        verificationCode,
-        name
-      );
+      await sendVerificationEmail(email, verificationCode, name);
       console.log(`Verification email sent to ${email}`);
     } catch (emailError) {
-      console.error('Failed to send verification email:', emailError);
+      console.error("Failed to send verification email:", emailError);
       // Continue with signup process even if email fails
     }
 
-    return NextResponse.json({
-      message: "User registered successfully",
-      userId: user._id
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        message: "User registered successfully",
+        userId: user._id,
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    console.error('Signup error details:', error);
-    
+    console.error("Signup error details:", error);
+
     // Log more details about the error
     if (error instanceof Error) {
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
     }
-    
+
     return NextResponse.json(
       { error: "Failed to register user", details: String(error) },
       { status: 500 }

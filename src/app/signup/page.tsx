@@ -6,6 +6,8 @@ import Link from "next/link";
 import AuthLayout, { itemVariants } from "../components/Auth/AuthLayout";
 import LogoHeader from "../components/UI/LogoHeader";
 import { NameField, EmailField, PasswordField } from "../components/UI/Form";
+import { useAuthStore } from "../../../store/useAuthStore";
+
 
 const Page = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -19,6 +21,7 @@ const Page = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [signupComplete, setSignupComplete] = useState(false);
 
+  const { signUp } = useAuthStore()
   // Create refs at the top level
   const verificationInputRef1 = useRef<HTMLInputElement>(null);
   const verificationInputRef2 = useRef<HTMLInputElement>(null);
@@ -108,18 +111,22 @@ const Page = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (currentStep === 2) {
-      setIsVerifying(true);
-      setTimeout(() => {
-        setIsVerifying(false);
+  const handleSubmit = async () => {
+    try {
+      const response = await signUp({
+        name: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+      });
+      if (response?.status === 200 || response?.status === 201) {
+        console.log("Signup successful:", response);
         setSignupComplete(true);
-      }, 2000);
-    } else {
-      nextStep();
+      }
+    } catch {
+      console.error("Signup failed");
     }
+
+    
 
     console.log("Signup Data:", formData);
   };
@@ -223,7 +230,7 @@ const Page = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 type="button"
-                onClick={nextStep}
+                onClick={handleSubmit}
                 className="bg-gradient-to-r from-[#711381] to-purple-600 text-white py-2 px-4 rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 transition-all duration-300 flex items-center group"
               >
                 Verify Account
