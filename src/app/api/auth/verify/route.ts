@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '../../../lib/dbConn';
-import User from '../../../modal/User';
-import VerificationEmail from '../../components/Auth/VerificationEmail';
+import { connectDB } from "../../../../lib/dbConn";
+import User from "../../../../modal/User";
+import VerificationEmail from "../../../components/Auth/VerificationEmail";
 
 export const dynamic = "force-dynamic";
 

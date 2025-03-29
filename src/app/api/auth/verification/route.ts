@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '../../../lib/dbConn';
-import User from '../../../modal/User';
-import { sendVerificationEmail } from '../../../utils/mailer';
+import { connectDB } from "../../../../lib/dbConn";
+import User from "../../../../modal/User";
+import { sendVerificationEmail } from "../../../../utils/mailer";
 
 export const dynamic = "force-dynamic";
 

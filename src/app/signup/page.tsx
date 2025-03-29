@@ -8,7 +8,6 @@ import LogoHeader from "../components/UI/LogoHeader";
 import { NameField, EmailField, PasswordField } from "../components/UI/Form";
 import { useAuthStore } from "../../../store/useAuthStore";
 
-
 const Page = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -21,7 +20,7 @@ const Page = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [signupComplete, setSignupComplete] = useState(false);
 
-  const { signUp } = useAuthStore()
+  const { signUp } = useAuthStore();
   // Create refs at the top level
   const verificationInputRef1 = useRef<HTMLInputElement>(null);
   const verificationInputRef2 = useRef<HTMLInputElement>(null);
@@ -99,11 +98,11 @@ const Page = () => {
     }
   };
 
-  const nextStep = () => {
-    if (currentStep < 3) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
+  // const nextStep = () => {
+  //   if (currentStep < 3) {
+  //     setCurrentStep(currentStep + 1);
+  //   }
+  // };
 
   const prevStep = () => {
     if (currentStep > 1) {
@@ -125,8 +124,6 @@ const Page = () => {
     } catch {
       console.error("Signup failed");
     }
-
-    
 
     console.log("Signup Data:", formData);
   };
@@ -370,10 +367,10 @@ const Page = () => {
               signupComplete
                 ? "bg-gradient-to-r from-pink-500 to-purple-600"
                 : currentStep >= step && step <= 2
-                ? "bg-gradient-to-r from-pink-500 to-purple-600"
-                : currentStep === 2 && step === 3 && isVerifying
-                ? "bg-gradient-to-r from-pink-500 to-purple-600 animate-pulse"
-                : "bg-gray-700"
+                  ? "bg-gradient-to-r from-pink-500 to-purple-600"
+                  : currentStep === 2 && step === 3 && isVerifying
+                    ? "bg-gradient-to-r from-pink-500 to-purple-600 animate-pulse"
+                    : "bg-gray-700"
             }`}
           />
         ))}
