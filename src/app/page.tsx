@@ -5,7 +5,7 @@ import { Star } from "lucide-react";
 
 import Template from "./components/LandingPage/Template";
 import Sphere from "./components/LandingPage/Sphere";
-import Navbar from "./components/LandingPage/Navbar";
+import Navbar from "./components/UI/Navbar";
 import HeroSection from "./components/LandingPage/HeroSection";
 import FeaturesSection from "./components/LandingPage/FeaturesSection";
 import Footer from "./components/LandingPage/Footer";

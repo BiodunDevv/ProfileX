@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from "../../../../lib/dbConn";
-import User from "../../../../modal/User";
+import User from '../../../../modal/User';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -62,9 +62,7 @@ export async function POST(req: NextRequest) {
       id: user._id.toString(), // Add id for compatibility
       name: user.name,
       email: user.email,
-      role: user.role,
       verified: user.verified,
-      details: user.details || {},
       createdAt: user.createdAt
     };
     

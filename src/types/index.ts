@@ -5,7 +5,5 @@ export type User = {
   name: string;
   email: string;
   verified: boolean;
-  role?: 'student' | 'teacher' | 'chef' | null;
-  details?: Record<string, any>;
   createdAt?: string;
 };
