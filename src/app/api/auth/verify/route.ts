@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/dbConn';
 import User from '../../../../modal/User';
@@ -23,7 +22,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Add detailed logging about the user and verification code
     console.log('User found:', {
       name: user.name, 
       email: user.email,
@@ -43,7 +41,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Try both trimmed and untrimmed comparison
     if (user.verificationCode !== verificationCode && 
         user.verificationCode !== verificationCode.trim()) {
       return NextResponse.json(
@@ -67,7 +64,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Update user verification status
     user.isVerified = true;
     user.verificationCode = undefined;
     user.verificationExpires = undefined;

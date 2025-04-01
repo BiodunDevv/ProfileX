@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight, AlertCircle, Loader2, CheckCircle, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
@@ -28,7 +28,8 @@ const resetPasswordSchema = z
 
 type ResetPasswordData = z.infer<typeof resetPasswordSchema>;
 
-const ResetPasswordPage = () => {
+// This component uses the search params
+function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
@@ -249,6 +250,27 @@ const ResetPasswordPage = () => {
         )}
       </motion.div>
     </AuthLayout>
+  );
+}
+
+// Loading fallback component
+function LoadingComponent() {
+  return (
+    <AuthLayout>
+      <LogoHeader title="Loading..." />
+      <div className="flex justify-center items-center h-32">
+        <Loader2 className="h-8 w-8 text-purple-500 animate-spin" />
+      </div>
+    </AuthLayout>
+  );
+}
+
+// Main component that wraps the form in a Suspense boundary
+const ResetPasswordPage = () => {
+  return (
+    <Suspense fallback={<LoadingComponent />}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 };
 

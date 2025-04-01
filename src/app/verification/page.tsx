@@ -1,333 +1,259 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
-import { ChevronRight, CheckCircle2 } from "lucide-react";
+import { ChevronRight, AlertCircle, Loader2, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import AuthLayout, { itemVariants } from "../components/Auth/AuthLayout";
 import LogoHeader from "../components/UI/LogoHeader";
-import { useSearchParams } from "next/navigation";
-import { useAuthStore } from "../../../store/useAuthStore";
 
-const VerificationPage = () => {
-  const [verificationCode, setVerificationCode] = useState([
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationComplete, setVerificationComplete] = useState(false);
+// Verification form component
+function VerificationForm() {
+  const [verificationCode, setVerificationCode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-
+  
   const searchParams = useSearchParams();
-  const { resendVerificationCode, verifyCode } = useAuthStore();
-
-  // Create refs for the verification inputs properly
-  const ref1 = useRef<HTMLInputElement>(null);
-  const ref2 = useRef<HTMLInputElement>(null);
-  const ref3 = useRef<HTMLInputElement>(null);
-  const ref4 = useRef<HTMLInputElement>(null);
-  const ref5 = useRef<HTMLInputElement>(null);
-  const ref6 = useRef<HTMLInputElement>(null);
-
-  const verificationInputRefs = [ref1, ref2, ref3, ref4, ref5, ref6];
+  const router = useRouter();
 
   useEffect(() => {
-    // Get email from URL parameters
+    // Get email from URL query params
     const emailParam = searchParams.get("email");
     if (emailParam) {
       setEmail(emailParam);
-      // Store email in localStorage as fallback for verification
-      localStorage.setItem("userEmail", emailParam);
+    } else {
+      // Try getting from localStorage as fallback
+      const storedEmail = localStorage.getItem("userEmail");
+      if (storedEmail) {
+        setEmail(storedEmail);
+      }
     }
-
-    // Focus the first input field when component mounts
-    verificationInputRefs[0].current?.focus();
   }, [searchParams]);
 
-  const handleVerificationChange = (index: number, value: string) => {
-    // Only allow digits
-    if (!/^\d*$/.test(value)) {
+  const handleVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!verificationCode) {
+      setErrorMessage("Please enter your verification code");
+      return;
+    }
+    
+    if (!email) {
+      setErrorMessage("Email is required for verification");
       return;
     }
 
-    if (value.length > 1) {
-      value = value.slice(0, 1);
-    }
+    setIsLoading(true);
+    setErrorMessage("");
 
-    // Update the code at the current index
-    const newVerificationCode = [...verificationCode];
-    newVerificationCode[index] = value;
-    setVerificationCode(newVerificationCode);
-
-    // Auto-advance to next input if a digit was entered
-    if (value !== "" && index < 5) {
-      verificationInputRefs[index + 1].current?.focus();
-    }
-  };
-
-  const handleVerificationKeyDown = (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    // If backspace and empty, move to previous input
-    if (e.key === "Backspace" && verificationCode[index] === "" && index > 0) {
-      verificationInputRefs[index - 1].current?.focus();
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData("text/plain").trim();
-
-    // If we have a 6-digit number
-    if (/^\d{6}$/.test(pastedData)) {
-      const newVerificationCode = pastedData.split("");
-      setVerificationCode(newVerificationCode);
-
-      // Focus the last input
-      verificationInputRefs[5].current?.focus();
-    }
-  };
-
-  const handleVerify = async () => {
     try {
-      setIsVerifying(true);
-      setError("");
-      const code = verificationCode.join("");
-
-      // If email is not in state, try to get it from localStorage
-      const emailToUse = email || localStorage.getItem("userEmail");
-
-      if (!emailToUse) {
-        throw new Error("Email address is missing. Please try again.");
-      }
-
-      const response = await verifyCode({
-        email: emailToUse,
-        verificationCode: code.trim(),
+      const response = await fetch("/api/auth/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          verificationCode,
+        }),
       });
 
-      if (response?.ok) {
-        // Verification successful
-        setVerificationComplete(true);
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsSuccess(true);
+        // Redirect to login after 3 seconds
+        setTimeout(() => {
+          router.push("/signin");
+        }, 3000);
       } else {
-        // Handle errors based on status code
-        const data = await response?.json();
-        setError(data?.message || "Verification failed");
+        setErrorMessage(data.message || "Verification failed. Please try again.");
       }
     } catch (error) {
-      console.error("Error during verification:", error);
-      setError("An unexpected error occurred");
+      console.error("Verification error:", error);
+      setErrorMessage(
+        error instanceof Error 
+          ? error.message 
+          : "An error occurred during verification"
+      );
     } finally {
-      setIsVerifying(false);
+      setIsLoading(false);
     }
   };
 
   const handleResendCode = async () => {
-    setIsVerifying(true);
-    setError("");
+    if (!email) {
+      setErrorMessage("Email is required to resend the code");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage("");
+
     try {
-      const emailToUse = email;
+      const response = await fetch("/api/auth/resend-code", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
 
-      if (!emailToUse) {
-        throw new Error("Email address is missing. Please try again.");
+      const data = await response.json();
+
+      if (response.ok) {
+        setErrorMessage("");
+        // Show a success message for resending code
+        alert("Verification code has been resent to your email");
+      } else {
+        setErrorMessage(data.message || "Failed to resend verification code");
       }
-
-      await resendVerificationCode();
-      // Reset verification code inputs
-      setVerificationCode(["", "", "", "", "", ""]);
-      // Focus the first input again
-      verificationInputRefs[0].current?.focus();
     } catch (error) {
-      console.error("Failed to resend code:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to resend code. Please try again."
+      console.error("Resend code error:", error);
+      setErrorMessage(
+        error instanceof Error 
+          ? error.message 
+          : "An error occurred while resending the code"
       );
     } finally {
-      setIsVerifying(false);
+      setIsLoading(false);
     }
   };
 
-  if (verificationComplete) {
-    return (
-      <AuthLayout>
-        <LogoHeader title="Account Verified" />
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: { opacity: 0, y: 20 },
-            visible: {
-              opacity: 1,
-              y: 0,
-              transition: {
-                type: "spring",
-                stiffness: 300,
-                damping: 24,
-                delayChildren: 0.2,
-                staggerChildren: 0.1,
-              },
-            },
-          }}
-          className="bg-[#272932] rounded-2xl shadow-2xl border border-[#2E313C] p-8 space-y-8 text-center"
-        >
-          <motion.div
-            variants={{
-              hidden: { opacity: 0, scale: 0.8 },
-              visible: { opacity: 1, scale: 1 },
-            }}
-            className="flex justify-center"
-          >
-            <div className="h-24 w-24 rounded-full bg-gradient-to-r from-[#711381] to-purple-600 flex items-center justify-center">
-              <CheckCircle2 className="text-white" size={50} />
-            </div>
-          </motion.div>
-
-          <motion.h2
-            variants={itemVariants}
-            className="text-2xl md:text-3xl font-bold text-white"
-          >
-            Welcome to ProfileX!
-          </motion.h2>
-
-          <motion.p
-            variants={itemVariants}
-            className="text-gray-400 max-w-md mx-auto"
-          >
-            Your portfolio journey begins now. We&apos;re excited to help you
-            showcase your talents to the world.
-          </motion.p>
-
-          <motion.div variants={itemVariants}>
-            <Link
-              href="/dashboard"
-              className="bg-gradient-to-r from-[#711381] to-purple-600 text-white py-3 px-8 rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 transition-all duration-300 flex items-center justify-center space-x-2 w-full"
-            >
-              <span>Go to Dashboard</span>
-              <ChevronRight size={20} />
-            </Link>
-          </motion.div>
-        </motion.div>
-      </AuthLayout>
-    );
-  }
-
   return (
     <AuthLayout>
-      <LogoHeader title="Verify Your Account" />
+      <LogoHeader title="Verify your account" />
 
       <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: { opacity: 0 },
-          visible: {
-            opacity: 1,
-            transition: {
-              delayChildren: 0.2,
-              staggerChildren: 0.1,
-            },
-          },
-        }}
-        className="bg-[#272932] rounded-2xl shadow-2xl border border-[#2E313C] p-6 space-y-6"
+        variants={itemVariants}
+        className="bg-[#272932] rounded-2xl shadow-2xl border border-[#2E313C] p-6 space-y-6 w-full max-w-md"
       >
-        <motion.div variants={itemVariants} className="text-center">
-          <h3 className="text-xl font-semibold text-white mb-2">
-            Enter Verification Code
-          </h3>
-          <p className="text-gray-400 text-sm mb-4">
-            We&apos;ve sent a 6-digit code to{" "}
-            <span className="text-purple-400">{email || "your email"}</span>.
-            Please enter it below.
-          </p>
-
-          {error && (
-            <div className="text-red-400 text-sm mb-4 bg-red-500/10 border border-red-500/30 rounded-lg p-3">
-              {error}
+        {isSuccess ? (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center space-y-4"
+          >
+            <div className="flex justify-center">
+              <CheckCircle className="h-16 w-16 text-green-500" />
             </div>
-          )}
-
-          {isVerifying ? (
-            <div className="flex justify-center my-8">
-              <div className="w-8 h-8 border-t-2 border-purple-500 rounded-full animate-spin"></div>
+            <h2 className="text-xl font-semibold text-white">Verification Successful</h2>
+            <p className="text-gray-300">
+              Your account has been verified successfully. You will be redirected to the login page shortly.
+            </p>
+            <div className="mt-6">
+              <Link
+                href="/signin"
+                className="text-purple-400 hover:text-purple-300 transition-colors"
+              >
+                Go to login page
+              </Link>
             </div>
-          ) : (
-            <>
-              <div className="flex justify-center space-x-2 my-8">
-                {verificationCode.map((digit, index) => (
-                  <div key={index} className="w-12 h-14 relative">
-                    <input
-                      ref={verificationInputRefs[index]}
-                      type="text"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) =>
-                        handleVerificationChange(index, e.target.value)
-                      }
-                      onKeyDown={(e) => handleVerificationKeyDown(index, e)}
-                      onPaste={index === 0 ? handlePaste : undefined}
-                      className="w-full h-full text-center text-xl font-bold bg-[#2E313C] text-white rounded-lg border-2 border-gray-700 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
-                      pattern="[0-9]*"
-                      inputMode="numeric"
-                    />
-                  </div>
-                ))}
-              </div>
+          </motion.div>
+        ) : (
+          <motion.form onSubmit={handleVerification} className="space-y-6">
+            {errorMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg flex items-center gap-2"
+              >
+                <AlertCircle size={16} />
+                <span className="text-sm">{errorMessage}</span>
+              </motion.div>
+            )}
 
-              <div className="mt-6 text-sm text-gray-400">
-                Didn&apos;t receive a code?{" "}
-                <button
-                  type="button"
-                  className="text-purple-500 hover:text-purple-400 transition-colors ml-1"
-                  onClick={handleResendCode}
+            <div>
+              <p className="text-gray-300 mb-4">
+                We&apos;ve sent a verification code to your email address 
+                {email && <strong className="text-white"> ({email})</strong>}. 
+                Please enter the code below to verify your account.
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Verification Code
+              </label>
+              <input
+                type="text"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                className="w-full px-4 py-3 bg-[#2E313C] text-white rounded-lg border border-[#3E4049] focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
+                placeholder="Enter verification code"
+              />
+            </div>
+
+            <motion.button
+              whileHover={{ scale: isLoading ? 1 : 1.05 }}
+              whileTap={{ scale: isLoading ? 1 : 0.95 }}
+              type="submit"
+              disabled={isLoading}
+              className={`w-full bg-gradient-to-r from-[#711381] to-purple-600 text-white py-3 rounded-lg transition-all duration-300 flex items-center justify-center group
+                ${isLoading ? "opacity-80 cursor-not-allowed" : "hover:from-[#5C0F6B] hover:to-purple-700"}`}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                <>
+                  Verify Account
+                  <ChevronRight
+                    className="ml-2 transform transition-transform group-hover:translate-x-1"
+                    size={20}
+                  />
+                </>
+              )}
+            </motion.button>
+
+            <div className="text-center mt-4 space-y-3">
+              <button
+                type="button"
+                onClick={handleResendCode}
+                disabled={isLoading}
+                className="text-purple-500 hover:text-purple-400 transition-colors text-sm focus:outline-none"
+              >
+                Didn&apos;t receive a code? Resend
+              </button>
+              
+              <div>
+                <Link
+                  href="/signin"
+                  className="text-gray-400 hover:text-gray-300 transition-colors text-sm block mt-2"
                 >
-                  Resend Code
-                </button>
+                  Back to Sign In
+                </Link>
               </div>
-            </>
-          )}
-        </motion.div>
-
-        <motion.div variants={itemVariants} className="flex justify-center">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
-            onClick={handleVerify}
-            disabled={
-              isVerifying || verificationCode.some((code) => code === "")
-            }
-            className={`bg-gradient-to-r from-[#711381] to-purple-600 text-white py-3 px-8 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 w-full
-              ${
-                isVerifying || verificationCode.some((code) => code === "")
-                  ? "opacity-70 cursor-not-allowed"
-                  : "hover:from-[#5C0F6B] hover:to-purple-700"
-              }`}
-          >
-            <span>Verify Account</span>
-            <CheckCircle2 size={20} />
-          </motion.button>
-        </motion.div>
-      </motion.div>
-
-      <motion.div variants={itemVariants} className="text-center mt-4">
-        <span className="text-gray-400 text-sm">
-          Back to{" "}
-          <Link
-            href="/signup"
-            className="text-purple-500 hover:text-purple-400 transition-colors"
-          >
-            Sign Up
-          </Link>
-        </span>
+            </div>
+          </motion.form>
+        )}
       </motion.div>
     </AuthLayout>
+  );
+}
+
+// Loading fallback component
+function LoadingComponent() {
+  return (
+    <AuthLayout>
+      <LogoHeader title="Loading..." />
+      <div className="flex justify-center items-center h-32">
+        <Loader2 className="h-8 w-8 text-purple-500 animate-spin" />
+      </div>
+    </AuthLayout>
+  );
+}
+
+// Main component with Suspense boundary
+const VerificationPage = () => {
+  return (
+    <Suspense fallback={<LoadingComponent />}>
+      <VerificationForm />
+    </Suspense>
   );
 };
 
