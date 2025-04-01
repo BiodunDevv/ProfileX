@@ -1,75 +1,76 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from "../../../../lib/dbConn";
-import User from "../../../../modal/User";
-import { sendVerificationEmail } from "../../../../utils/mailer";
+import { NextResponse } from 'next/server';
+import { connectDB } from '@/lib/dbConn';
+import User from '../../../../modal/User';
+import crypto from 'crypto';
+import { sendVerificationEmail } from '../../../../utils/mailer';
 
-export const dynamic = "force-dynamic";
-
-// Generate a random 6-digit verification code
-const generateVerificationCode = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-};
-
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    // Get email from request body or cookie
-    const data = await req.json();
-    const email = data.email;
+    await connectDB();
+    
+    const body = await request.json();
+    const { email } = body;
 
     if (!email) {
       return NextResponse.json(
-        { error: "Email is required" },
+        { message: 'Email is required' },
         { status: 400 }
       );
     }
 
-    await connectDB();
-
-    // Find user by email
+    // Find the user
     const user = await User.findOne({ email });
-
+    
     if (!user) {
       return NextResponse.json(
-        { error: "User not found" },
+        { message: 'User not found' },
         { status: 404 }
       );
     }
 
-    // Generate new verification code
-    const verificationCode = generateVerificationCode();
-    
-    // Set expiration time (15 minutes from now)
-    const verificationExpiry = new Date();
-    verificationExpiry.setMinutes(verificationExpiry.getMinutes() + 15);
+    // If already verified, no need to resend code
+    if (user.isVerified) {
+      return NextResponse.json(
+        { message: 'Email already verified' },
+        { status: 200 }
+      );
+    }
 
-    // Save verification code and expiry to user
+    // Generate a new verification code
+    const verificationCode = crypto.randomInt(100000, 999999).toString();
+    
+    // Set expiration to 24 hours from now
+    const verificationExpires = new Date();
+    verificationExpires.setHours(verificationExpires.getHours() + 24);
+
+    // Update user with new verification code
     user.verificationCode = verificationCode;
-    user.verificationExpiry = verificationExpiry;
+    user.verificationExpires = verificationExpires;
     await user.save();
 
-    // Send verification email using Nodemailer
-    try {
-      await sendVerificationEmail(
-        email,
-        verificationCode,
-        user.name || 'User'
-      );
-      
-      return NextResponse.json({
-        message: "Verification code resent successfully"
-      });
-    } catch (emailError) {
-      console.error('Failed to send verification email:', emailError);
-      
+    // Send the verification email
+    const emailResult = await sendVerificationEmail(email, verificationCode, user.name);
+    
+    if (!emailResult.success) {
+      console.error('Failed to send verification email');
       return NextResponse.json(
-        { error: "Failed to send verification email" },
+        { message: 'Failed to send verification email' },
         { status: 500 }
       );
     }
+
+    return NextResponse.json(
+      { 
+        message: 'Verification code resent successfully',
+        // Include the code in development/testing environments
+        ...(process.env.NODE_ENV !== 'production' && { verificationCode })
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Resend verification error:', error);
     return NextResponse.json(
-      { error: "Failed to resend verification code" },
+      { message: 'Server error', error: (error as Error).message },
       { status: 500 }
     );
   }

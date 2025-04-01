@@ -1,72 +1,94 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from "../../../../lib/dbConn";
-import User from "../../../../modal/User";
-import VerificationEmail from "../../../components/Auth/VerificationEmail";
+import { NextResponse } from 'next/server';
+import { connectDB } from '@/lib/dbConn';
+import User from '../../../../modal/User';
+import { sendWelcomeEmail } from '../../../../utils/welcome';
 
-export const dynamic = "force-dynamic";
-
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    // Get email and code from request body
-    const { code, email } = await req.json();
-    
-    console.log(`Verification request received for email: ${email}, code: ${code}`);
-
-    if (!code || !email) {
-      return NextResponse.json(
-        { error: "Code and email are required" },
-        { status: 400 }
-      );
-    }
-
     await connectDB();
     
-    // Find user by email
-    const user = await User.findOne({ email });
+    const body = await request.json();
+    const { email, verificationCode } = body;
 
+    console.log('Verification request:', { email, verificationCode, type: typeof verificationCode });
+
+    const user = await User.findOne({ email });
+    
     if (!user) {
-      console.log(`User not found for email: ${email}`);
+      console.log('User not found:', email);
       return NextResponse.json(
-        { error: "User not found" },
+        { message: 'User not found' },
         { status: 404 }
       );
     }
 
-    // Check if code matches and is not expired
-    if (user.verificationCode !== code) {
-      console.log(`Invalid verification code for email: ${email}. Expected: ${user.verificationCode}, Got: ${code}`);
+    // Add detailed logging about the user and verification code
+    console.log('User found:', {
+      name: user.name, 
+      email: user.email,
+      isVerified: user.isVerified,
+      dbVerificationCode: user.verificationCode,
+      dbCodeType: typeof user.verificationCode,
+      providedVerificationCode: verificationCode,
+      match: user.verificationCode === verificationCode,
+      expires: user.verificationExpires,
+      isExpired: user.verificationExpires ? new Date() > user.verificationExpires : false
+    });
+
+    if (user.isVerified) {
       return NextResponse.json(
-        { error: "Invalid verification code" },
+        { message: 'Email already verified' },
+        { status: 200 }
+      );
+    }
+
+    // Try both trimmed and untrimmed comparison
+    if (user.verificationCode !== verificationCode && 
+        user.verificationCode !== verificationCode.trim()) {
+      return NextResponse.json(
+        { 
+          message: 'Invalid verification code',
+          debug: {
+            stored: user.verificationCode,
+            provided: verificationCode,
+            storedType: typeof user.verificationCode,
+            providedType: typeof verificationCode
+          }
+        },
         { status: 400 }
       );
     }
 
-    const now = new Date();
-    if (user.verificationExpiry && now > user.verificationExpiry) {
-      console.log(`Verification code expired for email: ${email}`);
+    if (user.verificationExpires && new Date() > user.verificationExpires) {
       return NextResponse.json(
-        { error: "Verification code has expired" },
+        { message: 'Verification code has expired' },
         { status: 400 }
       );
     }
 
-    // Mark user as verified
-    user.verified = true;
+    // Update user verification status
+    user.isVerified = true;
     user.verificationCode = undefined;
-    user.verificationExpiry = undefined;
+    user.verificationExpires = undefined;
     await user.save();
 
-    console.log(`Email verified successfully for: ${email}`);
-    
-    return NextResponse.json({
-      message: "Email verified successfully",
-      verified: true
-    });
+    // Send welcome email
+    try {
+      await sendWelcomeEmail(email, user.name);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+      // Continue with verification success even if welcome email fails
+    }
+
+    return NextResponse.json(
+      { message: 'Email verified successfully' },
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Verification error:', error);
     return NextResponse.json(
-      { error: "Failed to verify email" },
+      { message: 'Server error', error: (error as Error).message },
       { status: 500 }
     );
   }

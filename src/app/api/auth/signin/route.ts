@@ -1,85 +1,103 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from "../../../../lib/dbConn";
-import User from '../../../../modal/User';
+import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { connectDB } from '@/lib/dbConn';
+import User from '../../../../modal/User';
+import { cookies } from 'next/headers';
 
-export const dynamic = 'force-dynamic';
-
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    console.log("Sign-in API endpoint called");
     await connectDB();
     
-    const { identifier, password } = await req.json();
-    console.log("Received credentials:", { identifier, passwordProvided: !!password });
-    
-    if (!identifier || !password) {
+    const body = await request.json();
+    const { email, password } = body;
+
+    // Validate required fields
+    if (!email || !password) {
       return NextResponse.json(
-        { message: 'Email/username and password are required' },
+        { message: 'Email and password are required' },
         { status: 400 }
       );
     }
+
+    // Find the user
+    const user = await User.findOne({ email });
     
-    // Find user by email
-    const user = await User.findOne({
-      $or: [
-        { email: identifier.toLowerCase() },
-        { username: identifier.toLowerCase() }
-      ]
-    });
-    
-    console.log("User found:", !!user);
-    
+    // User not found
     if (!user) {
       return NextResponse.json(
-        { message: 'Invalid credentials' },
+        { message: 'Invalid email or password' },
         { status: 401 }
       );
     }
-    
+
+    // Check if user is verified
+    if (!user.isVerified) {
+      return NextResponse.json(
+        { 
+          message: 'Please verify your email address before signing in',
+          verified: false,
+          email: user.email
+        },
+        { status: 403 }
+      );
+    }
+
     // Compare passwords
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    console.log("Password valid:", isPasswordValid);
     
     if (!isPasswordValid) {
       return NextResponse.json(
-        { message: 'Invalid credentials' },
+        { message: 'Invalid email or password' },
         { status: 401 }
       );
     }
-    
-    // Create token
+
+    // Create tokens
     const token = jwt.sign(
       { userId: user._id },
-      process.env.ACCESS_TOKEN_SECRET as string,
-      { expiresIn: '7d' }
+      process.env.ACCESS_TOKEN_SECRET || 'fallback-secret',
+      { expiresIn: '1h' }
     );
     
-    // Return user (excluding password) and token
-    const userToReturn = {
-      _id: user._id,
-      id: user._id.toString(), // Add id for compatibility
-      name: user.name,
-      email: user.email,
-      verified: user.verified,
-      createdAt: user.createdAt
-    };
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.REFRESH_TOKEN_SECRET || 'fallback-refresh-secret',
+      { expiresIn: '7d' }
+    );
+
+    // Set cookies
+    const cookieStore = await cookies();
     
-    console.log("Login successful, returning user:", { 
-      id: userToReturn._id, 
-      email: userToReturn.email 
+    cookieStore.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60, 
+      path: '/'
     });
     
+    cookieStore.set('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60,
+      path: '/'
+    });
+
+    // Return user data (exclude sensitive information)
     return NextResponse.json({
-      message: 'Sign in successful',
-      user: userToReturn,
-      token
-    });
+      message: 'Login successful',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      }
+    }, { status: 200 });
   } catch (error) {
-    console.error('Sign in error:', error);
+    console.error('Login error:', error);
     return NextResponse.json(
-      { message: 'Failed to sign in', error: String(error) },
+      { message: 'Server error', error: (error as Error).message },
       { status: 500 }
     );
   }

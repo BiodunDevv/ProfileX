@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
@@ -9,36 +8,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import AuthLayout, { itemVariants } from "../components/Auth/AuthLayout";
 import LogoHeader from "../components/UI/LogoHeader";
-import { EmailField, PasswordField } from "../components/UI/Form";
-import { useAuthStore, checkIfUserExists } from "../../../store/useAuthStore";
+import { useAuthStore } from "../../../store/useAuthStore";
 import { useRouter } from "next/navigation";
 
-// Add Zod schema for validation
+// Update Zod schema to match our API
 const loginSchema = z.object({
-  identifier: z
+  email: z
     .string()
-    .min(2, "Identifier must be at least 2 characters")
-    .refine(
-      (val: string) => {
-        // Check if it's a valid email or meets username requirements
-        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-        const isValidUsername = val.length >= 2;
-        return isEmail || isValidUsername;
-      },
-      {
-        message: "Please enter a valid email or username",
-      }
-    ),
+    .email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-const Page = () => {
+const SignInPage = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { signIn, isLoading, error, clearError } = useAuthStore();
+  const { signIn } = useAuthStore();
   const router = useRouter();
 
   // Use react-hook-form with zod validation
@@ -50,61 +38,38 @@ const Page = () => {
     resolver: zodResolver(loginSchema),
   });
 
-  // Update error message when store error changes
-  React.useEffect(() => {
-    if (error) {
-      setErrorMessage(error);
-    }
-  }, [error]);
-
   const onSubmit = async (data: LoginFormData) => {
     setErrorMessage("");
-    clearError?.();
+    setIsLoading(true);
 
     try {
-      // First check if the user exists (for debugging)
-      const userExists = await checkIfUserExists(data.identifier);
-      console.log("User exists in database:", userExists);
-
-      if (!userExists) {
-        setErrorMessage(
-          "No account found with this email or username. Please check your credentials or sign up."
-        );
-        return;
-      }
-
-      console.log("Attempting to sign in with:", {
-        identifier: data.identifier.toLowerCase(),
-        passwordProvided: !!data.password,
-      });
-
       const response = await signIn({
-        identifier: data.identifier.toLowerCase(),
+        email: data.email,
         password: data.password,
       });
 
-      console.log("Sign-in response:", response);
-
-      // Check both the store state and response
-      if (response?.success === false || response?.error) {
-        setErrorMessage(
-          response.error ||
-            "Invalid credentials. Please check your email/username and password."
-        );
+      if (!response) {
+        setErrorMessage("Network error. Please try again.");
         return;
       }
 
-      // Use the store state to determine if auth was successful
-      const { isAuthenticated, user } = useAuthStore.getState();
-
-      console.log("Auth state after sign-in:", { isAuthenticated, user });
-
-      if (isAuthenticated && user) {
-        console.log("Authentication successful, redirecting to dashboard");
-        router.push("/dashboard");
-      } else {
-        setErrorMessage("Authentication failed. Please try again.");
+      if (!response.ok) {
+        const errorData = await response.json();
+        
+        // Handle verification error specifically
+        if (response.status === 403 && errorData.verified === false) {
+          // Store email in localStorage for verification process
+          localStorage.setItem("userEmail", data.email);
+          // Redirect to verification page
+          router.push(`/verification?email=${encodeURIComponent(data.email)}`);
+          return;
+        }
+        
+        setErrorMessage(errorData.message || "Invalid credentials");
+        return;
       }
+
+      router.push("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
       setErrorMessage(
@@ -112,6 +77,8 @@ const Page = () => {
           ? error.message
           : "Failed to sign in. Please try again."
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -126,30 +93,30 @@ const Page = () => {
         className="bg-[#272932] rounded-2xl shadow-2xl border border-[#2E313C] p-6 space-y-6"
       >
         {/* Error Message */}
-        {(errorMessage || error) && (
+        {errorMessage && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg flex items-center gap-2"
           >
             <AlertCircle size={16} />
-            <span className="text-sm">{errorMessage || error}</span>
+            <span className="text-sm">{errorMessage}</span>
           </motion.div>
         )}
 
         {/* Email Input */}
         <div className="space-y-1">
           <label className="block text-sm font-medium text-gray-300 mb-1">
-            Email or Username
+            Email Address
           </label>
           <input
-            {...register("identifier")}
+            {...register("email")}
             className="w-full px-4 py-3 bg-[#2E313C] text-white rounded-lg border border-[#3E4049] focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
-            placeholder="Email or username"
+            placeholder="Your email address"
           />
-          {errors.identifier && (
+          {errors.email && (
             <p className="text-red-400 text-sm mt-1">
-              {errors.identifier.message}
+              {errors.email.message}
             </p>
           )}
         </div>
@@ -244,4 +211,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default SignInPage;

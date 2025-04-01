@@ -23,7 +23,7 @@ const VerificationPage = () => {
   const [error, setError] = useState("");
 
   const searchParams = useSearchParams();
-  const { resendVerificationCode } = useAuthStore();
+  const { resendVerificationCode, verifyCode } = useAuthStore();
 
   // Create refs for the verification inputs properly
   const ref1 = useRef<HTMLInputElement>(null);
@@ -106,29 +106,22 @@ const VerificationPage = () => {
         throw new Error("Email address is missing. Please try again.");
       }
 
-      const response = await fetch("/api/auth/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ code, email: emailToUse }),
+      const response = await verifyCode({
+        email: emailToUse,
+        verificationCode: code.trim(),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Verification failed. Please try again.");
+      if (response?.ok) {
+        // Verification successful
+        setVerificationComplete(true);
+      } else {
+        // Handle errors based on status code
+        const data = await response?.json();
+        setError(data?.message || "Verification failed");
       }
-
-      // If verification is successful, proceed to the next step
-      setVerificationComplete(true);
     } catch (error) {
-      console.error("Verification error:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Verification failed. Please try again."
-      );
+      console.error("Error during verification:", error);
+      setError("An unexpected error occurred");
     } finally {
       setIsVerifying(false);
     }
