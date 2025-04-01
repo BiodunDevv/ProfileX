@@ -22,6 +22,8 @@ export async function POST(request: Request) {
       );
     }
 
+    
+
     console.log('User found:', {
       name: user.name, 
       email: user.email,
