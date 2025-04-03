@@ -16,7 +16,6 @@ import {
   PanelLeft,
   Bolt,
   ChevronRight,
-  Calendar,
   Clock,
   PieChart,
   Zap,
@@ -58,27 +57,6 @@ const mockProjects: Project[] = [
   },
 ];
 
-// Mock data for upcoming tasks
-const mockTasks = [
-  {
-    id: "1",
-    title: "Update project description",
-    due: "Today",
-    priority: "high",
-  },
-  {
-    id: "2",
-    title: "Add new portfolio case study",
-    due: "Tomorrow",
-    priority: "medium",
-  },
-  {
-    id: "3",
-    title: "Review template options",
-    due: "Next week",
-    priority: "low",
-  },
-];
 const DashboardPage = () => {
   const router = useRouter();
   const { user, isAuthenticated, token, checkAuthState } = useAuthStore();
@@ -127,16 +105,34 @@ const DashboardPage = () => {
 
     setWelcomeMessage(`${greeting}, ${user?.name?.split(" ")[0] || "there"}!`);
 
-    // Show welcome animation after page loads
-    const welcomeTimer = setTimeout(() => {
-      setShowWelcomeAnimation(true);
-    }, 1800);
+    // Check if this is the first visit after login
+    const hasSeenWelcome = localStorage.getItem("hasSeenWelcome");
+    const lastLoginTimestamp = localStorage.getItem("lastLoginTimestamp");
+    const currentTime = Date.now();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    // Only show welcome if:
+    // - User hasn't seen welcome before, or
+    // - It's been more than 24 hours since last login
+    if (
+      !hasSeenWelcome ||
+      (lastLoginTimestamp &&
+        currentTime - parseInt(lastLoginTimestamp) > twentyFourHours)
+    ) {
+      // Mark that user has seen welcome
+      localStorage.setItem("hasSeenWelcome", "true");
+      localStorage.setItem("lastLoginTimestamp", currentTime.toString());
+
+      // Show welcome animation after a slight delay
+      const welcomeTimer = setTimeout(() => {
+        setShowWelcomeAnimation(true);
+      }, 500);
+      return () => clearTimeout(welcomeTimer);
+    }
 
     // Set mock projects
     setHasProjects(mockProjects.length > 0);
     setProjects(mockProjects);
-
-    return () => clearTimeout(welcomeTimer);
   }, [user]);
 
   // Handle loading state
@@ -173,49 +169,105 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A]">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A] pb-2">
       <Navbar />
 
-      {/* Welcome Message Overlay - Animated */}
+      {/* Enhanced Welcome Message Overlay */}
       <AnimatePresence>
         {showWelcomeAnimation && (
           <motion.div
-            className="fixed inset-0 z-40 flex items-center justify-center bg-gradient-to-br from-[#17181E]/90 via-[#1F2029]/90 to-[#2A2D3A]/90 backdrop-blur-sm"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 0 }}
-            transition={{ delay: 1.5, duration: 1 }}
-            onAnimationComplete={() => setShowWelcomeAnimation(false)}
-            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 flex items-center justify-center bg-gradient-to-br from-[#17181E]/80 via-[#1F2029]/80 to-[#2A2D3A]/80 backdrop-blur-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.5 } }}
+            transition={{ duration: 0.3 }}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="text-center px-6"
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative px-8 py-10 bg-gradient-to-br from-[#272A3E]/70 to-[#1D1F2E]/70 backdrop-blur-md rounded-2xl border border-[#3D4156]/30 shadow-2xl max-w-lg w-full mx-4"
             >
-              <motion.div
-                className="inline-block mb-6 rounded-full p-3 bg-purple-500/20"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1, repeat: 1 }}
-              >
-                <Rocket size={40} className="text-purple-500" />
-              </motion.div>
-              <motion.h1
-                className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 mb-3"
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-              >
-                {welcomeMessage}
-              </motion.h1>
-              <motion.p
-                className="text-lg text-gray-300"
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-              >
-                Welcome back to your Portfolio Dashboard
-              </motion.p>
+              {/* Decorative elements */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-purple-500/20 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-indigo-500/20 rounded-full blur-xl"></div>
+
+              <div className="relative z-10">
+                <motion.div
+                  className="flex justify-center mb-6"
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        className="w-16 h-16 rounded-full bg-purple-500/20"
+                        animate={{ scale: [1, 1.3, 1] }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          repeatType: "reverse",
+                        }}
+                      />
+                    </div>
+                    <motion.div
+                      className="relative z-10 w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg"
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    >
+                      <Rocket size={32} className="text-white" />
+                    </motion.div>
+                  </div>
+                </motion.div>
+
+                <motion.h1
+                  className="text-3xl sm:text-4xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-pink-400 mb-3"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                >
+                  {welcomeMessage}
+                </motion.h1>
+
+                <motion.p
+                  className="text-center text-lg text-gray-300/90 mb-8"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.5, duration: 0.6 }}
+                >
+                  Your portfolio journey begins now. Let&apos;s create something
+                  amazing together.
+                </motion.p>
+
+                <motion.button
+                  className="w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg font-medium shadow-lg shadow-purple-900/30 flex items-center justify-center group transition-all"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.7, duration: 0.6 }}
+                  onClick={() => setShowWelcomeAnimation(false)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span>Let&apos;s Get Started</span>
+                  <motion.div
+                    className="ml-2"
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      repeatType: "reverse",
+                    }}
+                  >
+                    <ChevronRight size={18} />
+                  </motion.div>
+                </motion.button>
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -225,7 +277,7 @@ const DashboardPage = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="pt-24 px-2 sm:px-6 md:px-10 flex-1 relative z-10"
+        className="pt-24 px-2 sm:px-6 md:px-10 flex-1 relative z-10 overflow-hidden "
       >
         <div className="max-w-7xl mx-auto">
           {/* Dashboard Header with Welcome Message and Search */}
@@ -652,70 +704,6 @@ const DashboardPage = () => {
 
             {/* Sidebar */}
             <div className="lg:col-span-4 space-y-6">
-              {/* Upcoming Tasks & Reminders */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-                className="bg-[#1E2132] border border-[#2E313C] rounded-xl overflow-hidden"
-              >
-                <div className="flex justify-between items-center p-5 border-b border-[#2E313C]">
-                  <h2 className="text-lg font-bold text-white flex items-center">
-                    <Calendar className="text-purple-400 mr-2" size={18} />
-                    Tasks & Reminders
-                  </h2>
-                </div>
-
-                <div className="p-5">
-                  {mockTasks.length > 0 ? (
-                    <div className="space-y-3">
-                      {mockTasks.map((task) => (
-                        <div
-                          key={task.id}
-                          className="flex items-start justify-between p-3 bg-[#262A3E] border border-[#3E4154] rounded-lg"
-                        >
-                          <div className="flex items-start">
-                            <div className="mr-3 mt-0.5">
-                              <div
-                                className={`w-3 h-3 rounded-full ${
-                                  task.priority === "high"
-                                    ? "bg-red-400"
-                                    : task.priority === "medium"
-                                      ? "bg-amber-400"
-                                      : "bg-green-400"
-                                }`}
-                              ></div>
-                            </div>
-                            <div>
-                              <h4 className="text-gray-200 text-sm font-medium">
-                                {task.title}
-                              </h4>
-                              <p className="text-xs text-gray-400 mt-0.5">
-                                Due: {task.due}
-                              </p>
-                            </div>
-                          </div>
-                          <button className="text-gray-400 hover:text-purple-400 p-1">
-                            <CheckCircle size={16} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-5">
-                      <p className="text-gray-400">No upcoming tasks</p>
-                    </div>
-                  )}
-
-                  <button className="w-full mt-3 text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border border-[#3E4154] hover:border-purple-500/30 rounded-lg transition-colors">
-                    <div className="flex items-center justify-center">
-                      <PlusCircle size={14} className="mr-1.5" />
-                      Add New Task
-                    </div>
-                  </button>
-                </div>
-              </motion.div>
-
               {/* Quick Actions */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -830,7 +818,7 @@ const DashboardPage = () => {
                         <motion.div
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.98 }}
-                          className={`${template.color} h-24 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all`}
+                          className={`${template.color} h-26 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all`}
                         >
                           <span className="text-white font-medium text-sm relative z-10">
                             {template.name}
@@ -859,13 +847,6 @@ const DashboardPage = () => {
           </div>
         </div>
       </motion.div>
-
-      {/* Subtle background effects */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-900/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-40 w-96 h-96 bg-purple-800/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-80 left-20 w-48 h-48 bg-pink-800/10 rounded-full blur-3xl"></div>
-      </div>
     </div>
   );
 };

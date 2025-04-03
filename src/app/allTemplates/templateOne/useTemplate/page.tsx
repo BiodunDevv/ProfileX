@@ -11,6 +11,8 @@ import {
   Sparkles,
   ArrowRight,
   Upload,
+  Save,
+  LayoutGrid,
 } from "lucide-react";
 
 interface HeroSection {
@@ -91,8 +93,8 @@ const Page = () => {
       subtitle: "Professional Background & Expertise",
       description: "",
       skills: [
-        { name: "Skill 1", level: 3, color: "bg-blue-500" },
-        { name: "Skill 2", level: 3, color: "bg-yellow-500" },
+        { name: "Skill 1", level: 3, color: "bg-purple-500" },
+        { name: "Skill 2", level: 3, color: "bg-blue-500" },
       ],
       education: [{ degree: "", institution: "", year: "", description: "" }],
     },
@@ -100,7 +102,7 @@ const Page = () => {
       {
         id: 1,
         type: "Project Type",
-        typeColor: "blue",
+        typeColor: "purple",
         name: "Project Name",
         description: "",
         image: "",
@@ -118,14 +120,15 @@ const Page = () => {
       ],
     },
   });
+  const [showSavedToast, setShowSavedToast] = useState(false);
 
   const colorOptions = [
-    { value: "blue", label: "Blue", bgClass: "bg-blue-500" },
     { value: "purple", label: "Purple", bgClass: "bg-purple-500" },
-    { value: "green", label: "Green", bgClass: "bg-green-500" },
-    { value: "amber", label: "Amber", bgClass: "bg-amber-500" },
+    { value: "blue", label: "Blue", bgClass: "bg-blue-500" },
     { value: "indigo", label: "Indigo", bgClass: "bg-indigo-500" },
     { value: "pink", label: "Pink", bgClass: "bg-pink-500" },
+    { value: "amber", label: "Amber", bgClass: "bg-amber-500" },
+    { value: "green", label: "Green", bgClass: "bg-green-500" },
     { value: "red", label: "Red", bgClass: "bg-red-500" },
     { value: "teal", label: "Teal", bgClass: "bg-teal-500" },
   ];
@@ -153,58 +156,68 @@ const Page = () => {
     // This is where the actual AI implementation would go
   };
 
-const handleInputChange = (
+  const handleInputChange = (
     section: keyof FormData,
     field: string,
     value: string
-) => {
+  ) => {
     setFormData((prev) => ({
-        ...prev,
-        [section]: {
-            ...(typeof prev[section] === "object" && prev[section] !== null ? prev[section] : {}),
-            [field]: value,
-        },
+      ...prev,
+      [section]: {
+        ...(typeof prev[section] === "object" && prev[section] !== null
+          ? prev[section]
+          : {}),
+        [field]: value,
+      },
     }));
-};
 
-interface NestedInputChangeValue {
+    // Show the saved toast notification
+    setShowSavedToast(true);
+    setTimeout(() => setShowSavedToast(false), 2000);
+  };
+
+  interface NestedInputChangeValue {
     [key: string]: string | number | boolean | object | null;
-}
+  }
 
-const handleNestedInputChange = (
+  const handleNestedInputChange = (
     section: keyof FormData,
     index: number,
     field: string | null,
     value: NestedInputChangeValue | string
-) => {
+  ) => {
     setFormData((prev) => {
-        const newData = { ...prev };
-        if (section === "hero" && field === "companies") {
-            newData.hero.companies[index] = value as string;
-        } else if (section === "about" && field === "skills") {
-            newData.about.skills[index] = {
-                ...newData.about.skills[index],
-                ...(value as NestedInputChangeValue),
-            };
-        } else if (section === "about" && field === "education") {
-            newData.about.education[index] = {
-                ...newData.about.education[index],
-                ...(value as NestedInputChangeValue),
-            };
-        } else if (section === "projects") {
-            newData.projects[index] = {
-                ...newData.projects[index],
-                ...(value as NestedInputChangeValue),
-            };
-        } else if (section === "contact" && field === "socialLinks") {
-            newData.contact.socialLinks[index] = {
-                ...newData.contact.socialLinks[index],
-                ...(value as NestedInputChangeValue),
-            };
-        }
-        return newData;
+      const newData = { ...prev };
+      if (section === "hero" && field === "companies") {
+        newData.hero.companies[index] = value as string;
+      } else if (section === "about" && field === "skills") {
+        newData.about.skills[index] = {
+          ...newData.about.skills[index],
+          ...(value as NestedInputChangeValue),
+        };
+      } else if (section === "about" && field === "education") {
+        newData.about.education[index] = {
+          ...newData.about.education[index],
+          ...(value as NestedInputChangeValue),
+        };
+      } else if (section === "projects") {
+        newData.projects[index] = {
+          ...newData.projects[index],
+          ...(value as NestedInputChangeValue),
+        };
+      } else if (section === "contact" && field === "socialLinks") {
+        newData.contact.socialLinks[index] = {
+          ...newData.contact.socialLinks[index],
+          ...(value as NestedInputChangeValue),
+        };
+      }
+      return newData;
     });
-};
+
+    // Show the saved toast notification
+    setShowSavedToast(true);
+    setTimeout(() => setShowSavedToast(false), 2000);
+  };
 
   const addItem = (section: keyof FormData, field: string | null) => {
     setFormData((prev) => {
@@ -213,7 +226,11 @@ const handleNestedInputChange = (
       if (section === "hero" && field === "companies") {
         newData.hero.companies.push("");
       } else if (section === "about" && field === "skills") {
-        newData.about.skills.push({ name: "", level: 3, color: "bg-blue-500" });
+        newData.about.skills.push({
+          name: "",
+          level: 3,
+          color: "bg-purple-500",
+        });
       } else if (section === "about" && field === "education") {
         newData.about.education.push({
           degree: "",
@@ -229,7 +246,7 @@ const handleNestedInputChange = (
         newData.projects.push({
           id: newId,
           type: "Project Type",
-          typeColor: "blue",
+          typeColor: "purple",
           name: "Project Name",
           description: "",
           image: "",
@@ -244,7 +261,11 @@ const handleNestedInputChange = (
     });
   };
 
-  const removeItem = (section: keyof FormData, field: string | null, index: number) => {
+  const removeItem = (
+    section: keyof FormData,
+    field: string | null,
+    index: number
+  ) => {
     setFormData((prev) => {
       const newData = { ...prev };
 
@@ -273,37 +294,44 @@ const handleNestedInputChange = (
   };
 
   const handlePreview = () => {
-    // Navigate to preview with the ID in the URL
     router.push(`/templateone/preview/${formData.id}`);
   };
 
   const inputClass =
-    "w-full bg-white border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#3F8E00] focus:border-transparent";
-  const labelClass = "block text-gray-700 font-medium mb-2";
-  const sectionClass = "bg-white rounded-xl shadow-md p-6 mb-8";
+    "w-full bg-[#1E2132] border border-[#2E313C] rounded-lg px-2 sm:px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-600/50 focus:border-purple-500 text-gray-200";
+  const labelClass = "block text-gray-300 font-medium mb-2";
+  const sectionClass =
+    "sm:bg-[#171826] sm:border sm:border-[#2E313C] sm:rounded-xl sm:shadow-lg px-0 py-2 sm:px-4 py-4 mb-8";
   const buttonClass =
-    "bg-[#3F8E00] hover:bg-[#4BA600] text-white font-medium py-2 px-4 rounded-lg transition-colors";
+    "bg-gradient-to-r from-[#711381] to-purple-600 hover:from-[#5C0F6B] hover:to-purple-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors shadow-lg shadow-purple-900/20";
   const tabButtonClass = "py-3 px-6 font-medium rounded-lg transition-colors";
 
-
   const tabVariants = {
-    active: { backgroundColor: "#3F8E00", color: "white" },
-    inactive: { backgroundColor: "#f3f4f6", color: "#374151" },
+    active: {
+      backgroundColor: "#711381",
+      color: "white",
+      boxShadow: "0 4px 14px rgba(113, 19, 129, 0.25)",
+    },
+    inactive: { backgroundColor: "#1E2132", color: "#d1d5db" },
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A] py-2 sm:py-4 px-2 sm:px-4">
+      <div>
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="text-center mb-10"
         >
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">
+          <div className="inline-flex items-center px-3 py-1 mb-3 rounded-full bg-purple-900/30 border border-purple-500/30 text-sm text-purple-400">
+            <LayoutGrid size={14} className="mr-1.5" />
+            Template Editor
+          </div>
+          <h1 className="text-[28px] font-bold text-white mb-4">
             Customize Your Profile
           </h1>
-          <p className="text-gray-600 max-w-3xl mx-auto">
+          <p className="text-gray-400 max-w-3xl mx-auto">
             Personalize your portfolio by providing the information below. All
             fields can be customized to showcase your unique skills and
             projects.
@@ -311,16 +339,16 @@ const handleNestedInputChange = (
         </motion.div>
 
         {/* Tabs navigation */}
-        <div className="flex overflow-x-auto space-x-2 mb-8 p-1 bg-gray-100 rounded-lg">
+        <div className="flex overflow-x-auto space-x-2 mb-8 p-1.5 bg-[#1A1D2E] rounded-xl border border-[#2E313C]">
           {["hero", "about", "projects", "contact"].map((tab) => (
             <motion.button
               key={tab}
               variants={tabVariants}
               animate={activeTab === tab ? "active" : "inactive"}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: activeTab !== tab ? 1.03 : 1 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setActiveTab(tab)}
-              className={tabButtonClass}
+              className={`${tabButtonClass} ${activeTab === tab ? "border-transparent" : "hover:bg-[#262A3E] border-transparent"}`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </motion.button>
@@ -334,7 +362,7 @@ const handleNestedInputChange = (
           animate={{ height: isAiPanelOpen ? "auto" : 0 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-md p-6 text-white">
+          <div className="bg-gradient-to-r from-indigo-600/90 to-purple-600/90 backdrop-blur-sm rounded-xl shadow-lg p-6 text-white border border-indigo-500/30">
             <div className="flex items-center mb-4">
               <Sparkles className="mr-2" size={24} />
               <h3 className="text-xl font-semibold">AI Assistance</h3>
@@ -436,9 +464,11 @@ const handleNestedInputChange = (
           </div>
         </motion.div>
 
-        <button
+        <motion.button
           onClick={() => setIsAiPanelOpen(!isAiPanelOpen)}
-          className="flex items-center justify-center w-full mb-8 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg py-2 px-4 font-medium transition-transform hover:shadow-lg"
+          className="flex items-center justify-center w-full mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg py-2.5 px-4 font-medium transition-all hover:shadow-lg shadow-purple-900/20 border border-indigo-500/30"
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
         >
           <Sparkles className="mr-2" size={18} />
           {isAiPanelOpen ? "Hide AI Assistance" : "Show AI Assistance"}
@@ -447,7 +477,7 @@ const handleNestedInputChange = (
           ) : (
             <ChevronDown className="ml-2" size={18} />
           )}
-        </button>
+        </motion.button>
 
         <form className="space-y-8">
           {/* Hero Section */}
@@ -458,7 +488,7 @@ const handleNestedInputChange = (
               transition={{ duration: 0.5 }}
               className={sectionClass}
             >
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              <h2 className="text-2xl font-bold text-white mb-6">
                 Hero Section
               </h2>
 
@@ -529,12 +559,12 @@ const handleNestedInputChange = (
                   />
                   <button
                     type="button"
-                    className="bg-gray-200 hover:bg-gray-300 px-4 rounded-r-lg flex items-center"
+                    className="bg-[#262A3E] hover:bg-[#303650] px-4 rounded-r-lg flex items-center border border-l-0 border-[#2E313C]"
                     onClick={() =>
                       alert("Image upload functionality would go here")
                     }
                   >
-                    <Upload size={18} />
+                    <Upload size={18} className="text-gray-300" />
                   </button>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
@@ -545,12 +575,12 @@ const handleNestedInputChange = (
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-2">
                   <label className={labelClass}>
-                    Companies You&apos;ve Worked With
+                    Companies you worked with
                   </label>
                   <button
                     type="button"
                     onClick={() => addItem("hero", "companies")}
-                    className="text-[#3F8E00] hover:text-[#4BA600] flex items-center text-sm font-medium"
+                    className="text-purple-400 hover:text-purple-300 flex items-center text-sm font-medium"
                   >
                     <Plus size={16} className="mr-1" /> Add Company
                   </button>
@@ -576,7 +606,7 @@ const handleNestedInputChange = (
                       <button
                         type="button"
                         onClick={() => removeItem("hero", "companies", index)}
-                        className="ml-2 text-red-500 hover:text-red-700 p-2"
+                        className="ml-2 text-red-400 hover:text-red-300 p-2 bg-[#261A1A] hover:bg-[#2D1F1F] rounded-lg"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -595,7 +625,7 @@ const handleNestedInputChange = (
               transition={{ duration: 0.5 }}
               className={sectionClass}
             >
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              <h2 className="text-2xl font-bold text-white mb-6">
                 About Section
               </h2>
 
@@ -654,30 +684,35 @@ const handleNestedInputChange = (
                   <button
                     type="button"
                     onClick={() => addItem("about", "skills")}
-                    className="text-[#3F8E00] hover:text-[#4BA600] flex items-center text-sm font-medium"
+                    className="text-purple-400 hover:text-purple-300 flex items-center text-sm font-medium"
                   >
                     <Plus size={16} className="mr-1" /> Add Skill
                   </button>
                 </div>
 
                 {formData.about.skills.map((skill, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <div
+                    key={index}
+                    className="bg-[#1A1D2E] border border-[#2E313C] rounded-lg p-4 mb-4"
+                  >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium">Skill {index + 1}</h4>
+                      <h4 className="font-medium text-white">
+                        Skill {index + 1}
+                      </h4>
                       {formData.about.skills.length > 1 && (
                         <button
                           type="button"
                           onClick={() => removeItem("about", "skills", index)}
-                          className="text-red-500 hover:text-red-700 p-1"
+                          className="text-red-400 hover:text-red-300 p-1.5 bg-[#261A1A] hover:bg-[#2D1F1F] rounded-lg"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                       )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
                           Name
                         </label>
                         <input
@@ -694,7 +729,7 @@ const handleNestedInputChange = (
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
                           Level (1-5)
                         </label>
                         <input
@@ -712,7 +747,7 @@ const handleNestedInputChange = (
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
                           Color
                         </label>
                         <select
@@ -737,10 +772,10 @@ const handleNestedInputChange = (
                     </div>
 
                     <div className="mt-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-300 mb-1">
                         Preview
                       </label>
-                      <div className="h-2.5 bg-gray-200 rounded-full">
+                      <div className="h-2.5 bg-[#262A3E] rounded-full">
                         <div
                           className={`h-2.5 rounded-full ${skill.color}`}
                           style={{ width: `${skill.level * 20}%` }}
@@ -758,32 +793,37 @@ const handleNestedInputChange = (
                   <button
                     type="button"
                     onClick={() => addItem("about", "education")}
-                    className="text-[#3F8E00] hover:text-[#4BA600] flex items-center text-sm font-medium"
+                    className="text-purple-400 hover:text-purple-300 flex items-center text-sm font-medium"
                   >
                     <Plus size={16} className="mr-1" /> Add Education
                   </button>
                 </div>
 
                 {formData.about.education.map((edu, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <div
+                    key={index}
+                    className="bg-[#1A1D2E] border border-[#2E313C] rounded-lg p-4 mb-4"
+                  >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium">Education {index + 1}</h4>
+                      <h4 className="font-medium text-white">
+                        Education {index + 1}
+                      </h4>
                       {formData.about.education.length > 1 && (
                         <button
                           type="button"
                           onClick={() =>
                             removeItem("about", "education", index)
                           }
-                          className="text-red-500 hover:text-red-700 p-1"
+                          className="text-red-400 hover:text-red-300 p-1.5 bg-[#261A1A] hover:bg-[#2D1F1F] rounded-lg"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                       )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
                           Degree
                         </label>
                         <input
@@ -803,7 +843,7 @@ const handleNestedInputChange = (
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
                           Institution
                         </label>
                         <input
@@ -825,7 +865,7 @@ const handleNestedInputChange = (
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
                           Years
                         </label>
                         <input
@@ -845,7 +885,7 @@ const handleNestedInputChange = (
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
                           Description
                         </label>
                         <input
@@ -879,34 +919,36 @@ const handleNestedInputChange = (
               className={sectionClass}
             >
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">
+                <h2 className="text-2xl font-bold text-white">
                   Projects Section
                 </h2>
-                <button
+                <motion.button
                   type="button"
                   onClick={() => addItem("projects", null)}
                   className={`${buttonClass} flex items-center`}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <Plus size={18} className="mr-2" /> Add Project
-                </button>
+                </motion.button>
               </div>
 
               {formData.projects.map((project, index) => (
                 <div
                   key={project.id}
-                  className="bg-gray-50 rounded-lg p-6 mb-6 border border-gray-200"
+                  className="sm:bg-[#1A1D2E] border border-[#2E313C] rounded-lg px-2 py-2 sm:px-4 sm:py-4 mb-6"
                 >
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold text-gray-800">
+                    <h3 className="text-xl font-semibold text-white">
                       Project {index + 1}
                     </h3>
                     {formData.projects.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeItem("projects", null, index)}
-                        className="text-red-500 hover:text-red-700 p-2 rounded-lg"
+                        className="text-red-400 hover:text-red-300 p-2 bg-[#261A1A] hover:bg-[#2D1F1F] rounded-lg"
                       >
-                        <Trash2 size={20} />
+                        <Trash2 size={18} />
                       </button>
                     )}
                   </div>
@@ -995,12 +1037,12 @@ const handleNestedInputChange = (
                       />
                       <button
                         type="button"
-                        className="bg-gray-200 hover:bg-gray-300 px-4 rounded-r-lg flex items-center"
+                        className="bg-[#262A3E] hover:bg-[#303650] px-4 rounded-r-lg flex items-center border border-l-0 border-[#2E313C]"
                         onClick={() =>
                           alert("Image upload functionality would go here")
                         }
                       >
-                        <Upload size={18} />
+                        <Upload size={18} className="text-gray-300" />
                       </button>
                     </div>
                   </div>
@@ -1049,7 +1091,7 @@ const handleNestedInputChange = (
               transition={{ duration: 0.5 }}
               className={sectionClass}
             >
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              <h2 className="text-2xl font-bold text-white mb-6">
                 Contact Information
               </h2>
 
@@ -1093,32 +1135,37 @@ const handleNestedInputChange = (
                   <button
                     type="button"
                     onClick={() => addItem("contact", "socialLinks")}
-                    className="text-[#3F8E00] hover:text-[#4BA600] flex items-center text-sm font-medium"
+                    className="text-purple-400 hover:text-purple-300 flex items-center text-sm font-medium"
                   >
                     <Plus size={16} className="mr-1" /> Add Social Link
                   </button>
                 </div>
 
                 {formData.contact.socialLinks.map((link, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <div
+                    key={index}
+                    className="bg-[#1A1D2E] border border-[#2E313C] rounded-lg p-2 sm:p-2 mb-4"
+                  >
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium">Social Link {index + 1}</h4>
+                      <h4 className="font-medium text-white">
+                        Social Link {index + 1}
+                      </h4>
                       {formData.contact.socialLinks.length > 1 && (
                         <button
                           type="button"
                           onClick={() =>
                             removeItem("contact", "socialLinks", index)
                           }
-                          className="text-red-500 hover:text-red-700 p-1"
+                          className="text-red-400 hover:text-red-300 p-1.5 bg-[#261A1A] hover:bg-[#2D1F1F] rounded-lg"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                       )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
                           Platform
                         </label>
                         <input
@@ -1138,7 +1185,7 @@ const handleNestedInputChange = (
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
                           Icon
                         </label>
                         <select
@@ -1161,7 +1208,7 @@ const handleNestedInputChange = (
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
                           URL
                         </label>
                         <input
@@ -1187,7 +1234,7 @@ const handleNestedInputChange = (
           )}
 
           <div className="flex justify-between">
-            <button
+            <motion.button
               type="button"
               onClick={() => {
                 const currentIndex = [
@@ -1203,15 +1250,17 @@ const handleNestedInputChange = (
                   );
                 }
               }}
-              className={`bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-6 rounded-lg flex items-center transition-colors ${
+              className={`bg-[#1E2132] border border-[#2E313C] hover:bg-[#262A3E] text-gray-200 font-medium py-2.5 px-6 rounded-lg flex items-center transition-colors ${
                 activeTab === "hero" ? "invisible" : ""
               }`}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
             >
               Previous
-            </button>
+            </motion.button>
 
             {activeTab !== "contact" ? (
-              <button
+              <motion.button
                 type="button"
                 onClick={() => {
                   const currentIndex = [
@@ -1227,15 +1276,19 @@ const handleNestedInputChange = (
                     );
                   }
                 }}
-                className="bg-[#3F8E00] hover:bg-[#4BA600] text-white font-medium py-2 px-6 rounded-lg flex items-center transition-colors"
+                className="bg-gradient-to-r from-[#711381] to-purple-600 hover:from-[#5C0F6B] hover:to-purple-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center transition-colors shadow-lg shadow-purple-900/20"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
               >
                 Next <ArrowRight size={18} className="ml-2" />
-              </button>
+              </motion.button>
             ) : (
               <motion.button
                 type="button"
                 onClick={handlePreview}
-                className="bg-[#3F8E00] hover:bg-[#4BA600] text-white font-medium py-2 px-6 rounded-lg flex items-center transition-colors"
+                className="bg-gradient-to-r from-[#711381] to-purple-600 hover:from-[#5C0F6B] hover:to-purple-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center transition-colors shadow-lg shadow-purple-900/20"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
               >
                 Preview <ArrowRight size={18} className="ml-2" />
               </motion.button>
@@ -1243,6 +1296,21 @@ const handleNestedInputChange = (
           </div>
         </form>
       </div>
+
+      {/* Auto-save toast */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{
+          opacity: showSavedToast ? 1 : 0,
+          y: showSavedToast ? 0 : 20,
+        }}
+        className="fixed bottom-6 left-6 right-6 md:left-auto md:right-auto md:w-auto md:max-w-md mx-auto bg-[#1E2132]/80 backdrop-blur-lg border border-green-500/30 shadow-xl rounded-xl p-4 text-center"
+      >
+        <p className="text-green-400 flex items-center justify-center">
+          <Save size={16} className="mr-2" />
+          Changes saved automatically
+        </p>
+      </motion.div>
     </div>
   );
 };
