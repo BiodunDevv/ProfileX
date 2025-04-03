@@ -1,11 +1,11 @@
 import React from "react";
-import Hero from "../components/TemplateTwo/Hero";
-import About from "../components/TemplateTwo/About";
-import Navbar from "../components/TemplateTwo/Navbar";
-import HeroImage from "../components/TemplateTwo/images/Hero picture.svg";
-import Projects from "../components/TemplateTwo/Projects";
-import ProjectsImage from "../components/TemplateTwo/images/Projects.jpg";
-import Contact from "../components/TemplateTwo/Contact";
+import Hero from "../../components/TemplateTwo/Hero";
+import About from "../../components/TemplateTwo/About";
+import Navbar from "../../components/TemplateTwo/Navbar";
+import HeroImage from "../../components/TemplateTwo/images/Hero picture.svg";
+import Projects from "../../components/TemplateTwo/Projects";
+import ProjectsImage from "../../components/TemplateTwo/images/Projects.jpg";
+import Contact from "../../components/TemplateTwo/Contact";
 
 const HeroDetails = {
   Name: "Your Name Here",

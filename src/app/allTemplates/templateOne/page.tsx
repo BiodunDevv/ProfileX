@@ -1,10 +1,10 @@
 import React from "react";
-import Hero from "../components/TemplateOne/Hero";
-import HeroImage from "../components/TemplateOne/images/Hero picture.svg";
-import Experience from "../components/TemplateOne/Experience";
-import Projects from "../components/TemplateOne/images/Projects.jpg";
-import About from "../components/TemplateOne/About";
-import Contact from "../components/TemplateOne/Contact";
+import Hero from "../../components/TemplateOne/Hero";
+import HeroImage from "../../components/TemplateOne/images/Hero picture.svg";
+import Experience from "../../components/TemplateOne/Experience";
+import Projects from "../../components/TemplateOne/images/Projects.jpg";
+import About from "../../components/TemplateOne/About";
+import Contact from "../../components/TemplateOne/Contact";
 
 const HeroDetails = {
   DevName: "WorkName",

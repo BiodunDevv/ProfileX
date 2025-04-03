@@ -141,18 +141,13 @@ const Navbar = () => {
               className="relative group"
             >
               <button className="bg-gradient-to-r from-[#711381] to-purple-600 p-2 rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 transition-all shadow-lg">
-                <Plus size={20} className="text-white" />
+                <Link
+                  href="/dashboard/templates"
+                  className="text-sm text-gray-300 hover:bg-[#2E313C] hover:text-purple-400"
+                >
+                  <Plus size={20} className="text-white" />
+                </Link>
               </button>
-              <div className="absolute right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 bg-[#272932] border border-[#2E313C] rounded-lg shadow-xl z-50">
-                <div className="py-1">
-                  <Link
-                    href="/dashboard/template-form"
-                    className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#2E313C] hover:text-purple-400"
-                  >
-                    Create New Portfolio
-                  </Link>
-                </div>
-              </div>
             </motion.div>
 
             {/* User Profile Dropdown */}
