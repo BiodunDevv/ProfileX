@@ -1,14 +1,14 @@
 "use client";
 import React from "react";
-import Link from "next/link";
-import { Star } from "lucide-react";
 
 import Template from "./components/LandingPage/Template";
 import Sphere from "./components/LandingPage/Sphere";
-import Navbar from "./components/UI/Navbar";
 import HeroSection from "./components/LandingPage/HeroSection";
 import FeaturesSection from "./components/LandingPage/FeaturesSection";
 import Footer from "./components/LandingPage/Footer";
+import Navbar from "./components/LandingPage/Navbar";
+import CallToAction from "./components/LandingPage/CallToAction";
+import Developers from "./components/LandingPage/Developers";
 
 const page = () => {
   return (
@@ -21,29 +21,8 @@ const page = () => {
       <HeroSection />
       <FeaturesSection />
       <Template />
-
-      {/* Call to Action */}
-      <section className="relative z-10 px-6 py-16 md:py-24 bg-[#272932]/50 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#711381] to-purple-600">
-            Start Your Professional Journey Today
-          </h2>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-10">
-            Create a portfolio that opens doors, showcases your talents, and
-            sets you apart in today&apos;s competitive landscape.
-          </p>
-          <div className="flex justify-center space-x-4">
-            <Link
-              href="/signup"
-              className="bg-gradient-to-r from-[#711381] to-purple-600 px-6 py-3 rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 transition-all flex items-center"
-            >
-              Create Your Portfolio
-              <Star className="ml-2" size={20} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
+      <Developers />
+      <CallToAction />
       <Footer />
 
       {/* Background Gradient Overlay */}

@@ -13,9 +13,7 @@ import { useRouter } from "next/navigation";
 
 // Update Zod schema to match our API
 const loginSchema = z.object({
-  email: z
-    .string()
-    .email("Please enter a valid email address"),
+  email: z.string().email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
@@ -55,7 +53,7 @@ const SignInPage = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        
+
         // Handle verification error specifically
         if (response.status === 403 && errorData.verified === false) {
           // Store email in localStorage for verification process
@@ -64,11 +62,19 @@ const SignInPage = () => {
           router.push(`/verification?email=${encodeURIComponent(data.email)}`);
           return;
         }
-        
+
         setErrorMessage(errorData.message || "Invalid credentials");
         return;
       }
+      const { token, user } = useAuthStore.getState();
 
+      // Log token for verification
+      console.log("Sign-in successful!");
+      console.log("User authenticated:", user?.name);
+      console.log("Token available:", token ? "Yes" : "No");
+      console.log("Token:", token);
+
+      // Navigate to dashboard
       router.push("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
@@ -115,9 +121,7 @@ const SignInPage = () => {
             placeholder="Your email address"
           />
           {errors.email && (
-            <p className="text-red-400 text-sm mt-1">
-              {errors.email.message}
-            </p>
+            <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
           )}
         </div>
 

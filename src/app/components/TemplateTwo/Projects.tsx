@@ -16,13 +16,9 @@ interface Project {
 
 interface ProjectsProps {
   projects?: Project[];
-  title?: string;
 }
 
-const Projects: React.FC<ProjectsProps> = ({
-  projects = [],
-  title = "My Projects",
-}) => {
+const Projects: React.FC<ProjectsProps> = ({ projects = [] }) => {
   const [activeFilter, setActiveFilter] = useState<"all" | "featured">("all");
 
   const filteredProjects =
@@ -45,7 +41,7 @@ const Projects: React.FC<ProjectsProps> = ({
         {/* Section Title */}
         <div className="mb-12 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">
-            {title}
+            My Projects
           </h2>
           <div className="w-20 h-1 bg-gradient-to-r from-amber-500 to-amber-600 mx-auto"></div>
         </div>

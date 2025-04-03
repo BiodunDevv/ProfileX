@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,42 +11,69 @@ import {
   Settings,
   Layout,
   Plus,
+  UserCircle,
+  LayoutDashboard,
+  FileCode,
+  Palette,
+  Home,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore } from "../../../../store/useAuthStore";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
-  // Check if user is in dashboard or other authenticated routes
-  useEffect(() => {
-    // This is a simple check - in a real app, you'd verify with your auth provider
-    const authenticatedPaths = [
-      "/dashboard",
-      "/profile",
-      "/settings",
-      "/templates",
-    ];
-    setIsAuthenticated(
-      authenticatedPaths.some((path) => pathname?.startsWith(path))
-    );
-  }, [pathname]);
+  // Use auth store for authentication status
+  const { user, signOut } = useAuthStore();
 
-  // Handle scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
-  const handleSignOut = () => {
-    console.log("Signing out...");
-    window.location.href = "/";
+  // Format user name for avatar
+  const getInitials = (name?: string) => {
+    if (!name) return "PX";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
   };
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.push("/signin");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
+  // Navigation links for dashboard
+  const navLinks = [
+    {
+      name: "Dashboard",
+      path: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      name: "Templates",
+      path: "/dashboard/templates",
+      icon: Palette,
+    },
+    {
+      name: "Projects",
+      path: "/dashboard/projects",
+      icon: FileCode,
+    },
+    {
+      name: "Settings",
+      path: "/dashboard/settings",
+      icon: Settings,
+    },
+  ];
 
   return (
     <>
@@ -54,25 +81,19 @@ const Navbar = () => {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className={`fixed top-0 left-0 right-0 z-20 px-6 py-4 transition-all duration-300 ${
-          scrolled || isAuthenticated
-            ? "bg-[#1a1b24]/90 backdrop-blur-md shadow-lg"
-            : "bg-transparent"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-20 px-4 sm:px-6 py-3 transition-all duration-300 bg-[#1a1b24]/90 backdrop-blur-md shadow-lg`}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
+          {/* Logo */}
           <motion.div
             className="flex items-center"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <Link
-              href={isAuthenticated ? "/dashboard" : "/"}
-              className="flex items-center"
-            >
+            <Link href="/dashboard" className="flex items-center">
               <Rocket
                 className="mr-2 text-[#711381]"
-                size={40}
+                size={36}
                 strokeWidth={2}
               />
               <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#711381] to-purple-600">
@@ -81,95 +102,103 @@ const Navbar = () => {
             </Link>
           </motion.div>
 
-          {/* Navigation Links for Authenticated Users */}
-          {isAuthenticated && (
-            <div className="hidden md:flex items-center space-x-6 mr-4">
+          {/* Navigation Links - Desktop */}
+          <div className="hidden md:flex items-center space-x-6 mr-4">
+            {navLinks.map((link) => (
               <motion.div
+                key={link.path}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <Link
-                  href="/dashboard"
+                  href={link.path}
                   className={`transition-colors ${
-                    pathname === "/dashboard"
+                    pathname === link.path
                       ? "text-purple-400 font-medium"
                       : "text-gray-300 hover:text-purple-400"
                   }`}
                 >
-                  Dashboard
+                  {link.name}
                 </Link>
               </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+            ))}
+            {/* Home Link to return to landing page */}
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                href="/"
+                className="text-gray-300 hover:text-purple-400 transition-colors"
               >
-                <Link
-                  href="/templates"
-                  className={`transition-colors ${
-                    pathname?.startsWith("/template")
-                      ? "text-purple-400 font-medium"
-                      : "text-gray-300 hover:text-purple-400"
-                  }`}
-                >
-                  Templates
-                </Link>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  href="/settings"
-                  className={`transition-colors ${
-                    pathname === "/settings"
-                      ? "text-purple-400 font-medium"
-                      : "text-gray-300 hover:text-purple-400"
-                  }`}
-                >
-                  Settings
-                </Link>
-              </motion.div>
-            </div>
-          )}
+                <Home size={18} />
+              </Link>
+            </motion.div>
+          </div>
 
-          {/* Authentication Buttons or User Menu */}
+          {/* User Menu - Desktop */}
           <div className="hidden md:flex items-center space-x-4">
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-4">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative group"
-                >
-                  <button className="bg-gradient-to-r from-[#711381] to-purple-600 p-2 rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 transition-all shadow-lg">
-                    <Plus size={20} className="text-white" />
-                  </button>
-                  <div className="absolute right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 bg-[#272932] border border-[#2E313C] rounded-lg shadow-xl z-50">
-                    <div className="py-1">
-                      <Link
-                        href="/template-form"
-                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#2E313C] hover:text-purple-400"
-                      >
-                        Create New Portfolio
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative group"
+            >
+              <button className="bg-gradient-to-r from-[#711381] to-purple-600 p-2 rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 transition-all shadow-lg">
+                <Plus size={20} className="text-white" />
+              </button>
+              <div className="absolute right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 bg-[#272932] border border-[#2E313C] rounded-lg shadow-xl z-50">
+                <div className="py-1">
+                  <Link
+                    href="/dashboard/template-form"
+                    className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#2E313C] hover:text-purple-400"
+                  >
+                    Create New Portfolio
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
 
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative group"
-                >
-                  <button className="flex items-center space-x-2 bg-[#2E313C]/50 px-3 py-2 rounded-lg hover:bg-[#2E313C]/80 transition-all">
-                    <User size={18} className="text-purple-400" />
-                    <span className="text-gray-300">My Account</span>
-                  </button>
-                  <div className="absolute right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 bg-[#272932] border border-[#2E313C] rounded-lg shadow-xl z-50">
+            {/* User Profile Dropdown */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative"
+            >
+              <button
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className="flex items-center space-x-2 bg-[#2E313C]/50 px-3 py-2 rounded-lg hover:bg-[#2E313C]/80 transition-all"
+              >
+                <div className="h-7 w-7 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-500 text-white text-xs font-medium">
+                  {user?.name ? (
+                    getInitials(user.name)
+                  ) : (
+                    <UserCircle size={20} />
+                  )}
+                </div>
+                <span className="text-gray-300 max-w-[100px] truncate">
+                  {user?.name || "My Account"}
+                </span>
+              </button>
+
+              <AnimatePresence>
+                {isProfileMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 mt-2 w-60 bg-[#272932] border border-[#2E313C] rounded-lg shadow-xl z-50"
+                  >
+                    <div className="p-3 border-b border-[#3E4049]">
+                      <p className="text-sm font-medium text-gray-200">
+                        {user?.name || "User"}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5 break-all">
+                        {user?.email}
+                      </p>
+                    </div>
                     <div className="py-1">
                       <Link
-                        href="/profile"
+                        href="/dashboard/profile"
                         className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#2E313C] hover:text-purple-400"
+                        onClick={() => setIsProfileMenuOpen(false)}
                       >
                         <div className="flex items-center">
                           <User size={16} className="mr-2" />
@@ -179,6 +208,7 @@ const Navbar = () => {
                       <Link
                         href="/dashboard"
                         className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#2E313C] hover:text-purple-400"
+                        onClick={() => setIsProfileMenuOpen(false)}
                       >
                         <div className="flex items-center">
                           <Layout size={16} className="mr-2" />
@@ -186,8 +216,9 @@ const Navbar = () => {
                         </div>
                       </Link>
                       <Link
-                        href="/settings"
+                        href="/dashboard/settings"
                         className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#2E313C] hover:text-purple-400"
+                        onClick={() => setIsProfileMenuOpen(false)}
                       >
                         <div className="flex items-center">
                           <Settings size={16} className="mr-2" />
@@ -195,7 +226,10 @@ const Navbar = () => {
                         </div>
                       </Link>
                       <button
-                        onClick={handleSignOut}
+                        onClick={() => {
+                          handleLogout();
+                          setIsProfileMenuOpen(false);
+                        }}
                         className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#2E313C]"
                       >
                         <div className="flex items-center">
@@ -204,35 +238,10 @@ const Navbar = () => {
                         </div>
                       </button>
                     </div>
-                  </div>
-                </motion.div>
-              </div>
-            ) : (
-              <>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link
-                    href="/signin"
-                    className="text-purple-400 transition-colors px-4 py-2"
-                  >
-                    Sign In
-                  </Link>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link
-                    href="/signup"
-                    className="bg-gradient-to-r from-[#711381] to-purple-600 px-5 py-2.5 rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 transition-all shadow-lg shadow-purple-500/30"
-                  >
-                    Create Account
-                  </Link>
-                </motion.div>
-              </>
-            )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -259,6 +268,22 @@ const Navbar = () => {
             transition={{ duration: 0.3 }}
             className="md:hidden fixed z-30 top-16 left-0 w-full bg-gradient-to-b from-[#272932] to-[#1a1b24] shadow-lg backdrop-blur-md"
           >
+            {/* User Profile - Mobile */}
+            <div className="p-4 border-b border-[#3E4049]">
+              <div className="flex items-center">
+                <div className="h-10 w-10 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-500 text-white text-sm font-medium">
+                  {user?.name ? getInitials(user.name) : "PX"}
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-200">
+                    {user?.name || "User"}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">{user?.email}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation Links - Mobile */}
             <motion.div
               initial="hidden"
               animate="visible"
@@ -273,54 +298,33 @@ const Navbar = () => {
               }}
               className="flex flex-col items-center space-y-4 py-6"
             >
-              {isAuthenticated && (
-                <div className="w-full px-6 space-y-3">
+              <div className="w-full px-6 space-y-3">
+                {navLinks.map((link) => (
                   <Link
-                    href="/dashboard"
-                    className={`block text-center py-2 px-4 rounded-md transition-colors ${
-                      pathname === "/dashboard"
+                    key={link.path}
+                    href={link.path}
+                    className={`flex items-center justify-center py-2 px-4 rounded-md transition-colors ${
+                      pathname === link.path
                         ? "bg-[#2E313C] text-purple-400"
                         : "bg-[#2E313C]/50 text-gray-300"
                     }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Dashboard
+                    <link.icon size={16} className="mr-2" />
+                    {link.name}
                   </Link>
-                  <Link
-                    href="/templates"
-                    className={`block text-center py-2 px-4 rounded-md transition-colors ${
-                      pathname?.startsWith("/template")
-                        ? "bg-[#2E313C] text-purple-400"
-                        : "bg-[#2E313C]/50 text-gray-300"
-                    }`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Templates
-                  </Link>
-                  <Link
-                    href="/settings"
-                    className={`block text-center py-2 px-4 rounded-md transition-colors ${
-                      pathname === "/settings"
-                        ? "bg-[#2E313C] text-purple-400"
-                        : "bg-[#2E313C]/50 text-gray-300"
-                    }`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Settings
-                  </Link>
-                  <Link
-                    href="/profile"
-                    className={`block text-center py-2 px-4 rounded-md transition-colors ${
-                      pathname === "/profile"
-                        ? "bg-[#2E313C] text-purple-400"
-                        : "bg-[#2E313C]/50 text-gray-300"
-                    }`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Profile
-                  </Link>
-                </div>
-              )}
+                ))}
+
+                {/* Link to home page */}
+                <Link
+                  href="/"
+                  className="flex items-center justify-center py-2 px-4 rounded-md transition-colors bg-[#2E313C]/50 text-gray-300"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Home size={16} className="mr-2" />
+                  Home
+                </Link>
+              </div>
 
               <motion.div
                 className="w-full px-6 space-y-3 mt-2 pt-4 border-t border-gray-700/50"
@@ -329,54 +333,41 @@ const Navbar = () => {
                   visible: { y: 0, opacity: 1 },
                 }}
               >
-                {isAuthenticated ? (
-                  <>
-                    <Link
-                      href="/template-form"
-                      className="block w-full bg-gradient-to-r from-[#711381] to-purple-600 px-4 py-3 rounded-lg text-center hover:from-[#5C0F6B] hover:to-purple-700 transition-all shadow-lg shadow-purple-500/20"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <div className="flex items-center justify-center">
-                        <Plus size={18} className="mr-2" />
-                        Create New Portfolio
-                      </div>
-                    </Link>
-                    <button
-                      onClick={() => {
-                        handleSignOut();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="block w-full text-center text-red-400 transition-colors py-2 px-4 bg-[#2E313C]/50 rounded-md hover:bg-[#2E313C]/70"
-                    >
-                      <div className="flex items-center justify-center">
-                        <LogOut size={18} className="mr-2" />
-                        Sign Out
-                      </div>
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/signin"
-                      className="block text-center text-purple-400 transition-colors py-2 px-4 bg-[#2E313C]/50 rounded-md hover:bg-[#2E313C]/70"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Sign In
-                    </Link>
-                    <Link
-                      href="/signup"
-                      className="block w-full bg-gradient-to-r from-[#711381] to-purple-600 px-4 py-3 rounded-lg text-center hover:from-[#5C0F6B] hover:to-purple-700 transition-all shadow-lg shadow-purple-500/20"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Create Account
-                    </Link>
-                  </>
-                )}
+                <Link
+                  href="/dashboard/template-form"
+                  className="block w-full bg-gradient-to-r from-[#711381] to-purple-600 px-4 py-3 rounded-lg text-center hover:from-[#5C0F6B] hover:to-purple-700 transition-all shadow-lg shadow-purple-500/20"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <div className="flex items-center justify-center">
+                    <Plus size={18} className="mr-2" />
+                    Create New Portfolio
+                  </div>
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="block w-full text-center text-red-400 transition-colors py-2 px-4 bg-[#2E313C]/50 rounded-md hover:bg-[#2E313C]/70"
+                >
+                  <div className="flex items-center justify-center">
+                    <LogOut size={18} className="mr-2" />
+                    Sign Out
+                  </div>
+                </button>
               </motion.div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Close profile dropdown when clicking outside */}
+      {isProfileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setIsProfileMenuOpen(false)}
+        ></div>
+      )}
     </>
   );
 };
