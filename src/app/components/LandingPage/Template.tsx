@@ -42,7 +42,7 @@ const Template = () => {
   return (
     <>
       {/* Templates Section */}
-      <section className="relative z-10 px-6 py-16 md:py-24">
+      <section className="relative z-10 px-2 sm:px-6 py-16 md:py-24">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#711381] to-purple-600">

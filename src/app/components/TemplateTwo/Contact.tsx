@@ -15,8 +15,6 @@ interface ContactInfo {
 
 interface ContactProps {
   contactInfo?: ContactInfo;
-  formspreeEndpoint?: string;
-  handleSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
 const Contact: React.FC<ContactProps> = ({
@@ -25,7 +23,6 @@ const Contact: React.FC<ContactProps> = ({
     phone: "+1 (123) 456-7890",
     location: "New York, NY",
   },
-  handleSubmit,
 }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -41,6 +38,18 @@ const Contact: React.FC<ContactProps> = ({
       [e.target.name]: e.target.value,
     });
   };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Handle form submission logic here, e.g., send data to an API
+    console.log("Form submitted:", formData);
+    // Reset form after submission
+    setFormData({
+      name: "",
+      email: "",
+      message: "",
+    });
+  }
 
   return (
     <div

@@ -61,7 +61,7 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
   return (
     <LazyMotion features={domAnimation}>
       <div className="relative min-h-screen bg-[#17181E] overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/noise-pattern.png')] opacity-[0.03] pointer-events-none"></div>
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"></div>
 
         <AnimatePresence>
           {isLoaded && (

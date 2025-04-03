@@ -4,7 +4,7 @@ import { Rocket } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="relative z-10 px-6 py-12 bg-[#272932]">
+    <footer className="relative z-10 px-2 sm:px-6 py-12 bg-[#272932]">
       <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-8">
         <div>
           <div className="flex items-center mb-4">
