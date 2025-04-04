@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/dbConn';
 import User from '../../../../modal/User';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import { sendPasswordResetEmail } from '../../../../utils/email';
 
 export async function POST(request: Request) {
@@ -10,6 +11,8 @@ export async function POST(request: Request) {
     
     const body = await request.json();
     const { email } = body;
+
+    console.log('Password reset requested for:', email);
 
     if (!email) {
       return NextResponse.json(
@@ -29,70 +32,35 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate a reset token (random string) and set expiration
+    // Generate a reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpires = new Date();
-    resetTokenExpires.setHours(resetTokenExpires.getHours() + 24); 
+    console.log('Generated reset token:', resetToken);
 
-    console.log(`Generated reset token for ${email}:`, resetToken);
+    // Hash the token before storing it
+    const salt = 10;
+    const hashedToken = await bcrypt.hash(resetToken, salt);
 
-    // Hash the token for storage
-    const hashedToken = crypto
-      .createHash('sha256')
-      .update(resetToken)
-      .digest('hex');
-    
-    console.log(`Hashed token for storage:`, hashedToken);
-
-    // Instead of findOneAndUpdate, try updating directly
+    // Store the token with the user (create or update token document)
     user.resetToken = hashedToken;
-    user.resetTokenExpires = resetTokenExpires;
+    user.resetTokenExpires = new Date(Date.now() + 3600000); // 1 hour
+    await user.save();
 
-    // Save with explicit error handling
-    try {
-      await user.save();
-      
-      // Verify the token was saved by fetching the user again
-      const updatedUser = await User.findById(user._id);
-      console.log('After save - User token status:', {
-        id: updatedUser._id,
-        email: updatedUser.email,
-        hasToken: !!updatedUser.resetToken,
-        resetToken: updatedUser.resetToken,
-        tokenExpires: updatedUser.resetTokenExpires
-      });
-    } catch (saveError) {
-      console.error('Failed to save reset token:', saveError);
-      return NextResponse.json(
-        { message: 'Failed to process reset request' },
-        { status: 500 }
-      );
-    }
-
-    // Send the reset email with the unhashed token
-    const emailResult = await sendPasswordResetEmail(email, user.name || 'User', resetToken);
+    // Send the reset email with the unhashed token and user ID
+    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/reset-password?token=${resetToken}&userId=${user._id}`;
     
-    if (!emailResult.success) {
-      console.error('Failed to send password reset email:', emailResult.error);
-      return NextResponse.json(
-        { message: 'Failed to send password reset email' },
-        { status: 500 }
-      );
-    }
-
-    // For development: include token info in response
-    const debugInfo = process.env.NODE_ENV !== 'production' 
-      ? {
-          resetToken,
-          hashedToken,
-          resetUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/reset-password?token=${resetToken}`
-        }
-      : {};
+    await sendPasswordResetEmail(email, user.name || 'User', resetLink);
 
     return NextResponse.json(
       { 
         message: 'If your email is registered, you will receive a password reset link.',
-        ...(process.env.NODE_ENV !== 'production' && { debug: debugInfo })
+        // Include debug info in development
+        ...(process.env.NODE_ENV !== 'production' && { 
+          debug: {
+            userId: user._id,
+            resetToken,
+            resetLink
+          }
+        })
       },
       { status: 200 }
     );

@@ -36,6 +36,7 @@ function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -43,16 +44,20 @@ function ResetPasswordForm() {
   // Get token from URL parameters
   useEffect(() => {
     const tokenParam = searchParams.get("token");
+    const userIdParam = searchParams.get("userId");
+    
     if (!tokenParam) {
       setErrorMessage("Invalid or missing reset token. Please request a new password reset link.");
     } else {
       console.log("Token from URL:", tokenParam);
       setToken(tokenParam);
-      
-      // Verify token length is as expected (a complete hex string)
-      if (tokenParam.length !== 64) {
-        console.warn(`Token length might be incorrect. Expected 64, got ${tokenParam.length}`);
-      }
+    }
+    
+    if (userIdParam) {
+      console.log("User ID from URL:", userIdParam);
+      setUserId(userIdParam);
+    } else {
+      console.warn("No userId provided in URL");
     }
   }, [searchParams]);
 
@@ -69,6 +74,11 @@ function ResetPasswordForm() {
       setErrorMessage("Missing reset token. Please request a new password reset link.");
       return;
     }
+    
+    if (!userId) {
+      setErrorMessage("Missing user ID. Please request a new password reset link.");
+      return;
+    }
 
     setErrorMessage("");
     setIsLoading(true);
@@ -80,9 +90,9 @@ function ResetPasswordForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          password: data.password,
           token: token,
-          email: localStorage.getItem('resetEmail') || null
+          userId: userId,
+          password: data.password
         }),
       });
 
