@@ -80,8 +80,8 @@ const Experience = ({
               ${
                 index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
               } items-center gap-10 ${
-              index !== projects.length - 1 ? "mb-20" : ""
-            }`}
+                index !== projects.length - 1 ? "mb-20" : ""
+              }`}
             variants={itemVariants}
           >
             <div
@@ -142,11 +142,20 @@ const Experience = ({
               <div className="rounded-xl overflow-hidden shadow-2xl group">
                 <div className="relative overflow-hidden">
                   <Image
-                    src={project.image}
+                    src={
+                      project.image ||
+                      "https://placehold.co/600x400/e2e8f0/a0aec0?text=No+Image"
+                    }
                     alt={project.name}
                     width={600}
                     height={400}
                     className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
+                    unoptimized={project.image?.includes("cloudinary.com")}
+                    onError={(e) => {
+                      // Handle image loading errors
+                      (e.target as HTMLImageElement).src =
+                        "https://placehold.co/600x400/e2e8f0/a0aec0?text=Image+Error";
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>

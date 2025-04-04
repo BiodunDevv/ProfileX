@@ -17,20 +17,9 @@ const Sphere = () => {
           damping: 15,
           delay: 0.2,
         }}
-        className="absolute top-0 md:top-40 right-0 md:left-20 animate-float"
+        className="absolute top-5 md:top-40 right-0 md:left-20 animate-float"
       >
-        <motion.div
-          animate={{
-            y: [0, 15, 0],
-            rotate: [0, 3, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            repeatType: "reverse",
-            ease: "easeInOut",
-          }}
-        >
+        <motion.div>
           <Image
             src={pinkSphere}
             alt="Pink Decorative Sphere"
@@ -113,20 +102,6 @@ const Sphere = () => {
           />
         </motion.div>
       </motion.div>
-
-      {/* Subtle accent lighting, matching AuthLayout */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.5 }}
-        className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-purple-900/20 blur-3xl pointer-events-none hidden md:block"
-      />
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.5, delay: 0.3 }}
-        className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-[#711381]/10 blur-3xl pointer-events-none hidden md:block"
-      />
     </>
   );
 };

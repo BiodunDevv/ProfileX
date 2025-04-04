@@ -4,13 +4,18 @@
 
 * {
     scrollbar-width: none;
+
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 .raleway {
     font-family: 'Raleway', sans-serif;
 }
 
-.ibm{
+.ibm {
     font-family: 'IBM Plex Mono', monospace;
 }
 
@@ -38,5 +43,3 @@
         transform: translateY(0px);
     }
 }
-
-

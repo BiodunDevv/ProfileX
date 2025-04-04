@@ -38,18 +38,38 @@ const Page = () => {
       return;
     }
 
+    // Validate password requirements manually
+    const passwordChecks = {
+      hasLength: formData.password.length >= 8,
+      hasCapital: /[A-Z]/.test(formData.password),
+      hasNumber: /[0-9]/.test(formData.password),
+      hasSpecial: /[^A-Za-z0-9]/.test(formData.password),
+    };
+
+    if (
+      !passwordChecks.hasLength ||
+      !passwordChecks.hasCapital ||
+      !passwordChecks.hasNumber ||
+      !passwordChecks.hasSpecial
+    ) {
+      setErrorMessage(
+        "Password must have at least 8 characters, one capital letter, one number, and one special character"
+      );
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
       const response = await signUp({
         name: formData.fullName,
-        email: formData.email,
+        email: formData.email.toLowerCase(), // Ensure email is lowercase
         password: formData.password,
       });
 
       if (response?.status === 200 || response?.status === 201) {
         router.push(
-          `/verification?email=${encodeURIComponent(formData.email)}`
+          `/verification?email=${encodeURIComponent(formData.email.toLowerCase())}`
         );
       } else if (response?.status === 409) {
         setErrorMessage("Email already registered");

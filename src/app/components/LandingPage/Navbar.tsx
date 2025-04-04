@@ -60,7 +60,13 @@ const Navbar = () => {
           scrolled
             ? "bg-[#1a1b24]/90 backdrop-blur-md shadow-lg"
             : "bg-transparent"
-        }`}
+        }
+        ${
+          isMobileMenuOpen
+            ? "bg-[#1a1b24]/90 backdrop-blur-md shadow-lg"
+            : "bg-transparent"
+        }
+        `}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           {/* Logo */}
@@ -105,6 +111,17 @@ const Navbar = () => {
                   className="text-gray-300 hover:text-purple-400 transition-colors"
                 >
                   Templates
+                </Link>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link
+                  href="/#developers"
+                  className="text-gray-300 hover:text-purple-400 transition-colors"
+                >
+                  Developers
                 </Link>
               </motion.div>
             </div>
@@ -209,6 +226,13 @@ const Navbar = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Templates
+                </Link>
+                <Link
+                  href="/#developers"
+                  className="block text-center py-2.5 px-4 text-gray-300 hover:text-purple-400 transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Developers
                 </Link>
               </div>
 
