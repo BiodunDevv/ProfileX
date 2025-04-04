@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { ChevronRight, AlertCircle, Loader2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronRight, AlertCircle, Loader2, Check, X } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,8 +13,17 @@ import { useRouter } from "next/navigation";
 
 // Update Zod schema to match our API
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  email: z
+    .string()
+    .email("Please enter a valid email address")
+    .transform((val) => val.toLowerCase()),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])/,
+      "Password must include at least one capital letter, one number, and one special character"
+    ),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -23,18 +32,58 @@ const SignInPage = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordValue, setPasswordValue] = useState("");
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [passwordChecks, setPasswordChecks] = useState({
+    hasLength: false,
+    hasCapital: false,
+    hasNumber: false,
+    hasSpecial: false,
+  });
 
   const { signIn } = useAuthStore();
   const router = useRouter();
+
+  // Check password requirements in real-time
+  useEffect(() => {
+    setPasswordChecks({
+      hasLength: passwordValue.length >= 8,
+      hasCapital: /[A-Z]/.test(passwordValue),
+      hasNumber: /[0-9]/.test(passwordValue),
+      hasSpecial: /[^A-Za-z0-9]/.test(passwordValue),
+    });
+  }, [passwordValue]);
+
+  // Check if all requirements are met
+  const allRequirementsMet =
+    passwordChecks.hasLength &&
+    passwordChecks.hasCapital &&
+    passwordChecks.hasNumber &&
+    passwordChecks.hasSpecial;
 
   // Use react-hook-form with zod validation
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
+
+  // Watch password field
+  useEffect(() => {
+    const subscription = watch((value) => {
+      if (value.password) {
+        setPasswordValue(value.password);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
+  // Determine if we should show requirements
+  const shouldShowRequirements =
+    isPasswordFocused && passwordValue.length > 0 && !allRequirementsMet;
 
   const onSubmit = async (data: LoginFormData) => {
     setErrorMessage("");
@@ -96,7 +145,7 @@ const SignInPage = () => {
       <motion.form
         onSubmit={handleSubmit(onSubmit)}
         variants={itemVariants}
-        className="bg-[#272932] rounded-2xl shadow-2xl border border-[#2E313C] p-6 space-y-6"
+        className="bg-[#272932] rounded-2xl shadow-2xl border border-[#2E313C] p-6 space-y-4"
       >
         {/* Error Message */}
         {errorMessage && (
@@ -125,7 +174,7 @@ const SignInPage = () => {
           )}
         </div>
 
-        {/* Password Input */}
+        {/* Password Input with Interactive Requirements */}
         <div className="space-y-1">
           <label className="block text-sm font-medium text-gray-300 mb-1">
             Password
@@ -133,11 +182,117 @@ const SignInPage = () => {
           <input
             type="password"
             {...register("password")}
+            onFocus={() => setIsPasswordFocused(true)}
+            onBlur={() => setIsPasswordFocused(false)}
             className="w-full px-4 py-3 bg-[#2E313C] text-white rounded-lg border border-[#3E4049] focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
             placeholder="Enter your password"
           />
+
+          {/* Interactive Password Requirements */}
+          <AnimatePresence>
+            {shouldShowRequirements && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="mt-3 overflow-hidden"
+              >
+                <div className="p-3 bg-[#1F212A] rounded-lg border border-[#3E4049]/50">
+                  <p className="text-sm text-gray-300 mb-2 font-medium">
+                    Password requirements:
+                  </p>
+                  <ul className="space-y-2">
+                    <li className="flex items-center gap-2 text-xs">
+                      {passwordChecks.hasLength ? (
+                        <Check size={14} className="text-green-400" />
+                      ) : (
+                        <X size={14} className="text-red-400" />
+                      )}
+                      <span
+                        className={
+                          passwordChecks.hasLength
+                            ? "text-green-400"
+                            : "text-gray-400"
+                        }
+                      >
+                        At least 8 characters
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-2 text-xs">
+                      {passwordChecks.hasCapital ? (
+                        <Check size={14} className="text-green-400" />
+                      ) : (
+                        <X size={14} className="text-red-400" />
+                      )}
+                      <span
+                        className={
+                          passwordChecks.hasCapital
+                            ? "text-green-400"
+                            : "text-gray-400"
+                        }
+                      >
+                        At least one capital letter
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-2 text-xs">
+                      {passwordChecks.hasNumber ? (
+                        <Check size={14} className="text-green-400" />
+                      ) : (
+                        <X size={14} className="text-red-400" />
+                      )}
+                      <span
+                        className={
+                          passwordChecks.hasNumber
+                            ? "text-green-400"
+                            : "text-gray-400"
+                        }
+                      >
+                        At least one number
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-2 text-xs">
+                      {passwordChecks.hasSpecial ? (
+                        <Check size={14} className="text-green-400" />
+                      ) : (
+                        <X size={14} className="text-red-400" />
+                      )}
+                      <span
+                        className={
+                          passwordChecks.hasSpecial
+                            ? "text-green-400"
+                            : "text-gray-400"
+                        }
+                      >
+                        At least one special character (@, #, $, etc.)
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Success message when all requirements are met while focused */}
+            {isPasswordFocused &&
+              passwordValue.length > 0 &&
+              allRequirementsMet && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="mt-3"
+                >
+                  <div className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm flex items-center gap-2">
+                    <Check size={16} />
+                    <span>Password meets all requirements</span>
+                  </div>
+                </motion.div>
+              )}
+          </AnimatePresence>
+
           {errors.password && (
-            <p className="text-red-400 text-sm mt-1">
+            <p className="text-red-400 text-sm mt-2">
               {errors.password.message}
             </p>
           )}

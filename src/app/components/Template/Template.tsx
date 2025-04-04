@@ -203,14 +203,14 @@ const Templates = () => {
     }
 
     router.push(
-      `/dashboard/templates/templatedisplay?id=${template.id}&title=${template.title}&path=${template.templatePath}`
+      `/templates/templatedisplay?id=${template.id}&title=${template.title}&path=${template.templatePath}`
     );
   };
 
   // Handle template usage
   const handleUseTemplate = (template: any) => {
     router.push(
-      `/dashboard/templates/useTemplateForm?id=${template.id}&title=${template.title}&path=${template.templatePath}`
+      `/templates/useTemplateForm?id=${template.id}&title=${template.title}&path=${template.templatePath}`
     );
   };
 

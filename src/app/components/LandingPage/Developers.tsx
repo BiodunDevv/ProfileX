@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Github,
   Twitter,
@@ -123,7 +123,7 @@ const Developers = () => {
     developers.find((dev) => dev.id === activeId) || developers[0];
 
   return (
-    <section id="team" className="relative py-24 overflow-hidden z-10">
+    <section id="developers" className="relative py-24 overflow-hidden z-10">
       {/* Animated code symbols */}
       <div className="absolute top-40 left-10 text-purple-500/20 animate-float-slow">
         <Terminal size={30} />
@@ -254,205 +254,223 @@ const Developers = () => {
 
           {/* Active developer profile - Right side on desktop */}
           <div className="lg:col-span-2 order-1 lg:order-2">
-            <motion.div
-              key={activeMember.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="bg-gradient-to-br from-[#1a1b24] to-[#1F2029] rounded-2xl overflow-hidden border border-purple-500/10 shadow-lg shadow-purple-500/5"
-            >
-              {/* Header with background gradient and image */}
-              <div className="relative h-72 md:h-80 overflow-hidden rounded-t-2xl group">
-                {/* Animated gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#711381]/60 to-purple-500/40 mix-blend-multiply transition-opacity duration-300 group-hover:opacity-70 z-10"></div>
-                
-                {/* Animated pattern overlay */}
-                <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-20 mix-blend-soft-light z-20"></div>
-                
-                {/* Animated glow effect on hover */}
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-violet-500 rounded-t-2xl opacity-0 group-hover:opacity-30 blur-lg transition-all duration-700 group-hover:duration-500 z-0"></div>
-              
-                {/* Profile image with zoom effect */}
-                <motion.div
-                  initial={{ scale: 1.05 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.7 }}
-                  className="absolute inset-0 z-0"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <Image
-                    src={activeMember.image}
-                    fill
-                    priority
-                    alt={activeMember.name}
-                    className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
-                    style={{ 
-                      objectPosition: "center 25%",
-                      filter: "contrast(1.05) saturate(1.1)"
-                    }}
-                  />
-                </motion.div>
-              
-                {/* Dark gradient overlay at bottom */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1a1b24] via-[#1a1b24]/80 to-transparent z-30"></div>
-              
-                {/* Name and role with improved positioning */}
-                <div className="absolute bottom-0 left-0 p-8 w-full z-40">
-                  <div className="relative overflow-hidden">
-                    <motion.div
-                      initial={{ y: 30, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.2 }}
-                      className="w-12 h-1.5 bg-purple-500 rounded-full mb-4"
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeMember.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ 
+                  duration: 0.5, 
+                  ease: [0.22, 1, 0.36, 1] 
+                }}
+                className="bg-gradient-to-br from-[#1a1b24] to-[#1F2029] rounded-2xl overflow-hidden border border-purple-500/10 shadow-xl shadow-purple-500/5"
+              >
+                {/* Modern layout with image contained properly */}
+                <div className="flex flex-col md:flex-row">
+                  {/* Profile image container with sophisticated styling */}
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                    className="md:w-2/5 md:min-h-[400px] h-80 relative overflow-hidden bg-gradient-to-b from-[#1a1b24]/80 to-[#201F35]/90"
+                  >
+                    {/* Decorative elements */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-500/40 to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-500/40 to-transparent"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="absolute w-64 h-64 rounded-full bg-purple-500/10 animate-pulse-slow"></div>
+                      <div className="absolute w-48 h-48 rounded-full bg-purple-700/5 animate-pulse"></div>
+                    </div>
+
+                    {/* Actual image with contain for full visibility */}
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.3, duration: 0.5 }}
+                      className="absolute inset-0 p-4 flex items-center justify-center"
+                    >
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={activeMember.image}
+                          alt={activeMember.name}
+                          fill
+                          priority
+                          sizes="(max-width: 768px) 100vw, 40vw"
+                          className="object-contain"
+                        />
+                      </div>
+                    </motion.div>
+
+                    {/* Gradient overlays for depth */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a1b24] via-transparent to-transparent opacity-70 z-10"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#1a1b24] via-transparent to-transparent opacity-30 z-10"></div>
+
+                    {/* Developer badge */}
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5, duration: 0.4 }}
+                      className="absolute bottom-4 right-4 z-20"
+                    >
+                      <div className="bg-[#1a1b24]/70 backdrop-blur-sm border border-purple-500/20 rounded-lg px-3 py-1.5 flex items-center gap-2">
+                        <Code size={16} className="text-purple-400" />
+                        <span className="text-purple-200 text-sm font-medium">
+                          {activeMember.role}
+                        </span>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+
+                  {/* Content section */}
+                  <div className="md:w-3/5 p-6 md:p-8 relative">
+                    {/* Geometric decoration */}
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.4, duration: 0.3 }}
+                      className="absolute -top-6 -right-6 w-12 h-12 border-r-2 border-t-2 border-purple-500/20 rounded-tr-xl"
                     ></motion.div>
-                    
-                    <motion.h3
+
+                    {/* Name and bio */}
+                    <div className="mb-6">
+                      <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2, duration: 0.4 }}
+                        className="flex items-center mb-4"
+                      >
+                        <div className="w-12 h-1.5 bg-gradient-to-r from-[#711381] to-purple-500 rounded-full mr-3"></div>
+                        <motion.div className="text-xs text-purple-400 font-mono tracking-wider">
+                          DEV/{activeMember.id}
+                        </motion.div>
+                      </motion.div>
+
+                      <motion.h3 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, duration: 0.4 }}
+                        className="text-3xl font-bold text-white mb-2 bg-clip-text bg-gradient-to-r from-white to-purple-100"
+                      >
+                        {activeMember.name}
+                      </motion.h3>
+
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4, duration: 0.6 }}
+                        className="py-4 mb-3 border-b border-t border-purple-500/10"
+                      >
+                        <p className="text-gray-300 leading-relaxed first-letter:text-2xl first-letter:font-bold first-letter:text-purple-400">
+                          {activeMember.bio}
+                        </p>
+                      </motion.div>
+                    </div>
+
+                    {/* Skills with improved visualization */}
+                    <motion.div 
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.3 }}
-                      className="text-3xl md:text-4xl font-bold text-white mb-2"
+                      transition={{ delay: 0.5, duration: 0.4 }}
+                      className="mb-6"
                     >
-                      {activeMember.name}
-                    </motion.h3>
-                    
-                    <motion.p
+                      <h4 className="text-white font-medium mb-3 flex items-center">
+                        <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                        Expertise
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {activeMember.skills.map((skill, index) => (
+                          <motion.span
+                            key={skill}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{
+                              delay: 0.6 + index * 0.1,
+                              duration: 0.3
+                            }}
+                            whileHover={{ scale: 1.05 }}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center
+                              ${
+                                hoverSkill === skill
+                                  ? "bg-gradient-to-r from-[#711381] to-purple-600 text-white shadow-md shadow-purple-500/20"
+                                  : "bg-[#1D1E2A] text-purple-300 border border-purple-500/20"
+                              }`}
+                            onMouseEnter={() => setHoverSkill(skill)}
+                            onMouseLeave={() => setHoverSkill(null)}
+                          >
+                            {hoverSkill === skill && (
+                              <Terminal size={12} className="mr-1.5" />
+                            )}
+                            {skill}
+                          </motion.span>
+                        ))}
+                      </div>
+                    </motion.div>
+
+                    {/* Social links with improved styling */}
+                    <motion.div 
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.4 }}
-                      className="text-lg text-purple-300 font-medium flex items-center"
+                      transition={{ delay: 0.7, duration: 0.4 }}
+                      className="pt-4 border-t border-purple-500/10"
                     >
-                      <span className="mr-2">{activeMember.role}</span>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-500/20 text-purple-300">
-                        <Code className="mr-1" size={12} /> Developer
-                      </span>
-                    </motion.p>
+                      <div className="flex flex-wrap gap-3">
+                        {Object.entries(activeMember.links).map(([platform, url], index) => {
+                          if (!url) return null;
+                          
+                          let Icon;
+                          let bgColor = "from-[#6D28D9]/80 to-[#6D28D9]";
+                          
+                          switch(platform) {
+                            case 'github':
+                              Icon = Github;
+                              bgColor = "from-[#24292E]/80 to-[#24292E]";
+                              break;
+                            case 'twitter':
+                              Icon = Twitter;
+                              bgColor = "from-[#1DA1F2]/80 to-[#1DA1F2]";
+                              break;
+                            case 'linkedin':
+                              Icon = Linkedin;
+                              bgColor = "from-[#0077B5]/80 to-[#0077B5]";
+                              break;
+                            case 'website':
+                              Icon = Globe;
+                              bgColor = "from-[#4C1D95]/80 to-[#4C1D95]";
+                              break;
+                            case 'email':
+                              Icon = Mail;
+                              url = `mailto:${url}`;
+                              break;
+                          }
+                          
+                          return (
+                            <motion.a
+                              key={platform}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{
+                                delay: 0.8 + index * 0.1,
+                                duration: 0.3
+                              }}
+                              whileHover={{ y: -2 }}
+                              href={url}
+                              target={platform !== 'email' ? "_blank" : undefined}
+                              rel={platform !== 'email' ? "noopener noreferrer" : undefined}
+                              className={`group relative w-10 h-10 bg-gradient-to-br ${bgColor} rounded-xl flex items-center justify-center transition-all duration-300 shadow-md shadow-black/20`}
+                              aria-label={`${activeMember.name}'s ${platform}`}
+                            >
+                              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/40 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                              {Icon && <Icon size={18} className="relative z-10" />}
+                            </motion.a>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
                   </div>
                 </div>
-              </div>
-
-              {/* Content section */}
-              <div className="p-8">
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.3 }}
-                  className="text-gray-300 leading-relaxed mb-8"
-                >
-                  {activeMember.bio}
-                </motion.p>
-
-                {/* Skills */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.4 }}
-                >
-                  <h4 className="text-white font-medium mb-4">Expertise</h4>
-                  <div className="flex flex-wrap gap-3">
-                    {activeMember.skills.map((skill, index) => (
-                      <motion.span
-                        key={skill}
-                        onMouseEnter={() => setHoverSkill(skill)}
-                        onMouseLeave={() => setHoverSkill(null)}
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{
-                          opacity: 1,
-                          scale: 1,
-                          background:
-                            hoverSkill === skill
-                              ? "linear-gradient(to right, rgb(113, 19, 129), rgb(168, 85, 247))"
-                              : "rgba(168, 85, 247, 0.15)",
-                        }}
-                        transition={{ duration: 0.3, delay: 0.1 * index }}
-                        className="px-3 py-1.5 rounded-full text-sm font-medium text-purple-300 bg-purple-500/15 hover:text-white cursor-default"
-                      >
-                        {skill}
-                      </motion.span>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Social links */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.5 }}
-                  className="mt-8 pt-6 border-t border-purple-500/10"
-                >
-                  <div className="flex flex-wrap gap-3">
-                    {activeMember.links.github && (
-                      <motion.a
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        href={activeMember.links.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 bg-[#24292E]/80 hover:bg-[#24292E] rounded-full flex items-center justify-center transition-colors"
-                        aria-label={`${activeMember.name}'s GitHub`}
-                      >
-                        <Github size={18} />
-                      </motion.a>
-                    )}
-
-                    {activeMember.links.twitter && (
-                      <motion.a
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        href={activeMember.links.twitter}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 bg-[#1DA1F2]/80 hover:bg-[#1DA1F2] rounded-full flex items-center justify-center transition-colors"
-                        aria-label={`${activeMember.name}'s Twitter`}
-                      >
-                        <Twitter size={18} />
-                      </motion.a>
-                    )}
-
-                    {activeMember.links.linkedin && (
-                      <motion.a
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        href={activeMember.links.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 bg-[#0077B5]/80 hover:bg-[#0077B5] rounded-full flex items-center justify-center transition-colors"
-                        aria-label={`${activeMember.name}'s LinkedIn`}
-                      >
-                        <Linkedin size={18} />
-                      </motion.a>
-                    )}
-
-                    {activeMember.links.website && (
-                      <motion.a
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        href={activeMember.links.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 bg-[#4C1D95]/80 hover:bg-[#4C1D95] rounded-full flex items-center justify-center transition-colors"
-                        aria-label={`${activeMember.name}'s Website`}
-                      >
-                        <Globe size={18} />
-                      </motion.a>
-                    )}
-
-                    {activeMember.links.email && (
-                      <motion.a
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        href={`mailto:${activeMember.links.email}`}
-                        className="w-10 h-10 bg-[#6D28D9]/80 hover:bg-[#6D28D9] rounded-full flex items-center justify-center transition-colors"
-                        aria-label={`Email ${activeMember.name}`}
-                      >
-                        <Mail size={18} />
-                      </motion.a>
-                    )}
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>

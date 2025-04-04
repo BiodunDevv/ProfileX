@@ -165,7 +165,7 @@ const DashboardPage = () => {
 
   // Function to handle creating a new project
   const handleCreateProject = () => {
-    router.push("/dashboard/templates");
+    router.push("/templates");
   };
 
   return (
@@ -343,14 +343,14 @@ const DashboardPage = () => {
 
                 <div className="flex flex-wrap gap-3">
                   <Link
-                    href="/dashboard/templates"
+                    href="/templates"
                     className="flex items-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors shadow-lg shadow-purple-900/20"
                   >
                     <LayoutTemplate size={18} className="mr-1.5" />
                     Choose a Template
                   </Link>
                   <Link
-                    href="/dashboard/tutorials"
+                    href="/tutorials"
                     className="flex items-center px-4 py-2.5 bg-[#2E313C] hover:bg-[#3E4154] text-gray-200 rounded-lg transition-colors"
                   >
                     <Eye size={18} className="mr-1.5" />
@@ -528,7 +528,7 @@ const DashboardPage = () => {
                     Your Portfolios
                   </h2>
                   <Link
-                    href="/dashboard/projects"
+                    href="/projects"
                     className="text-sm font-medium text-purple-400 hover:text-purple-300 flex items-center"
                   >
                     View All
@@ -546,7 +546,7 @@ const DashboardPage = () => {
                         transition={{ delay: 0.1 * idx, duration: 0.5 }}
                         className="flex flex-col md:flex-row items-start md:items-center gap-4 bg-[#262A3E] hover:bg-[#2A2F45] border border-[#3E4154] rounded-lg p-4 mb-3 last:mb-0 transition-colors cursor-pointer"
                         onClick={() =>
-                          router.push(`/dashboard/projects/${project.id}`)
+                          router.push(`/projects/${project.id}`)
                         }
                       >
                         {/* Project thumbnail - can be replaced with real images */}
@@ -724,25 +724,25 @@ const DashboardPage = () => {
                       label: "Create Portfolio",
                       icon: PlusCircle,
                       color: "bg-purple-500/20 text-purple-400",
-                      path: "/dashboard/templates",
+                      path: "/templates",
                     },
                     {
                       label: "Edit Profile",
                       icon: Edit3,
                       color: "bg-blue-500/20 text-blue-400",
-                      path: "/dashboard/profile",
+                      path: "/profile",
                     },
                     {
                       label: "Browse Templates",
                       icon: PanelLeft,
                       color: "bg-green-500/20 text-green-400",
-                      path: "/dashboard/templates",
+                      path: "/templates",
                     },
                     {
                       label: "View Analytics",
                       icon: BarChart3,
                       color: "bg-amber-500/20 text-amber-400",
-                      path: "/dashboard/analytics",
+                      path: "/analytics",
                     },
                   ].map((action, idx) => (
                     <Link
@@ -783,7 +783,7 @@ const DashboardPage = () => {
                     Featured Templates
                   </h2>
                   <Link
-                    href="/dashboard/templates"
+                    href="/templates"
                     className="text-sm font-medium text-purple-400 hover:text-purple-300"
                   >
                     View All
@@ -812,7 +812,7 @@ const DashboardPage = () => {
                     ].map((template, i) => (
                       <Link
                         key={i}
-                        href={`/dashboard/templates?filter=${template.name.toLowerCase()}`}
+                        href={`/templates?filter=${template.name.toLowerCase()}`}
                         className="group cursor-pointer relative overflow-hidden rounded-lg"
                       >
                         <motion.div
@@ -833,7 +833,7 @@ const DashboardPage = () => {
                   </div>
 
                   <Link
-                    href="/dashboard/templates"
+                    href="/templates"
                     className="block w-full mt-4 text-sm text-center text-purple-400 font-medium hover:text-purple-300 py-2 border border-[#3E4154] hover:border-purple-500/30 rounded-lg transition-colors"
                   >
                     <div className="flex items-center justify-center">

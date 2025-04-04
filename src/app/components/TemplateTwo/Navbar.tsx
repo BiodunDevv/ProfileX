@@ -25,7 +25,7 @@ const Navbar = ({ DevName }: NavbarProps) => {
 
   return (
     <motion.header
-      className={`fixed w-full top-0 z-50 px-6 md:px-12 py-4 transition-all duration-300 
+      className={`w-full px-6 md:px-12 py-4 transition-all duration-300 
       ${
         scrolled
           ? "bg-[#161513]/90 backdrop-blur-md shadow-lg"

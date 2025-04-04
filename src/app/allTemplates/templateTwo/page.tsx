@@ -108,7 +108,7 @@ const contactInfo = {
 
 const TemplateTwo = () => {
   return (
-    <div>
+    <div className="bg-gradient-to-b from-[#0f0f12] to-[#0f0f12]">
       <Navbar DevName="DevName" />
       <Hero
         name={HeroDetails.Name}

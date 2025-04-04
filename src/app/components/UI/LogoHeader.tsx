@@ -11,7 +11,7 @@ const LogoHeader = ({ title }: LogoHeaderProps) => {
   return (
     <motion.div
       variants={itemVariants}
-      className="flex flex-col items-center mb-10"
+      className="flex flex-col items-center mb-5"
     >
       <motion.div
         className="flex items-center"

@@ -60,17 +60,17 @@ const Navbar = () => {
     },
     {
       name: "Templates",
-      path: "/dashboard/templates",
+      path: "/templates",
       icon: Palette,
     },
     {
       name: "Projects",
-      path: "/dashboard/projects",
+      path: "/projects",
       icon: FileCode,
     },
     {
       name: "Settings",
-      path: "/dashboard/settings",
+      path: "/settings",
       icon: Settings,
     },
   ];
