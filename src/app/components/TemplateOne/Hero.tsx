@@ -131,7 +131,10 @@ const Hero = ({
                     priority
                     sizes="(max-width: 480px) 180px, (max-width: 640px) 220px, (max-width: 768px) 280px, (max-width: 1024px) 320px, (max-width: 1280px) 340px, 380px"
                     className="rounded-full shadow-lg border-2 border-[#1B1B1B] object-cover"
-                    unoptimized={heroImage?.includes("cloudinary.com")}
+                    unoptimized={
+                      typeof heroImage === "string" &&
+                      heroImage.includes("cloudinary.com")
+                    }
                     onError={(e) => {
                       // Fallback for image loading errors
                       const target = e.target as HTMLImageElement;

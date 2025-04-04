@@ -142,15 +142,15 @@ const Experience = ({
               <div className="rounded-xl overflow-hidden shadow-2xl group">
                 <div className="relative overflow-hidden">
                   <Image
-                    src={
-                      project.image ||
-                      "https://placehold.co/600x400/e2e8f0/a0aec0?text=No+Image"
-                    }
+                    src={project.image}
                     alt={project.name}
                     width={600}
                     height={400}
                     className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
-                    unoptimized={project.image?.includes("cloudinary.com")}
+                    unoptimized={
+                      typeof project.image === "string" &&
+                      project.image.includes("cloudinary.com")
+                    }
                     onError={(e) => {
                       // Handle image loading errors
                       (e.target as HTMLImageElement).src =
