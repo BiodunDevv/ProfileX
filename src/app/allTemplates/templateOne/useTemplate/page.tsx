@@ -219,7 +219,6 @@ const Page = () => {
       return newData;
     });
   };
-  
 
   const addItem = (section: keyof FormData, field: string | null) => {
     setFormData((prev) => {
@@ -1662,7 +1661,7 @@ const Page = () => {
           </form>
         </div>
 
-        {/* Auto-save toast - Only shown before preview */}
+        {/* This is the toast notification for saved changes */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{

@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React from "react";
+import { motion } from "framer-motion";
 import Hero from "../../components/TemplateOne/Hero";
 import HeroImage from "../../components/TemplateOne/images/Hero picture.svg";
 import Experience from "../../components/TemplateOne/Experience";
@@ -8,7 +8,6 @@ import Projects from "../../components/TemplateOne/images/Projects.jpg";
 import About from "../../components/TemplateOne/About";
 import Contact from "../../components/TemplateOne/Contact";
 
-// Default data as fallback
 const defaultHeroDetails = {
   DevName: "WorkName",
   title: "Your Name Here",
@@ -131,297 +130,35 @@ const defaultContactData = {
   ],
 };
 
-const LoadingScreen = () => {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#080808] text-white">
-      <div className="space-y-8">
-        <div className="flex flex-col items-center">
-          {/* Loading circle animation */}
-          <div className="relative w-20 h-20 mb-4">
-            <motion.div
-              className="absolute inset-0 border-t-2 border-l-2 border-[#3F8E00] rounded-full"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-            ></motion.div>
-            <motion.div
-              className="absolute inset-1 border-t-2 border-r-2 border-[#3F8E00]/60 rounded-full"
-              animate={{ rotate: -360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            ></motion.div>
-          </div>
-
-          <motion.h2
-            className="text-2xl font-bold mb-2"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            Loading Template
-          </motion.h2>
-
-          <motion.div
-            className="flex space-x-1.5"
-            initial="hidden"
-            animate="visible"
-          >
-            {[
-              "P",
-              "r",
-              "e",
-              "p",
-              "a",
-              "r",
-              "i",
-              "n",
-              "g",
-              " ",
-              "y",
-              "o",
-              "u",
-              "r",
-              " ",
-              "p",
-              "r",
-              "o",
-              "f",
-              "i",
-              "l",
-              "e",
-            ].map((letter, index) => (
-              <motion.span
-                key={index}
-                className="text-[#3F8E00] text-sm"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.3,
-                  delay: index * 0.05,
-                  repeat: Infinity,
-                  repeatDelay: 3.5,
-                  repeatType: "reverse",
-                }}
-              >
-                {letter}
-              </motion.span>
-            ))}
-          </motion.div>
-        </div>
-
-        {/* Animated placeholder sections */}
-        <div className="space-y-4 max-w-md mx-auto w-full px-4">
-          <motion.div
-            className="h-6 w-2/4 mx-auto bg-[#1b1b1b] rounded-md overflow-hidden relative"
-            initial={{ opacity: 0.5 }}
-            animate={{ opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 1.8, repeat: Infinity }}
-          >
-            <motion.div
-              className="absolute left-0 top-0 bottom-0 bg-[#3F8E00]/20 w-1/4"
-              animate={{ x: ["-100%", "400%", "-100%"] }}
-              transition={{
-                duration: 2.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          </motion.div>
-
-          <motion.div
-            className="h-16 bg-[#1b1b1b] rounded-md overflow-hidden relative"
-            initial={{ opacity: 0.5 }}
-            animate={{ opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 1.8, repeat: Infinity, delay: 0.2 }}
-          >
-            <motion.div
-              className="absolute left-0 top-0 bottom-0 bg-[#3F8E00]/20 w-1/4"
-              animate={{ x: ["-100%", "400%", "-100%"] }}
-              transition={{
-                duration: 2.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 0.2,
-              }}
-            />
-          </motion.div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <motion.div
-              className="h-20 bg-[#1b1b1b] rounded-md overflow-hidden relative"
-              initial={{ opacity: 0.5 }}
-              animate={{ opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 1.8, repeat: Infinity, delay: 0.4 }}
-            >
-              <motion.div
-                className="absolute left-0 top-0 bottom-0 bg-[#3F8E00]/20 w-1/4"
-                animate={{ x: ["-100%", "400%", "-100%"] }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.4,
-                }}
-              />
-            </motion.div>
-            <motion.div
-              className="h-20 bg-[#1b1b1b] rounded-md overflow-hidden relative"
-              initial={{ opacity: 0.5 }}
-              animate={{ opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 1.8, repeat: Infinity, delay: 0.6 }}
-            >
-              <motion.div
-                className="absolute left-0 top-0 bottom-0 bg-[#3F8E00]/20 w-1/4"
-                animate={{ x: ["-100%", "400%", "-100%"] }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.6,
-                }}
-              />
-            </motion.div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const TemplateOne = () => {
-  const [templateId, setTemplateId] = useState<string | null>(null);
-  const [heroDetails, setHeroDetails] = useState(defaultHeroDetails);
-  const [aboutData, setAboutData] = useState(defaultAboutData);
-  const [projects, setProjects] = useState(defaultProjects);
-  const [contactData, setContactData] = useState(defaultContactData);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Extract the ID from the URL
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const url = window.location.href;
-      const idMatch = url.match(/\?(.+)/); // Extract everything after the "?"
-      if (idMatch && idMatch[1]) {
-        setTemplateId(idMatch[1]);
-      }
-    }
-  }, []);
-
-  // Load data from localStorage
-  useEffect(() => {
-    if (templateId) {
-      try {
-        // Try both formats of localStorage keys
-        let savedData = localStorage.getItem("templateOneData");
-        if (!savedData) {
-          savedData = localStorage.getItem(`templateOneData-${templateId}`);
-        }
-
-        if (savedData) {
-          const parsedData = JSON.parse(savedData);
-
-          // Check if the ID matches or if we should use this data
-          if (!parsedData.id || parsedData.id === templateId) {
-            console.log("Found matching template data:", parsedData);
-
-            // Map the saved form data to our template components
-            if (parsedData.hero) {
-              setHeroDetails({
-                DevName: parsedData.hero.devName || defaultHeroDetails.DevName,
-                title: parsedData.hero.title || defaultHeroDetails.title,
-                description:
-                  parsedData.hero.description || defaultHeroDetails.description,
-                heroImage:
-                  parsedData.hero.heroImage || defaultHeroDetails.heroImage,
-                Companies:
-                  parsedData.hero.companies || defaultHeroDetails.Companies,
-              });
-            }
-
-            if (parsedData.about) {
-              setAboutData({
-                title: parsedData.about.title || defaultAboutData.title,
-                subtitle:
-                  parsedData.about.subtitle || defaultAboutData.subtitle,
-                description:
-                  parsedData.about.description || defaultAboutData.description,
-                skills: parsedData.about.skills || defaultAboutData.skills,
-                education:
-                  parsedData.about.education || defaultAboutData.education,
-              });
-            }
-
-            if (parsedData.projects) {
-              setProjects(parsedData.projects);
-            }
-
-            if (parsedData.contact) {
-              setContactData({
-                email: parsedData.contact.email || defaultContactData.email,
-                phone: parsedData.contact.phone || defaultContactData.phone,
-                socialLinks:
-                  parsedData.contact.socialLinks ||
-                  defaultContactData.socialLinks,
-              });
-            }
-
-            console.log(
-              "Loaded template data from localStorage for ID:",
-              templateId
-            );
-          } else {
-            console.log("Template data ID doesn't match URL ID");
-          }
-        } else {
-          console.log("No saved template found for ID:", templateId);
-        }
-      } catch (error) {
-        console.error("Error loading template data from localStorage:", error);
-      } finally {
-        // Simulate a slight loading delay for better user experience
-        setTimeout(() => setIsLoaded(true), 1200);
-      }
-    }
-  }, [templateId]);
-
   return (
-    <AnimatePresence mode="wait">
-      {!isLoaded ? (
-        <motion.div
-          key="loading"
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <LoadingScreen />
-        </motion.div>
-      ) : (
-        <motion.div
-          key="content"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Hero
-            DevName={heroDetails.DevName}
-            title={heroDetails.title}
-            description={heroDetails.description}
-            heroImage={heroDetails.heroImage}
-            Companies={heroDetails.Companies}
-          />
-          <About
-            title={aboutData.title}
-            subtitle={aboutData.subtitle}
-            description={aboutData.description}
-            skills={aboutData.skills}
-            education={aboutData.education}
-          />
-          <Experience projects={projects} colorMap={colorMap} />
-          <Contact
-            email={contactData.email}
-            phone={contactData.phone}
-            socialLinks={contactData.socialLinks}
-          />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <motion.div
+      key="content"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Hero
+        DevName={defaultHeroDetails.DevName}
+        title={defaultHeroDetails.title}
+        description={defaultHeroDetails.description}
+        heroImage={defaultHeroDetails.heroImage}
+        Companies={defaultHeroDetails.Companies}
+      />
+      <About
+        title={defaultAboutData.title}
+        subtitle={defaultAboutData.subtitle}
+        description={defaultAboutData.description}
+        skills={defaultAboutData.skills}
+        education={defaultAboutData.education}
+      />
+      <Experience projects={defaultProjects} colorMap={colorMap} />
+      <Contact
+        email={defaultContactData.email}
+        phone={defaultContactData.phone}
+        socialLinks={defaultContactData.socialLinks}
+      />
+    </motion.div>
   );
 };
 
