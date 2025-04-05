@@ -10,8 +10,11 @@ async function verifyAuthToken(token: string | null): Promise<{ userId: string }
   if (!token) return null;
   
   try {
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-fallback-secret');
+    // IMPORTANT: Use ACCESS_TOKEN_SECRET to match your .env file
+    const secret = process.env.ACCESS_TOKEN_SECRET || 'your-fallback-secret';
+    
+    console.log("Verifying token with ACCESS_TOKEN_SECRET");
+    const decoded = jwt.verify(token, secret);
     return decoded as { userId: string };
   } catch (error) {
     console.error("Token verification failed:", error);
@@ -23,13 +26,38 @@ async function verifyAuthToken(token: string | null): Promise<{ userId: string }
 async function getAuthenticatedUserId(req: Request): Promise<string | null> {
   try {
     // Get headers
-    const headersList = await headers();
+    const headersList = headers();
     
     // Try to get the token from the Authorization header
-    const authHeader = headersList.get('authorization');
-    const token = authHeader?.startsWith('Bearer ') 
-      ? authHeader.substring(7) 
-      : null;
+    const authHeader = (await headersList).get('authorization');
+    console.log("Authorization header:", authHeader ? "Present" : "Missing");
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log("No valid Authorization header found");
+      return null;
+    }
+    
+    const token = authHeader.substring(7);
+    
+    // Check token structure
+    try {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        // This looks like a JWT token
+        const base64Payload = parts[1];
+        const buff = Buffer.from(base64Payload, 'base64');
+        const payloadText = buff.toString('utf-8');
+        const payload = JSON.parse(payloadText);
+        
+        console.log("Token payload structure:", Object.keys(payload));
+        console.log("User identifier in token:", 
+          payload.userId || payload.user_id || payload.sub || "Not found");
+      } else {
+        console.log("Token doesn't look like JWT format!");
+      }
+    } catch (e) {
+      console.error("Error parsing token:", e);
+    }
     
     // Verify the token
     const decoded = await verifyAuthToken(token);
