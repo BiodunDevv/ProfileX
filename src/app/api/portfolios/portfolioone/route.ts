@@ -7,29 +7,66 @@ import jwt from 'jsonwebtoken';
 
 // Helper function to verify token
 async function verifyAuthToken(token: string | null): Promise<{ userId: string } | null> {
-  if (!token) return null;
+  if (!token) {
+    console.log("No token provided");
+    return null;
+  }
   
   try {
-    // IMPORTANT: Use ACCESS_TOKEN_SECRET to match your .env file
-    const secret = process.env.ACCESS_TOKEN_SECRET || 'your-fallback-secret';
+    // Get the secret with better fallback and logging
+    const secret = process.env.ACCESS_TOKEN_SECRET;
+    
+    if (!secret) {
+      console.error("ACCESS_TOKEN_SECRET is not defined in environment variables!");
+      return null;
+    }
     
     console.log("Verifying token with ACCESS_TOKEN_SECRET");
+    
+    // Verify the token
     const decoded = jwt.verify(token, secret);
-    return decoded as { userId: string };
+    console.log("Token verified successfully");
+    
+    // Handle different possible token formats
+    if (typeof decoded === 'object') {
+      console.log("Token payload keys:", Object.keys(decoded));
+      
+      // Check common fields that might contain the user ID
+      if ('userId' in decoded) {
+        return { userId: String(decoded.userId) };
+      } 
+      else if ('id' in decoded) {
+        return { userId: String(decoded.id) };
+      }
+      else if ('sub' in decoded) {
+        return { userId: String(decoded.sub) };
+      }
+      else if ('user' in decoded && typeof decoded.user === 'object' && decoded.user && 'id' in decoded.user) {
+        return { userId: String(decoded.user.id) };
+      }
+      else {
+        console.error("Token doesn't contain userId in expected format:", decoded);
+      }
+    } else {
+      console.error("Decoded token is not an object:", decoded);
+    }
+    
+    return null;
   } catch (error) {
     console.error("Token verification failed:", error);
     return null;
   }
 }
 
-// Helper function to get authenticated user ID
+// Replace your getAuthenticatedUserId function with this:
+
 async function getAuthenticatedUserId(req: Request): Promise<string | null> {
   try {
-    // Get headers
-    const headersList = headers();
+    // Get headers using the synchronous API
+    const headersList = await headers();
     
-    // Try to get the token from the Authorization header
-    const authHeader = (await headersList).get('authorization');
+    // Get authorization header directly (without await)
+    const authHeader = headersList.get('authorization');
     console.log("Authorization header:", authHeader ? "Present" : "Missing");
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -37,31 +74,31 @@ async function getAuthenticatedUserId(req: Request): Promise<string | null> {
       return null;
     }
     
+    // Extract token
     const token = authHeader.substring(7);
+    console.log(`Token received: ${token.substring(0, 10)}...`);
     
-    // Check token structure
-    try {
-      const parts = token.split('.');
-      if (parts.length === 3) {
-        // This looks like a JWT token
-        const base64Payload = parts[1];
-        const buff = Buffer.from(base64Payload, 'base64');
-        const payloadText = buff.toString('utf-8');
-        const payload = JSON.parse(payloadText);
-        
-        console.log("Token payload structure:", Object.keys(payload));
-        console.log("User identifier in token:", 
-          payload.userId || payload.user_id || payload.sub || "Not found");
-      } else {
-        console.log("Token doesn't look like JWT format!");
-      }
-    } catch (e) {
-      console.error("Error parsing token:", e);
+    // Verify token
+    const secret = process.env.ACCESS_TOKEN_SECRET;
+    if (!secret) {
+      console.error("ACCESS_TOKEN_SECRET not found in environment variables");
+      return null;
     }
     
-    // Verify the token
-    const decoded = await verifyAuthToken(token);
-    return decoded?.userId || null;
+    try {
+      const decoded = jwt.verify(token, secret);
+      console.log("Token verified successfully:", decoded);
+      
+      if (typeof decoded === 'object' && 'userId' in decoded) {
+        return String(decoded.userId);
+      } else {
+        console.error("userId not found in token payload:", decoded);
+        return null;
+      }
+    } catch (e) {
+      console.error("Token verification failed:", e);
+      return null;
+    }
   } catch (error) {
     console.error("Authentication error:", error);
     return null;
@@ -129,6 +166,11 @@ export async function POST(request: Request) {
 // GET endpoint to retrieve the user's portfolio
 export async function GET(request: Request) {
   try {
+    // Debug headers
+    const headersList = await headers();
+    console.log("All headers:", Object.fromEntries(headersList.entries()));
+    console.log("Auth header:", headersList.get('authorization'));
+    
     // Check authentication using your custom auth system
     const userId = await getAuthenticatedUserId(request);
 

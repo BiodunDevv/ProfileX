@@ -73,7 +73,7 @@ const SignInPage = () => {
 
   // Watch password field
   useEffect(() => {
-    const subscription = watch((value) => {
+    const subscription = watch((value: Partial<LoginFormData>) => {
       if (value.password) {
         setPasswordValue(value.password);
       }
