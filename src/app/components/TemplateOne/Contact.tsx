@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
@@ -13,12 +14,16 @@ interface ContactProps {
   email: string;
   phone?: string;
   socialLinks: SocialLinkProps[];
+  portfolioId?: string;
+  portfolioCustomUrl?: string;
 }
 
 const Contact = ({
   email = "your.email@example.com",
   phone,
   socialLinks = [],
+  portfolioId,
+  portfolioCustomUrl,
 }: ContactProps) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -44,8 +49,31 @@ const Contact = ({
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const customUrl = window.location.pathname.split('/')[2]; 
+      
+      // Add portfolio information to the request
+      const requestData = {
+        ...formData,
+        portfolioCustomUrl: customUrl,
+        recipientEmail: email, 
+      };
+      
+      // Send the contact form data to our API
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to send message');
+      }
+      
+      // Handle success
       setSubmitted(true);
       setFormData({
         name: "",
@@ -53,8 +81,16 @@ const Contact = ({
         subject: "",
         message: "",
       });
+      
+      // Reset submitted state after 5 seconds
       setTimeout(() => setSubmitted(false), 5000);
-    }, 1500);
+    } catch (error) {
+      // Show error notification (you might want to add toast notifications)
+      console.error('Error sending message:', error);
+      alert('Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderSocialIcon = (iconName: string) => {
