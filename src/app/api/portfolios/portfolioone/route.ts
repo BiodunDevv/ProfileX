@@ -2,23 +2,56 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/dbConn";
 import Portfolio from "@/modal/Portfolio";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { headers } from 'next/headers';
+import jwt from 'jsonwebtoken';
+
+// Helper function to verify token
+async function verifyAuthToken(token: string | null): Promise<{ userId: string } | null> {
+  if (!token) return null;
+  
+  try {
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-fallback-secret');
+    return decoded as { userId: string };
+  } catch (error) {
+    console.error("Token verification failed:", error);
+    return null;
+  }
+}
+
+// Helper function to get authenticated user ID
+async function getAuthenticatedUserId(req: Request): Promise<string | null> {
+  try {
+    // Get headers
+    const headersList = await headers();
+    
+    // Try to get the token from the Authorization header
+    const authHeader = headersList.get('authorization');
+    const token = authHeader?.startsWith('Bearer ') 
+      ? authHeader.substring(7) 
+      : null;
+    
+    // Verify the token
+    const decoded = await verifyAuthToken(token);
+    return decoded?.userId || null;
+  } catch (error) {
+    console.error("Authentication error:", error);
+    return null;
+  }
+}
 
 // POST endpoint to create a new portfolio
 export async function POST(request: Request) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
+    // Check authentication using your custom auth system
+    const userId = await getAuthenticatedUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { message: "Unauthorized. Please log in." },
         { status: 401 }
       );
     }
-
-    const userId = session.user.id;
 
     // Connect to database
     await connectDB();
@@ -65,22 +98,18 @@ export async function POST(request: Request) {
   }
 }
 
-
-
 // GET endpoint to retrieve the user's portfolio
 export async function GET(request: Request) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
+    // Check authentication using your custom auth system
+    const userId = await getAuthenticatedUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { message: "Unauthorized. Please log in." },
         { status: 401 }
       );
     }
-
-    const userId = session.user.id;
 
     // Connect to database
     await connectDB();
@@ -111,17 +140,15 @@ export async function GET(request: Request) {
 // PATCH endpoint to update an existing portfolio
 export async function PATCH(request: Request) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
+    // Check authentication using your custom auth system
+    const userId = await getAuthenticatedUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { message: "Unauthorized. Please log in." },
         { status: 401 }
       );
     }
-
-    const userId = session.user.id;
 
     // Connect to database
     await connectDB();
@@ -168,17 +195,15 @@ export async function PATCH(request: Request) {
 // DELETE endpoint to remove a portfolio
 export async function DELETE(request: Request) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
+    // Check authentication using your custom auth system
+    const userId = await getAuthenticatedUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { message: "Unauthorized. Please log in." },
         { status: 401 }
       );
     }
-
-    const userId = session.user.id;
 
     // Connect to database
     await connectDB();

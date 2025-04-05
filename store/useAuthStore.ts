@@ -113,7 +113,6 @@ export const useAuthStore = create<AuthState>()(
             body: JSON.stringify(userData),
           });
 
-          // Don't set authenticated here since we'll wait for email verification
           return response;
         } catch (error) {
           console.error("Signup error:", error);

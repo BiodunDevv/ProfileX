@@ -2,6 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from 'zustand';
 import { toast } from 'react-hot-toast';
+import { useAuthStore } from './useAuthStore';
+import { fetchWithAuth } from '../src/utils/api';
 
 // Define the Portfolio interface
 interface Portfolio {
@@ -70,7 +72,18 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const response = await fetch('/api/portfolios/user');
+      const authStore = useAuthStore.getState();
+      const token = authStore.token;
+      
+      if (!token) {
+        throw new Error("You must be logged in to fetch portfolios");
+      }
+      
+      const response = await fetch('/api/portfolios/user', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
       if (!response.ok) {
         const error = await response.json();
@@ -93,7 +106,18 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const response = await fetch(`/api/portfolios/${id}`);
+      const authStore = useAuthStore.getState();
+      const token = authStore.token;
+      
+      if (!token) {
+        throw new Error("You must be logged in to fetch portfolio");
+      }
+      
+      const response = await fetch(`/api/portfolios/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
       if (!response.ok) {
         const error = await response.json();
@@ -117,7 +141,18 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const response = await fetch(`/api/portfolios/url/${customUrl}`);
+      const authStore = useAuthStore.getState();
+      const token = authStore.token;
+      
+      if (!token) {
+        throw new Error("You must be logged in to fetch portfolio");
+      }
+      
+      const response = await fetch(`/api/portfolios/url/${customUrl}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
       if (!response.ok) {
         const error = await response.json();
@@ -140,7 +175,7 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const response = await fetch('/api/portfolios', {
+      const response = await fetchWithAuth('/api/portfolios', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -155,6 +190,7 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       
       const responseData = await response.json();
       
+      // Update the portfolios list with the new portfolio
       set(state => ({ 
         portfolios: [...state.portfolios, responseData.portfolio],
         currentPortfolio: responseData.portfolio,
@@ -177,10 +213,18 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
+      const authStore = useAuthStore.getState();
+      const token = authStore.token;
+      
+      if (!token) {
+        throw new Error("You must be logged in to update portfolio");
+      }
+      
       const response = await fetch(`/api/portfolios/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(data),
       });
@@ -217,8 +261,18 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
+      const authStore = useAuthStore.getState();
+      const token = authStore.token;
+      
+      if (!token) {
+        throw new Error("You must be logged in to delete portfolio");
+      }
+      
       const response = await fetch(`/api/portfolios/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       if (!response.ok) {
@@ -250,10 +304,18 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
+      const authStore = useAuthStore.getState();
+      const token = authStore.token;
+      
+      if (!token) {
+        throw new Error("You must be logged in to generate custom URL");
+      }
+      
       const response = await fetch('/api/portfolios/custom-url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ portfolioId, customUrl }),
       });
@@ -294,7 +356,18 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   // Check if a custom URL is available
   checkCustomUrlAvailability: async (customUrl: string) => {
     try {
-      const response = await fetch(`/api/portfolios/custom-url?url=${encodeURIComponent(customUrl)}`);
+      const authStore = useAuthStore.getState();
+      const token = authStore.token;
+      
+      if (!token) {
+        throw new Error("You must be logged in to check custom URL availability");
+      }
+      
+      const response = await fetch(`/api/portfolios/custom-url?url=${encodeURIComponent(customUrl)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
       if (!response.ok) {
         const error = await response.json();
@@ -314,10 +387,18 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
+      const authStore = useAuthStore.getState();
+      const token = authStore.token;
+      
+      if (!token) {
+        throw new Error("You must be logged in to send message");
+      }
+      
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(data),
       });
