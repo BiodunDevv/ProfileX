@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -16,19 +16,57 @@ import {
   FileCode,
   Palette,
   Home,
+  AlertTriangle,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "../../../../store/useAuthStore";
 
+// Public routes that don't require authentication
+const PUBLIC_ROUTES = ["/", "/signin", "/signup", "/reset-password"];
+
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [showAuthWarning, setShowAuthWarning] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
   // Use auth store for authentication status
-  const { user, signOut } = useAuthStore();
+  const { user, signOut, checkAuthState } = useAuthStore();
 
+  // Check authentication on component mount and route changes
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        // Skip auth check for public pages
+        if (PUBLIC_ROUTES.includes(pathname)) {
+          return;
+        }
+
+        const isAuth = await checkAuthState();
+
+        if (!isAuth) {
+          console.log("User not authenticated, showing warning");
+          setShowAuthWarning(true);
+
+          // Set a timeout to redirect after showing the message
+          setTimeout(() => {
+            console.log("Redirecting to signin page");
+            router.push("/signin");
+          }, 3000); // 3 second delay before redirect
+        }
+      } catch (error) {
+        console.error("Error verifying authentication:", error);
+        setShowAuthWarning(true);
+
+        setTimeout(() => {
+          router.push("/signin");
+        }, 3000);
+      }
+    };
+
+    verifyAuth();
+  }, [pathname, router, checkAuthState]);
 
   // Format user name for avatar
   const getInitials = (name?: string) => {
@@ -77,6 +115,27 @@ const Navbar = () => {
 
   return (
     <>
+      {/* Authentication Warning Message */}
+      <AnimatePresence>
+        {showAuthWarning && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            transition={{ duration: 0.3 }}
+            className="fixed top-0 inset-x-0 z-50 flex justify-center items-center"
+          >
+            <div className="bg-red-500/90 backdrop-blur-sm text-white px-6 py-3 rounded-b-lg shadow-lg flex items-center max-w-md mx-auto">
+              <AlertTriangle className="mr-2 flex-shrink-0" size={20} />
+              <div>
+                <p className="font-medium">Authentication required</p>
+                <p className="text-sm">Redirecting you to sign in page...</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.nav
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -359,7 +418,7 @@ const Navbar = () => {
       {/* Close profile dropdown when clicking outside */}
       {isProfileMenuOpen && (
         <div
-          className="fixed inset-0 z-40"
+          className="fixed inset-0 z-10"
           onClick={() => setIsProfileMenuOpen(false)}
         ></div>
       )}

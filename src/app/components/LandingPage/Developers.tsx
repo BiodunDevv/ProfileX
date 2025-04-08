@@ -41,35 +41,27 @@ const Developers = () => {
   const developers: TeamMember[] = [
     {
       id: 1,
-      name: "Alex Morgan",
-      role: "Lead Developer",
-      bio: "Full stack developer with 8+ years of experience specializing in React and Node.js. Passionate about building elegant, high-performance web applications with exceptional user experiences.",
+      name: "Muhammed Abiodun",
+      role: "Frontend Developer",
+      bio: "Frontend specialist with a keen eye for detail and a passion for creating responsive, accessible web experiences. Loves working at the intersection of design and development.",
       image: Dev,
-      skills: ["React", "TypeScript", "NextJS", "Node", "Framer Motion"],
+      skills: [
+        "React",
+        "CSS/SCSS",
+        "Tailwind",
+        "Accessibility",
+        "JavaScript",
+        "NextJs",
+      ],
       links: {
         github: "https://github.com",
         twitter: "https://twitter.com",
-        linkedin: "https://linkedin.com",
         website: "https://example.com",
       },
     },
     {
       id: 2,
-      name: "Sarah Chen",
-      role: "UI/UX Designer",
-      bio: "Creative designer focused on crafting beautiful interfaces with intuitive user experiences. Combines artistic vision with data-driven insights to deliver designs that users love.",
-      image: Dev,
-      skills: ["Figma", "UI Design", "UX Research", "Prototyping", "Animation"],
-      links: {
-        github: "https://github.com",
-        linkedin: "https://linkedin.com",
-        website: "https://example.com",
-        email: "email@example.com",
-      },
-    },
-    {
-      id: 3,
-      name: "Marcus Johnson",
+      name: "Gold Enoch",
       role: "Backend Engineer",
       bio: "Specialized in building robust, scalable backend systems. Expert in database optimization, API design, and server architecture with a focus on performance and security.",
       image: Dev,
@@ -81,16 +73,23 @@ const Developers = () => {
       },
     },
     {
-      id: 4,
-      name: "Leila Patel",
-      role: "Frontend Developer",
-      bio: "Frontend specialist with a keen eye for detail and a passion for creating responsive, accessible web experiences. Loves working at the intersection of design and development.",
+      id: 3,
+      name: "Solomon",
+      role: "Artificial Intelligence Engineer",
+      bio: "AI enthusiast with a strong background in machine learning and data analysis. Passionate about leveraging AI to solve real-world problems and improve user experiences.",
       image: Dev,
-      skills: ["React", "CSS/SCSS", "Tailwind", "Accessibility", "JavaScript"],
+      skills: [
+        "Machine Learning",
+        "Python",
+        "TensorFlow",
+        "Data Analysis",
+        "Natural Language Processing",
+      ],
       links: {
         github: "https://github.com",
-        twitter: "https://twitter.com",
+        linkedin: "https://linkedin.com",
         website: "https://example.com",
+        email: "email@example.com",
       },
     },
   ];
@@ -260,16 +259,16 @@ const Developers = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ 
-                  duration: 0.5, 
-                  ease: [0.22, 1, 0.36, 1] 
+                transition={{
+                  duration: 0.5,
+                  ease: [0.22, 1, 0.36, 1],
                 }}
                 className="bg-gradient-to-br from-[#1a1b24] to-[#1F2029] rounded-2xl overflow-hidden border border-purple-500/10 shadow-xl shadow-purple-500/5"
               >
                 {/* Modern layout with image contained properly */}
                 <div className="flex flex-col md:flex-row">
                   {/* Profile image container with sophisticated styling */}
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
@@ -284,7 +283,7 @@ const Developers = () => {
                     </div>
 
                     {/* Actual image with contain for full visibility */}
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.3, duration: 0.5 }}
@@ -307,7 +306,7 @@ const Developers = () => {
                     <div className="absolute inset-0 bg-gradient-to-r from-[#1a1b24] via-transparent to-transparent opacity-30 z-10"></div>
 
                     {/* Developer badge */}
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5, duration: 0.4 }}
@@ -325,7 +324,7 @@ const Developers = () => {
                   {/* Content section */}
                   <div className="md:w-3/5 p-6 md:p-8 relative">
                     {/* Geometric decoration */}
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.4, duration: 0.3 }}
@@ -334,7 +333,7 @@ const Developers = () => {
 
                     {/* Name and bio */}
                     <div className="mb-6">
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2, duration: 0.4 }}
@@ -346,7 +345,7 @@ const Developers = () => {
                         </motion.div>
                       </motion.div>
 
-                      <motion.h3 
+                      <motion.h3
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.4 }}
@@ -355,7 +354,7 @@ const Developers = () => {
                         {activeMember.name}
                       </motion.h3>
 
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.4, duration: 0.6 }}
@@ -368,7 +367,7 @@ const Developers = () => {
                     </div>
 
                     {/* Skills with improved visualization */}
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5, duration: 0.4 }}
@@ -386,7 +385,7 @@ const Developers = () => {
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{
                               delay: 0.6 + index * 0.1,
-                              duration: 0.3
+                              duration: 0.3,
                             }}
                             whileHover={{ scale: 1.05 }}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center
@@ -408,63 +407,73 @@ const Developers = () => {
                     </motion.div>
 
                     {/* Social links with improved styling */}
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.7, duration: 0.4 }}
                       className="pt-4 border-t border-purple-500/10"
                     >
                       <div className="flex flex-wrap gap-3">
-                        {Object.entries(activeMember.links).map(([platform, url], index) => {
-                          if (!url) return null;
-                          
-                          let Icon;
-                          let bgColor = "from-[#6D28D9]/80 to-[#6D28D9]";
-                          
-                          switch(platform) {
-                            case 'github':
-                              Icon = Github;
-                              bgColor = "from-[#24292E]/80 to-[#24292E]";
-                              break;
-                            case 'twitter':
-                              Icon = Twitter;
-                              bgColor = "from-[#1DA1F2]/80 to-[#1DA1F2]";
-                              break;
-                            case 'linkedin':
-                              Icon = Linkedin;
-                              bgColor = "from-[#0077B5]/80 to-[#0077B5]";
-                              break;
-                            case 'website':
-                              Icon = Globe;
-                              bgColor = "from-[#4C1D95]/80 to-[#4C1D95]";
-                              break;
-                            case 'email':
-                              Icon = Mail;
-                              url = `mailto:${url}`;
-                              break;
+                        {Object.entries(activeMember.links).map(
+                          ([platform, url], index) => {
+                            if (!url) return null;
+
+                            let Icon;
+                            let bgColor = "from-[#6D28D9]/80 to-[#6D28D9]";
+
+                            switch (platform) {
+                              case "github":
+                                Icon = Github;
+                                bgColor = "from-[#24292E]/80 to-[#24292E]";
+                                break;
+                              case "twitter":
+                                Icon = Twitter;
+                                bgColor = "from-[#1DA1F2]/80 to-[#1DA1F2]";
+                                break;
+                              case "linkedin":
+                                Icon = Linkedin;
+                                bgColor = "from-[#0077B5]/80 to-[#0077B5]";
+                                break;
+                              case "website":
+                                Icon = Globe;
+                                bgColor = "from-[#4C1D95]/80 to-[#4C1D95]";
+                                break;
+                              case "email":
+                                Icon = Mail;
+                                url = `mailto:${url}`;
+                                break;
+                            }
+
+                            return (
+                              <motion.a
+                                key={platform}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  delay: 0.8 + index * 0.1,
+                                  duration: 0.3,
+                                }}
+                                whileHover={{ y: -2 }}
+                                href={url}
+                                target={
+                                  platform !== "email" ? "_blank" : undefined
+                                }
+                                rel={
+                                  platform !== "email"
+                                    ? "noopener noreferrer"
+                                    : undefined
+                                }
+                                className={`group relative w-10 h-10 bg-gradient-to-br ${bgColor} rounded-xl flex items-center justify-center transition-all duration-300 shadow-md shadow-black/20`}
+                                aria-label={`${activeMember.name}'s ${platform}`}
+                              >
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/40 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                {Icon && (
+                                  <Icon size={18} className="relative z-10" />
+                                )}
+                              </motion.a>
+                            );
                           }
-                          
-                          return (
-                            <motion.a
-                              key={platform}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{
-                                delay: 0.8 + index * 0.1,
-                                duration: 0.3
-                              }}
-                              whileHover={{ y: -2 }}
-                              href={url}
-                              target={platform !== 'email' ? "_blank" : undefined}
-                              rel={platform !== 'email' ? "noopener noreferrer" : undefined}
-                              className={`group relative w-10 h-10 bg-gradient-to-br ${bgColor} rounded-xl flex items-center justify-center transition-all duration-300 shadow-md shadow-black/20`}
-                              aria-label={`${activeMember.name}'s ${platform}`}
-                            >
-                              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/40 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                              {Icon && <Icon size={18} className="relative z-10" />}
-                            </motion.a>
-                          );
-                        })}
+                        )}
                       </div>
                     </motion.div>
                   </div>
