@@ -23,10 +23,9 @@ import TemplateTwoPreview from "../../../../public/TemplateTwoPreview.png";
 import TemplateThreePreview from "../../../../public/TemplateThreePreview.png";
 import TemplateFourPreview from "../../../../public/TemplateFourPreview.png";
 
-// Template data structure
 const templates = [
   {
-    id: "templateone",
+    id: "templateOne",
     imageUrl: TemplateOnePreview,
     title: "Modern Pro",
     description: "Clean & Professional",
@@ -38,7 +37,7 @@ const templates = [
     isNew: false,
   },
   {
-    id: "templatetwo",
+    id: "templateTwo",
     imageUrl: TemplateTwoPreview,
     title: "Minimalist",
     description: "Simple & Elegant",
@@ -50,7 +49,7 @@ const templates = [
     isNew: false,
   },
   {
-    id: "templatethree",
+    id: "templateThree",
     imageUrl: TemplateThreePreview,
     title: "Creative Portfolio",
     description: "Bold & Innovative",
@@ -62,7 +61,7 @@ const templates = [
     isNew: true,
   },
   {
-    id: "templatefour",
+    id: "templateFour",
     imageUrl: TemplateFourPreview,
     title: "Tech Resume",
     description: "Digital & Dynamic",
@@ -73,10 +72,9 @@ const templates = [
     popular: false,
     isNew: true,
   },
-  // Add a few more dummy templates for better UI demonstration
   {
-    id: "templatefive",
-    imageUrl: TemplateOnePreview, // Reusing images for example
+    id: "templateFive",
+    imageUrl: TemplateOnePreview,
     title: "Portfolio Plus",
     description: "Comprehensive showcase",
     templatePath: "TemplateOne",
@@ -87,7 +85,7 @@ const templates = [
     isNew: false,
   },
   {
-    id: "template-six",
+    id: "templateSix",
     imageUrl: TemplateThreePreview,
     title: "Art Display",
     description: "Visual showcase",
@@ -99,7 +97,7 @@ const templates = [
     isNew: true,
   },
   {
-    id: "template-seven",
+    id: "templateSeven",
     imageUrl: TemplateFourPreview,
     title: "Developer CV",
     description: "Code & skills focus",
@@ -111,7 +109,7 @@ const templates = [
     isNew: false,
   },
   {
-    id: "template-eight",
+    id: "templateEight",
     imageUrl: TemplateTwoPreview,
     title: "Business Card",
     description: "Professional identity",
@@ -202,15 +200,13 @@ const Templates = () => {
       e.stopPropagation();
     }
 
-    router.push(
-      `/templates/templatedisplay?id=${template.id}&title=${template.title}&path=${template.templatePath}`
-    );
+    router.push(`/templates/${template.id}`);
   };
 
   // Handle template usage
   const handleUseTemplate = (template: any) => {
     router.push(
-      `/templates/useTemplateForm?id=${template.id}&title=${template.title}&path=${template.templatePath}`
+      `/templates/${template.id}/edit`,
     );
   };
 

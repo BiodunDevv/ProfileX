@@ -11,15 +11,17 @@ import {
   Sparkles,
   ArrowRight,
   Upload,
-  Save,
   LayoutGrid,
   AlertTriangle,
   Check,
+  Loader2,
 } from "lucide-react";
 import { uploadToCloudinary } from "@/app/api/cloudinary/cloudinary";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Dialog, Transition } from "@headlessui/react";
+import usePortfolioStore from "../../../../../store/portfolioStore";
+import { useAuthStore } from "../../../../../store/useAuthStore";
 
 interface HeroSection {
   devName: string;
@@ -126,10 +128,16 @@ const Page = () => {
       ],
     },
   });
-  const [showSavedToast, setShowSavedToast] = useState(false);
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewStatus, setPreviewStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [previewPortfolioId, setPreviewPortfolioId] = useState<string | null>(
+    null
+  );
 
   const colorOptions = [
     { value: "purple", label: "Purple", bgClass: "bg-purple-500" },
@@ -293,15 +301,183 @@ const Page = () => {
       return newData;
     });
   };
+  const handlePreview = async () => {
+    try {
+      // First validate the form data
+      const requiredFields = {
+        hero: ["devName", "title", "description"],
+        about: ["title", "subtitle", "description"],
+        projects: ["name", "description"],
+        contact: ["email"],
+      };
 
-  const handlePreview = () => {
-    // Show the saved toast notification before navigating
-    setShowSavedToast(true);
+      const missingFields = [];
 
-    // Give time for the toast to be visible before navigating
-    setTimeout(() => {
-      router.push(`/allTemplates/templateOne?${formData.id}`);
-    }, 1200);
+      // Check for required fields
+      for (const field of requiredFields.hero) {
+        if (!formData.hero[field as keyof HeroSection]) {
+          missingFields.push(`Hero - ${field}`);
+        }
+      }
+      for (const field of requiredFields.about) {
+        if (!formData.about[field as keyof AboutSection]) {
+          missingFields.push(`About - ${field}`);
+        }
+      }
+      if (formData.projects.length > 0) {
+        const firstProject = formData.projects[0];
+        if (!firstProject.name || !firstProject.description) {
+          missingFields.push("Project - name and description");
+        }
+      }
+      for (const field of requiredFields.contact) {
+        if (!formData.contact[field as keyof ContactSection]) {
+          missingFields.push(`Contact - ${field}`);
+        }
+      }
+
+      if (missingFields.length > 0) {
+        toast.error(
+          <div>
+            <p className="font-medium mb-2">
+              Please fill in the required fields:
+            </p>
+            <ul className="list-disc ml-4">
+              {missingFields.map((field, i) => (
+                <li key={i}>{field}</li>
+              ))}
+            </ul>
+          </div>
+        );
+        return;
+      }
+
+      // Open preview modal and set loading state
+      setIsPreviewModalOpen(true);
+      setPreviewStatus("loading");
+
+      // Get authentication state from auth store - proper way in React component
+      const authStore = useAuthStore.getState();
+      const { isAuthenticated, token } = authStore;
+
+      if (!isAuthenticated || !token) {
+        setPreviewStatus("error");
+        // Save current form data to localStorage for persistence
+        localStorage.setItem("templateOneData", JSON.stringify(formData));
+        return;
+      }
+
+      // Prepare the data according to the Portfolio schema
+      const portfolioData = {
+        templateType: "template1",
+        brandName: formData.hero.devName,
+        title: formData.hero.title,
+        description: formData.hero.description,
+        heroImage:
+          formData.hero.heroImage ||
+          "https://placehold.co/600x400/1A1D2E/434963?text=No+Image",
+        companies: formData.hero.companies.filter(
+          (company) => company.trim() !== ""
+        ),
+
+        // About section
+        sectionAbout: formData.about.title,
+        sectionSubtitle: formData.about.subtitle,
+        aboutMeDescription: formData.about.description,
+
+        // Skills formatted according to schema
+        skills: formData.about.skills.map((skill) => ({
+          name: skill.name,
+          level: skill.level,
+          color: skill.color,
+        })),
+
+        // Education formatted according to schema
+        education: formData.about.education.map((edu) => ({
+          degree: edu.degree,
+          institution: edu.institution,
+          years: edu.year,
+          description: edu.description,
+        })),
+
+        // Projects formatted according to schema
+        projects: formData.projects.map((project) => ({
+          name: project.name,
+          description: project.description,
+          technologies: [project.type], // Assuming type is the technology
+          imageUrl:
+            project.image ||
+            "https://placehold.co/600x400/1A1D2E/434963?text=No+Image",
+          liveUrl: project.demoLink,
+          repoUrl: project.sourceLink,
+          featured: true,
+        })),
+
+        // Contact information
+        contactInfo: [
+          {
+            emailAddress: formData.contact.email,
+            phoneNumber: formData.contact.phone || "",
+          },
+        ],
+
+        // Social links
+        socialLinks: formData.contact.socialLinks
+          .filter((link) => link.platform && link.url)
+          .map((link) => ({
+            platform: link.platform,
+            icon: link.icon,
+            url: link.url,
+          })),
+
+        // Default settings
+        isPublic: true,
+        tags: ["portfolio", "developer", "template1"],
+        customUrl: formData.hero.devName.toLowerCase().replace(/\s+/g, "-"),
+      };
+
+      // Get the portfolio store instance
+      const portfolioStore = usePortfolioStore.getState();
+      const portfolioId = localStorage.getItem("templateOnePortfolioId");
+
+      let result;
+
+      try {
+        if (portfolioId) {
+          // Update existing portfolio
+          result = await portfolioStore.updatePortfolio(
+            portfolioId,
+            portfolioData
+          );
+        } else {
+          // Create a new portfolio
+          result = await portfolioStore.createPortfolio(portfolioData);
+
+          if (result && result._id) {
+            localStorage.setItem("templateOnePortfolioId", result._id);
+
+            // Also store the custom URL for later use
+            if (result.customUrl) {
+              localStorage.setItem("templateOneCustomUrl", result.customUrl);
+            }
+          }
+        }
+
+        if (!result) {
+          throw new Error("Failed to save portfolio");
+        }
+
+        // Set successful state and store ID for redirection
+        setPreviewStatus("success");
+        setPreviewPortfolioId(result._id || null);
+      } catch (error) {
+        console.error("Portfolio save error:", error);
+        setPreviewStatus("error");
+      }
+    } catch (error) {
+      console.error("Preview error:", error);
+      setPreviewStatus("error");
+    }
   };
 
   const handleFileChange = async (
@@ -1661,20 +1837,168 @@ const Page = () => {
           </form>
         </div>
 
-        {/* This is the toast notification for saved changes */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{
-            opacity: showSavedToast ? 1 : 0,
-            y: showSavedToast ? 0 : 20,
-          }}
-          className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-auto md:max-w-md bg-[#1E2132]/90 backdrop-blur-lg border border-green-500/30 shadow-xl rounded-xl p-4 text-center z-50"
-        >
-          <p className="text-green-400 flex items-center justify-center">
-            <Save size={16} className="mr-2" />
-            All changes saved - Ready for preview!
-          </p>
-        </motion.div>
+        {/* Preview Modal */}
+        <Transition appear show={isPreviewModalOpen} as={Fragment}>
+          <Dialog
+            as="div"
+            className="relative z-50"
+            onClose={() => {
+              if (previewStatus !== "loading") {
+                setIsPreviewModalOpen(false);
+                setPreviewStatus("idle");
+              }
+            }}
+          >
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-black/70" />
+            </Transition.Child>
+
+            <div className="fixed inset-0 overflow-y-auto">
+              <div className="flex min-h-full items-center justify-center p-4 text-center">
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0 scale-95"
+                  enterTo="opacity-100 scale-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100 scale-100"
+                  leaveTo="opacity-0 scale-95"
+                >
+                  <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-gradient-to-b from-[#1A1D2E] to-[#171826] border border-[#2E313C] p-6 text-left align-middle shadow-xl transition-all">
+                    <Dialog.Title
+                      as="h3"
+                      className="text-xl font-bold text-white mb-4 text-center"
+                    >
+                      {previewStatus === "loading" && "Creating Preview..."}
+                      {previewStatus === "success" && "Preview Ready!"}
+                      {previewStatus === "error" && "Preview Error"}
+                    </Dialog.Title>
+
+                    <div className="mt-4 flex flex-col items-center">
+                      {/* Loading State */}
+                      {previewStatus === "loading" && (
+                        <>
+                          <div className="mb-4">
+                            <Loader2 className="h-12 w-12 animate-spin text-purple-500" />
+                          </div>
+                          <p className="text-gray-300 text-center mb-2">
+                            Please wait while we prepare your portfolio preview.
+                          </p>
+                          <div className="w-full bg-[#262A3E] h-1.5 rounded-full overflow-hidden mt-4">
+                            <div
+                              className="h-full bg-purple-500 animate-pulse"
+                              style={{ width: "100%" }}
+                            ></div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Success State */}
+                      {previewStatus === "success" && (
+                        <>
+                          <div className="mx-auto flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-green-900/30 border border-green-500/30 mb-4">
+                            <Check
+                              className="h-8 w-8 text-green-500"
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <p className="text-gray-300 text-center mb-6">
+                            Your portfolio preview is ready. Click below to view
+                            it!
+                          </p>
+                          <motion.button
+                            type="button"
+                            onClick={() => {
+                              setIsPreviewModalOpen(false);
+                              if (previewPortfolioId) {
+                                // Get the stored custom URL
+                                const customUrl = localStorage.getItem(
+                                  "templateOneCustomUrl"
+                                );
+                                if (customUrl) {
+                                  router.push(`/p/${customUrl}`);
+                                } else {
+                                  // Fallback to preview route if custom URL isn't available
+                                  router.push(`/preview/${previewPortfolioId}`);
+                                }
+                              }
+                            }}
+                            className="bg-gradient-to-r from-[#711381] to-purple-600 hover:from-[#5C0F6B] hover:to-purple-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center transition-colors shadow-lg shadow-purple-900/20 w-full justify-center"
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            View Portfolio{" "}
+                            <ArrowRight size={18} className="ml-2" />
+                          </motion.button>
+                        </>
+                      )}
+
+                      {/* Error State */}
+                      {previewStatus === "error" && (
+                        <>
+                          <div className="mx-auto flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-red-900/30 border border-red-500/30 mb-4">
+                            <AlertTriangle
+                              className="h-8 w-8 text-red-500"
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <p className="text-gray-300 text-center mb-2">
+                            {!useAuthStore.getState().isAuthenticated
+                              ? "You need to be logged in to create a preview."
+                              : "There was an error creating your preview."}
+                          </p>
+                          <p className="text-gray-400 text-center text-sm mb-6">
+                            {!useAuthStore.getState().isAuthenticated
+                              ? "Your form data has been saved. You'll be redirected to login."
+                              : "Please try again or contact support if the issue persists."}
+                          </p>
+
+                          {!useAuthStore.getState().isAuthenticated ? (
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setIsPreviewModalOpen(false);
+                                router.push(
+                                  "/auth/login?returnTo=/allTemplates/templateOne/useTemplate"
+                                );
+                              }}
+                              className="bg-gradient-to-r from-[#711381] to-purple-600 hover:from-[#5C0F6B] hover:to-purple-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center transition-colors shadow-lg shadow-purple-900/20 w-full justify-center"
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              Log In <ArrowRight size={18} className="ml-2" />
+                            </motion.button>
+                          ) : (
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setIsPreviewModalOpen(false);
+                                setPreviewStatus("idle");
+                              }}
+                              className="bg-[#1E2132] border border-[#2E313C] hover:bg-[#262A3E] text-gray-200 font-medium py-2.5 px-6 rounded-lg flex items-center justify-center transition-colors w-full"
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              Close
+                            </motion.button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </Dialog.Panel>
+                </Transition.Child>
+              </div>
+            </div>
+          </Dialog>
+        </Transition>
       </div>
       <ToastContainer position="bottom-right" theme="dark" />
     </>

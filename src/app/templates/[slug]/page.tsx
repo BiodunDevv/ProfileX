@@ -1,21 +1,31 @@
 "use client";
 import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoArrowBack } from "react-icons/io5";
 import { Eye, ArrowRight, CheckCircle, LogIn } from "lucide-react";
 import { useAuthStore } from "../../../../store/useAuthStore";
 
+// Loading component for Suspense fallback
+const LoadingUI = () => (
+  <div className="flex flex-col justify-center items-center h-[600px] bg-[#1E2132]">
+    <div className="relative w-16 h-16 mb-4">
+      <div className="absolute inset-0 border-t-2 border-r-2 border-purple-600 rounded-full animate-spin"></div>
+      <div className="absolute inset-0 border-2 border-[#2E313C] rounded-full"></div>
+    </div>
+    <p className="text-gray-400">Loading template...</p>
+  </div>
+);
+
 const TemplateContent = () => {
-  const searchParams = useSearchParams();
+  const params = useParams();
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const [templateData, setTemplateData] = useState({
     id: "",
     title: "",
-    templatePath: "",
   });
   const [TemplateComponent, setTemplateComponent] =
     useState<React.ComponentType | null>(null);
@@ -24,50 +34,65 @@ const TemplateContent = () => {
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   useEffect(() => {
-    const id = searchParams.get("id") || "";
-    const title = searchParams.get("title") || "Template";
-    const templatePath = searchParams.get("path") || "";
+    const slug = params.slug as string;
 
-    setTemplateData({
-      id,
-      title,
-      templatePath,
-    });
+    const getTemplateFromSlug = async (slug: string) => {
+      // This could be an actual API call in production
+     const templateMap: Record<string, { id: string; title: string }> = {
+       templateOne: {
+         id: "templateOne",
+         title: "Modern Pro",
+       },
+       templateTwo: {
+         id: "templateTwo",
+         title: "Minimalist",
+       },
+       templateThree: {
+         id: "templateThree",
+         title: "Creative Portfolio",
+       },
+       templateFour: {
+         id: "templateFour",
+         title: "Tech Resume",
+       },
+     };
+
+      return templateMap[slug] || null;
+    };
 
     const loadTemplate = async () => {
       try {
         setIsLoading(true);
+        const template = await getTemplateFromSlug(slug);
 
-        if (templatePath.includes("TemplateOne")) {
+        if (!template) {
+          return; 
+        }
+
+        setTemplateData(template);
+
+        if (template.id.includes("templateOne")) {
           const Template = dynamic(
             () => import("../../allTemplates/templateOne/page"),
-            {
-              ssr: false,
-            }
+            { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (templatePath.includes("TemplateTwo")) {
+        } else if (template.id.includes("templateTwo")) {
           const Template = dynamic(
             () => import("../../allTemplates/templateTwo/page"),
-            {
-              ssr: false,
-            }
+            { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (templatePath.includes("TemplateThree")) {
+        } else if (template.id.includes("templateThree")) {
           const Template = dynamic(
             () => import("../../allTemplates/templateThree/page"),
-            {
-              ssr: false,
-            }
+            { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (templatePath.includes("TemplateFour")) {
+        } else if (template.id.includes("templateFour")) {
           const Template = dynamic(
             () => import("../../allTemplates/templateFour/page"),
-            {
-              ssr: false,
-            }
+            { ssr: false }
           );
           setTemplateComponent(() => Template);
         }
@@ -79,25 +104,21 @@ const TemplateContent = () => {
     };
 
     loadTemplate();
-  }, [searchParams]);
+  }, [params]);
 
   const handleUseTemplate = () => {
     if (!isAuthenticated) {
       setShowAuthPrompt(true);
       setTimeout(() => {
         setShowAuthPrompt(false);
-        router.push(
-          `/signin?redirect=templates/templatedisplay?id=${templateData.id}&title=${templateData.title}&path=${templateData.templatePath}`
-        );
+        router.push(`/signin?redirect=templates/${params.slug}`);
       }, 1500);
       return;
     }
 
     setShowConfirmation(true);
     setTimeout(() => {
-      router.push(
-        `/templates/useTemplateForm?id=${templateData.id}&title=${templateData.title}&path=${templateData.templatePath}`
-      );
+      router.push(`/templates/${params.slug}/edit`);
     }, 800);
   };
 
@@ -122,7 +143,7 @@ const TemplateContent = () => {
           className="flex items-center gap-2 bg-[#1E2132]/80 border border-[#2E313C] px-4 py-2 rounded-lg hover:bg-[#262A3E] transition-colors text-gray-300 font-medium"
         >
           <IoArrowBack className="text-lg" />
-          <span>{isAuthenticated ? "Back to Templates" : "Back to Home"}</span>
+          <span>{isAuthenticated ? "Templates" : "Back to Home"}</span>
         </Link>
 
         <div className="flex gap-3">
@@ -283,21 +304,10 @@ const TemplateContent = () => {
   );
 };
 
-const Page = () => {
+export default function TemplatePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A] flex items-center justify-center">
-          <div className="relative w-16 h-16">
-            <div className="absolute inset-0 border-t-2 border-r-2 border-purple-600 rounded-full animate-spin"></div>
-            <div className="absolute inset-0 border-2 border-[#2E313C] rounded-full"></div>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<LoadingUI />}>
       <TemplateContent />
     </Suspense>
   );
-};
-
-export default Page;
+}

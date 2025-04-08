@@ -11,41 +11,37 @@ import { useAuthStore } from "../../../../store/useAuthStore";
 
 const templatePreviews = [
   {
-    id: "modern-pro",
+    id: "templateOne",
     imageUrl: TemplateOnePreview,
     title: "Modern Pro",
     description: "Clean & Professional",
-    Template: "TemplateOne",
     tags: ["Minimal", "Light", "Corporate"],
     popular: true,
     isNew: false,
   },
   {
-    id: "minimalist",
+    id: "templateTwo",
     imageUrl: TemplateTwoPreview,
     title: "Minimalist",
     description: "Simple & Elegant",
-    Template: "TemplateTwo",
     tags: ["Clean", "Light", "Simple"],
     popular: false,
     isNew: true,
   },
   {
-    id: "creative-portfolio",
+    id: "templateThree",
     imageUrl: TemplateThreePreview,
     title: "Creative Portfolio",
     description: "Bold & Innovative",
-    Template: "TemplateThree",
     tags: ["Bold", "Dark", "Modern"],
     popular: true,
     isNew: false,
   },
   {
-    id: "tech-resume",
+    id: "templateFour",
     imageUrl: TemplateFourPreview,
     title: "Tech Resume",
     description: "Digital & Dynamic",
-    Template: "TemplateFour",
     tags: ["Modern", "Dark", "Interactive"],
     popular: false,
     isNew: true,
@@ -54,8 +50,7 @@ const templatePreviews = [
 
 const Template = () => {
   const [hoveredTemplate, setHoveredTemplate] = useState<string | null>(null);
-  const { user } = useAuthStore();
-  const isAuthenticated = !!user;
+  const {isAuthenticated} = useAuthStore();
 
   // Animation variants
   const containerVariants = {
@@ -167,7 +162,7 @@ const Template = () => {
                   <div className="p-4 pt-0 flex flex-col items-center gap-2 justify-center">
                     {isAuthenticated ? (
                       <Link
-                        href={`/templatedisplay?id=${template.id}&title=${template.title}&path=${template.Template}`}
+                        href={`/templates/${template.id}/edit`}
                         className="w-full bg-gradient-to-r from-[#711381] to-purple-600 hover:from-[#5C0F6B] hover:to-purple-700 text-white px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2 font-medium group shadow-lg shadow-purple-900/10"
                       >
                         Use Template
@@ -202,7 +197,7 @@ const Template = () => {
                     )}
 
                     <Link
-                      href={`/templates/templatedisplay?id=${template.id}&title=${template.title}&path=${template.Template}`}
+                      href={`/templates/${template.id}`}
                       className="w-full text-purple-400 hover:text-purple-300 text-sm font-medium px-4 py-2 flex items-center justify-center gap-1.5 bg-[#1E2132]/80 hover:bg-[#262A3E] backdrop-blur-sm border border-purple-500/20 rounded-lg transition-colors"
                     >
                       <Eye size={14} />
@@ -216,7 +211,7 @@ const Template = () => {
 
           <div className="text-center mt-12">
             <Link
-              href={isAuthenticated ? "/dashboard/templates" : "/signin"}
+              href={isAuthenticated ? "/templates" : "/signin"}
               className="bg-gradient-to-r from-[#711381] to-purple-600 px-6 py-3 rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 transition-all font-medium shadow-lg shadow-purple-900/10 inline-flex items-center gap-2"
             >
               {isAuthenticated

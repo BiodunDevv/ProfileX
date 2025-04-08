@@ -111,9 +111,6 @@ const DashboardPage = () => {
     const currentTime = Date.now();
     const twentyFourHours = 24 * 60 * 60 * 1000;
 
-    // Only show welcome if:
-    // - User hasn't seen welcome before, or
-    // - It's been more than 24 hours since last login
     if (
       !hasSeenWelcome ||
       (lastLoginTimestamp &&
