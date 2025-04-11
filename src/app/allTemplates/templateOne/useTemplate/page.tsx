@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect, useRef, Fragment } from "react";
 import { useRouter } from "next/navigation";
@@ -303,7 +304,7 @@ const Page = () => {
   };
   const handlePreview = async () => {
     try {
-      // First validate the form data
+      // Validate required fields
       const requiredFields = {
         hero: ["devName", "title", "description"],
         about: ["title", "subtitle", "description"],
@@ -356,127 +357,113 @@ const Page = () => {
       setIsPreviewModalOpen(true);
       setPreviewStatus("loading");
 
-      // Get authentication state from auth store - proper way in React component
+      // Get authentication state and token from auth store
       const authStore = useAuthStore.getState();
       const { isAuthenticated, token } = authStore;
 
+      // Add this check before making portfolio requests
+      const isAuthenticatedCheck = await useAuthStore.getState().checkAuthState();
+      if (!isAuthenticatedCheck) {
+        toast.error("Your session has expired. Please log in again.");
+        // Redirect to login or handle accordingly
+        return;
+      }
+
       if (!isAuthenticated || !token) {
         setPreviewStatus("error");
-        // Save current form data to localStorage for persistence
+        toast.error("You must be logged in to save your portfolio.");
         localStorage.setItem("templateOneData", JSON.stringify(formData));
         return;
       }
 
-      // Prepare the data according to the Portfolio schema
+      // Prepare portfolio data
       const portfolioData = {
         templateType: "template1",
         brandName: formData.hero.devName,
         title: formData.hero.title,
         description: formData.hero.description,
-        heroImage:
-          formData.hero.heroImage ||
-          "https://placehold.co/600x400/1A1D2E/434963?text=No+Image",
-        companies: formData.hero.companies.filter(
-          (company) => company.trim() !== ""
-        ),
-
-        // About section
+        heroImage: formData.hero.heroImage || "https://placehold.co/600x400/1A1D2E/434963?text=No+Image",
+        companies: formData.hero.companies.filter(company => company.trim() !== ""),
         sectionAbout: formData.about.title,
         sectionSubtitle: formData.about.subtitle,
         aboutMeDescription: formData.about.description,
-
-        // Skills formatted according to schema
-        skills: formData.about.skills.map((skill) => ({
+        skills: formData.about.skills.map(skill => ({
           name: skill.name,
           level: skill.level,
           color: skill.color,
         })),
-
-        // Education formatted according to schema
-        education: formData.about.education.map((edu) => ({
+        education: formData.about.education.map(edu => ({
           degree: edu.degree,
           institution: edu.institution,
           years: edu.year,
           description: edu.description,
         })),
-
-        // Projects formatted according to schema
-        projects: formData.projects.map((project) => ({
+        projects: formData.projects.map(project => ({
           name: project.name,
           description: project.description,
-          technologies: [project.type], // Assuming type is the technology
-          imageUrl:
-            project.image ||
-            "https://placehold.co/600x400/1A1D2E/434963?text=No+Image",
+          technologies: [project.type],
+          imageUrl: project.image || "https://placehold.co/600x400/1A1D2E/434963?text=No+Image",
           liveUrl: project.demoLink,
           repoUrl: project.sourceLink,
           featured: true,
         })),
-
-        // Contact information
-        contactInfo: [
-          {
-            emailAddress: formData.contact.email,
-            phoneNumber: formData.contact.phone || "",
-          },
-        ],
-
-        // Social links
         socialLinks: formData.contact.socialLinks
-          .filter((link) => link.platform && link.url)
-          .map((link) => ({
+          .filter(link => link.platform && link.url)
+          .map(link => ({
             platform: link.platform,
             icon: link.icon,
             url: link.url,
           })),
-
-        // Default settings
         isPublic: true,
         tags: ["portfolio", "developer", "template1"],
         customUrl: formData.hero.devName.toLowerCase().replace(/\s+/g, "-"),
       };
 
-      // Get the portfolio store instance
-      const portfolioStore = usePortfolioStore.getState();
+      // Get existing portfolio ID if any
       const portfolioId = localStorage.getItem("templateOnePortfolioId");
-
       let result;
 
       try {
-        if (portfolioId) {
-          // Update existing portfolio
-          result = await portfolioStore.updatePortfolio(
-            portfolioId,
-            portfolioData
-          );
-        } else {
-          // Create a new portfolio
-          result = await portfolioStore.createPortfolio(portfolioData);
+        // Include the authorization token in the request headers
+        const response = await fetch("/api/portfolios/portfolioone", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}` // THIS IS THE KEY FIX
+          },
+          body: JSON.stringify(portfolioData),
+        });
 
-          if (result && result._id) {
-            localStorage.setItem("templateOnePortfolioId", result._id);
-
-            // Also store the custom URL for later use
-            if (result.customUrl) {
-              localStorage.setItem("templateOneCustomUrl", result.customUrl);
-            }
-          }
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to create portfolio");
         }
 
-        if (!result) {
-          throw new Error("Failed to save portfolio");
+        result = await response.json();
+        
+        if (result && result.portfolio) {
+          result = result.portfolio;
+          localStorage.setItem("templateOnePortfolioId", result._id);
+          
+          if (result.customUrl) {
+            localStorage.setItem("templateOneCustomUrl", result.customUrl);
+          }
         }
 
         // Set successful state and store ID for redirection
         setPreviewStatus("success");
         setPreviewPortfolioId(result._id || null);
+        toast.success("Portfolio saved successfully!");
+        
       } catch (error) {
         console.error("Portfolio save error:", error);
         setPreviewStatus("error");
+        toast.error(error instanceof Error ? error.message : "Failed to save portfolio");
       }
     } catch (error) {
       console.error("Preview error:", error);
       setPreviewStatus("error");
+      toast.error("An unexpected error occurred");
     }
   };
 

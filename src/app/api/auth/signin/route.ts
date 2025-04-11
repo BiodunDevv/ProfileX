@@ -55,9 +55,9 @@ export async function POST(request: Request) {
 
     // Create tokens
     const token = jwt.sign(
-      { userId: user._id },
-      process.env.ACCESS_TOKEN_SECRET || "fallback-secret",
-      { expiresIn: "1h" }
+      { userId: user._id.toString() }, // Use MongoDB _id but name it userId in token
+      process.env.ACCESS_TOKEN_SECRET!,
+      { expiresIn: '1d' }
     );
 
     const refreshToken = jwt.sign(
