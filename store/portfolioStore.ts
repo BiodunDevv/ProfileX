@@ -145,6 +145,7 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     }
   },
 
+
   fetchPortfolioByCustomUrl: async (customUrl: string) => {
     try {
       set({ isLoading: true, error: null });
@@ -184,39 +185,58 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const response = await fetchWithAuth("/api/portfolios/portfolioone", {
+      const authStore = useAuthStore.getState();
+      const { user, token } = authStore;
+      
+      if (!user || !user.id || !token) {
+        throw new Error("You must be logged in to create a portfolio");
+      }
+
+      // Debug token to make sure it matches what's expected
+      console.log("Using token:", token.substring(0, 20) + "...");
+
+      const response = await fetch("/api/portfolios/portfolioone", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` // Make sure this is formatted correctly
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(data)
       });
 
+      // Debug response
+      console.log("Portfolio API response status:", response.status);
+
+      // Handle response
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create portfolio");
+        const errorData = await response.json();
+        console.error("Portfolio API error:", errorData);
+        throw new Error(errorData.message || "Failed to create portfolio");
       }
 
       const responseData = await response.json();
+      console.log("Portfolio created successfully:", responseData);
 
-      // Update the portfolios list with the new portfolio
       set((state) => ({
         portfolios: [...state.portfolios, responseData.portfolio],
         currentPortfolio: responseData.portfolio,
-        isLoading: false,
+        isLoading: false
       }));
 
       toast.success("Portfolio created successfully!");
       return responseData.portfolio;
     } catch (error) {
+      console.error("Portfolio creation error:", error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "An unknown error occurred";
+        
       set({
-        error:
-          error instanceof Error ? error.message : "An unknown error occurred",
-        isLoading: false,
+        error: errorMessage,
+        isLoading: false
       });
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create portfolio"
-      );
+      
+      toast.error(errorMessage);
       return null;
     }
   },

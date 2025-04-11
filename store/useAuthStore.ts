@@ -21,6 +21,7 @@ interface AuthState {
     resetData: ResetPasswordData
   ) => Promise<Response | undefined>;
   checkAuthState: () => Promise<boolean>; // New method to verify auth state
+  refreshAccessToken: () => Promise<boolean>; // New method to refresh access token
 }
 
 interface User {
@@ -178,7 +179,9 @@ export const useAuthStore = create<AuthState>()(
       signIn: async (credentials: SignInCredentials) => {
         try {
           set({ isLoading: true });
-
+          
+          console.log("SignIn attempt with:", credentials.email);
+      
           const response = await fetch("/api/auth/signin", {
             method: "POST",
             headers: {
@@ -186,33 +189,60 @@ export const useAuthStore = create<AuthState>()(
             },
             body: JSON.stringify(credentials),
           });
-
+      
+          const data = await response.json();
+          
+          console.log("SignIn response data:", {
+            status: response.status,
+            ok: response.ok,
+            hasUser: !!data.user,
+            hasToken: !!data.token
+          });
+      
           if (response.ok) {
-            const data = await response.json();
+            // Debug user data
+            console.log("User data received:", {
+              id: data.user?.id,
+              name: data.user?.name,
+              email: data.user?.email
+            });
+            
+            // Debug the token details
+            if (data.token) {
+              try {
+                const parts = data.token.split('.');
+                if (parts.length === 3) {
+                  const payload = JSON.parse(atob(parts[1]));
+                  console.log("Token payload:", payload);
+                  console.log("User ID in token vs user object:", {
+                    tokenUserId: payload.userId,
+                    userObjectId: data.user?.id,
+                    match: payload.userId === data.user?.id
+                  });
+                }
+              } catch (e) {
+                console.error("Failed to parse token:", e);
+              }
+            }
+      
             // Store tokens from response with timestamp
             set({
               user: data.user,
               isAuthenticated: true,
               token: data.token,
               refreshToken: data.refreshToken,
-              lastLogin: Date.now(), // Add timestamp
+              lastLogin: Date.now(),
             });
-
-            // Log token information for debugging
-            console.log(
-              "Auth store: Token received and stored:",
-              data.token ? "✓" : "✗"
-            );
-
-            // Create a new response with the same status but clone the data
-            // This way the component can still access the response data
+      
+            console.log("Auth state updated with new token");
+            
             return new Response(JSON.stringify(data), {
               status: response.status,
               headers: { "Content-Type": "application/json" },
             });
           }
-
-          // Return the original response for error handling
+      
+          console.error("SignIn failed:", data.message || "Unknown error");
           return response;
         } catch (error) {
           console.error("Login error:", error);
@@ -232,9 +262,6 @@ export const useAuthStore = create<AuthState>()(
             return false;
           }
 
-          // Check if token is still valid (or needs refresh)
-          // You could implement token validation or refresh logic here
-          // For now we'll just check if we have a token
 
           console.log("Auth state checked - User is authenticated");
           return true;
@@ -246,6 +273,53 @@ export const useAuthStore = create<AuthState>()(
             token: null,
             refreshToken: null,
           });
+          return false;
+        }
+      },
+
+      // Add this to your auth store implementation
+      refreshAccessToken: async () => {
+        try {
+          const { refreshToken } = get();
+          
+          if (!refreshToken) {
+            console.error("No refresh token available");
+            return false;
+          }
+          
+          const response = await fetch("/api/auth/refresh", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ refreshToken }),
+          });
+          
+          if (!response.ok) {
+            console.error("Failed to refresh token:", response.status);
+            // If refresh fails, sign the user out
+            get().signOut();
+            return false;
+          }
+          
+          const data = await response.json();
+          
+          if (data.token) {
+            // Update the token in the store
+            set({
+              token: data.token,
+              // Optionally update the refresh token if your API provides a new one
+              refreshToken: data.refreshToken || get().refreshToken,
+            });
+            console.log("Access token refreshed successfully");
+            return true;
+          }
+          
+          return false;
+        } catch (error) {
+          console.error("Error refreshing token:", error);
+          // On any error, sign the user out for security
+          get().signOut();
           return false;
         }
       },
