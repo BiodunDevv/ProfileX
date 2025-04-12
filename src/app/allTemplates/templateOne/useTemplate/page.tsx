@@ -419,27 +419,40 @@ const Page = () => {
         customUrl: formData.hero.devName.toLowerCase().replace(/\s+/g, "-"),
       };
 
-      // Get existing portfolio ID if any
-      const portfolioId = localStorage.getItem("templateOnePortfolioId");
-      let result;
-
       try {
         // Include the authorization token in the request headers
         const response = await fetch("/api/portfolios/portfolioone", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}` // THIS IS THE KEY FIX
+            "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify(portfolioData),
         });
 
+        // Check if response is 409 (Portfolio already exists)
+        if (response.status === 409) {
+          const data = await response.json();
+          
+          // If portfolio already exists, just redirect to the preview page
+          toast.success("Portfolio already exists, redirecting to preview.");
+          
+          // Store the portfolio ID for future reference
+          if (data.portfolioId) {
+            localStorage.setItem("templateOnePortfolioId", data.portfolioId);
+            
+            // SUCCESS CASE: Navigate directly to the template preview
+            router.push("/allTemplates/templateOne");
+            return;
+          }
+        }
+        
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Failed to create portfolio");
         }
 
-        result = await response.json();
+        let result = await response.json();
         
         if (result && result.portfolio) {
           result = result.portfolio;
@@ -448,12 +461,16 @@ const Page = () => {
           if (result.customUrl) {
             localStorage.setItem("templateOneCustomUrl", result.customUrl);
           }
+          
+          // SUCCESS CASE: Navigate directly to the template preview
+          toast.success("Portfolio saved successfully!");
+          router.push("/allTemplates/templateOne");
+          return;
         }
 
-        // Set successful state and store ID for redirection
+        // If we didn't navigate away, update the UI state for the modal
         setPreviewStatus("success");
         setPreviewPortfolioId(result._id || null);
-        toast.success("Portfolio saved successfully!");
         
       } catch (error) {
         console.error("Portfolio save error:", error);
