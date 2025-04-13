@@ -155,8 +155,9 @@ const Page = () => {
 
   // Get auth state directly from the store
   const { isAuthenticated, token } = useAuthStore();
+  const [portfolioId, setPortfolioId] = useState<string | null>(null);
 
-  useEffect(() => {
+  useEffect(() => { 
     const fetchPortfolio = async () => {
       try {
         if (!isAuthenticated || !token) {
@@ -187,7 +188,14 @@ const Page = () => {
         // Successfully fetched portfolio data
         const data = await response.json();
         console.log("Portfolio data loaded:", data);
+        
+        // Store the portfolio ID in state instead of localStorage
+        if (data && data.id) {
+          setPortfolioId(data.id);
+        }
 
+        console.log("Portfolio ID:", data.id);
+        
         if (data) {
           // Transform the fetched data into the format expected by our form
           const transformedData = {
@@ -554,11 +562,8 @@ const Page = () => {
         if (isUpdate) {
           // Use the updatePortfolio function from the store
           const portfolioStore = usePortfolioStore.getState();
-          const savedPortfolioId = localStorage.getItem(
-            "templateOnePortfolioId"
-          );
 
-          if (!savedPortfolioId) {
+          if (!portfolioId) {
             toast.dismiss("saving-portfolio");
             toast.error("Portfolio ID not found. Cannot update.");
             return;
@@ -566,7 +571,7 @@ const Page = () => {
 
           // Call the updatePortfolio function with properly structured data
           result = await portfolioStore.updatePortfolio(
-            savedPortfolioId,
+            portfolioId,
             portfolioData
           );
 
