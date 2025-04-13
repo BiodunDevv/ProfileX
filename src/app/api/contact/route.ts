@@ -1,12 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/dbConn';
 import Portfolio from '@/modal/Portfolio';
 import nodemailer from 'nodemailer';
 
-// Create email transporter
+// Create email transporter with better logging
 const createTransporter = () => {
-  // For development, you can use a testing service like Mailtrap
-  // For production, use a real email service
+  console.log('Creating email transporter with config:', {
+    host: process.env.EMAIL_SERVER_HOST,
+    port: process.env.EMAIL_SERVER_PORT,
+    hasAuth: !!process.env.EMAIL_SERVER_USER
+  });
+  
   return nodemailer.createTransport({
     host: process.env.EMAIL_SERVER_HOST,
     port: parseInt(process.env.EMAIL_SERVER_PORT || '587'),
@@ -24,6 +30,13 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, email, subject, message, portfolioCustomUrl, recipientEmail } = body;
     
+    console.log('Contact form submission received:', { 
+      name, 
+      email, 
+      hasPortfolioUrl: !!portfolioCustomUrl,
+      hasRecipientEmail: !!recipientEmail 
+    });
+    
     // Validate required fields
     if (!name || !email || !message) {
       return NextResponse.json(
@@ -32,24 +45,11 @@ export async function POST(request: Request) {
       );
     }
     
-    // Connect to database to get portfolio info (optional but useful for additional context)
-    await connectDB();
-    let portfolioInfo = null;
-    
-    if (portfolioCustomUrl) {
-      // Get portfolio information to include in the email
-      portfolioInfo = await Portfolio.findOne({
-        customUrl: portfolioCustomUrl,
-        isPublic: true
-      }).lean();
-    }
-    
-    // Use either the recipient email from the form or the one from the portfolio
-    const emailTo = recipientEmail || (Array.isArray(portfolioInfo) ? undefined : portfolioInfo?.email);
-    
-    if (!emailTo) {
+    // Make sure we have a recipient email directly from the request
+    // This simplifies the flow and ensures we have someone to send to
+    if (!recipientEmail) {
       return NextResponse.json(
-        { message: 'Recipient email not found' },
+        { message: 'Recipient email is required' },
         { status: 400 }
       );
     }
@@ -79,26 +79,46 @@ export async function POST(request: Request) {
     `;
     
     // Send email
+    console.log(`Attempting to send email to: ${recipientEmail}`);
     const transporter = createTransporter();
     
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: `"Portfolio Contact" <${process.env.EMAIL_FROM || 'noreply@profilex.com'}>`,
-      to: emailTo,
+      to: recipientEmail,
       subject: `[Portfolio Contact] ${subject || 'New message from your portfolio'}`,
       html: htmlContent,
       replyTo: email // Allow recipient to reply directly to the sender
     });
     
+    console.log('Email sent successfully:', info.messageId);
+    
     return NextResponse.json(
       { message: 'Message sent successfully' },
       { status: 200 }
-    );
+  );
   } catch (error) {
     console.error('Error sending contact message:', error);
+    
+    // Extract useful error information for connection issues
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorCode = (error as any)?.code || '';
+    
+    // Provide helpful hints for common SMTP errors
+    let hint = '';
+    if (errorCode === 'ECONNREFUSED') {
+      hint = 'Check your EMAIL_SERVER_HOST and EMAIL_SERVER_PORT settings. Make sure the SMTP server is accessible.';
+    } else if (errorCode === 'EAUTH') {
+      hint = 'Authentication failed. Check your EMAIL_SERVER_USER and EMAIL_SERVER_PASSWORD.';
+    } else if (errorCode === 'ETIMEDOUT') {
+      hint = 'Connection timed out. The SMTP server may be unreachable or blocked.';
+    }
+    
     return NextResponse.json(
       { 
         message: 'Error sending message',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: errorMessage,
+        code: errorCode,
+        hint: hint
       },
       { status: 500 }
     );

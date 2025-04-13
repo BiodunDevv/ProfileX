@@ -45,6 +45,7 @@ const Hero = ({
       {isLoaded && (
         <motion.section
           className="w-full min-h-screen flex flex-col items-center bg-[#080808] text-white"
+          id ="home"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
