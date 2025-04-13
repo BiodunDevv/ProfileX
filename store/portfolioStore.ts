@@ -280,8 +280,7 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         throw new Error("You must be logged in to update portfolio");
       }
 
-      // Fixed URL to include the portfolio ID
-      const response = await fetch(`/api/portfolios/portfolioone/${id}`, {
+      const response = await fetch(`/api/portfolios/portfolioone/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -290,25 +289,12 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         body: JSON.stringify(data),
       });
 
-      // Add debug logging
-      console.log(
-        `Update portfolio API response status for ID ${id}:`,
-        response.status
-      );
-
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Portfolio update error:", errorData);
-        throw new Error(errorData.message || "Failed to update portfolio");
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update portfolio");
       }
 
       const responseData = await response.json();
-
-      // Log successful update
-      console.log(
-        "Portfolio updated successfully:",
-        responseData.portfolio._id
-      );
 
       set((state) => ({
         portfolios: state.portfolios.map((p) =>
@@ -316,22 +302,19 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         ),
         currentPortfolio: responseData.portfolio,
         isLoading: false,
-        error: null,
       }));
 
       toast.success("Portfolio updated successfully!");
       return responseData.portfolio;
     } catch (error) {
-      console.error("Portfolio update error:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred";
-
       set({
-        error: errorMessage,
+        error:
+          error instanceof Error ? error.message : "An unknown error occurred",
         isLoading: false,
       });
-
-      toast.error(errorMessage);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update portfolio"
+      );
       return null;
     }
   },

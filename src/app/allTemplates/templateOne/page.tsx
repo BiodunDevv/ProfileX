@@ -12,7 +12,7 @@ import Contact from "../../components/TemplateOne/Contact";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuthStore } from "../../../../store/useAuthStore";
-import { Loader2 } from "lucide-react";
+import { LayoutGrid, Loader2 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { PencilIcon, Home, ChevronLeft, Eye } from "lucide-react";
 import Link from "next/link";
@@ -286,10 +286,14 @@ const TemplateOne = () => {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-[#171826] to-[#0D0F1A]">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-purple-500 mx-auto mb-4" />
-          <p className="text-gray-300">Loading your portfolio...</p>
+      <div className="h-screen flex flex-col gap-2.5 items-center justify-center bg-gradient-to-br from-[#171826] to-[#0D0F1A]">
+        <div className="relative w-16 h-16">
+          <div className="absolute inset-0 border-t-2 border-r-2 border-purple-600 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 border-2 border-[#2E313C] rounded-full"></div>
+          <LayoutGrid
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-purple-500"
+            size={24}
+          />
         </div>
       </div>
     );
@@ -313,7 +317,7 @@ const TemplateOne = () => {
                 transition={{ delay: 0.1 }}
                 className="text-white font-medium text-lg mr-6"
               >
-                Your Portfolio
+                Preview Mode
               </motion.h3>
             </div>
 
