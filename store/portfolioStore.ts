@@ -85,27 +85,57 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         throw new Error("You must be logged in to fetch portfolios");
       }
 
+      // Add debug logging to track the request
+      console.log(
+        "Fetching user portfolios with token:",
+        token.substring(0, 10) + "..."
+      );
+
       const response = await fetch("/api/portfolios/user", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
+      // Log the response status for debugging
+      console.log("Portfolios API response status:", response.status);
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to fetch portfolios");
+        const errorData = await response.json();
+        console.error("Portfolio fetch error:", errorData);
+        throw new Error(errorData.message || "Failed to fetch portfolios");
       }
 
       const data = await response.json();
-      set({ portfolios: data.portfolios, isLoading: false });
+
+      // Check if data.portfolios exists and is an array
+      if (!data.portfolios || !Array.isArray(data.portfolios)) {
+        console.error("Invalid response format:", data);
+        throw new Error("Invalid response format from API");
+      }
+
+      console.log(`Fetched ${data.portfolios.length} portfolios successfully`);
+
+      set({
+        portfolios: data.portfolios,
+        isLoading: false,
+        error: null,
+      });
+
       return data.portfolios;
     } catch (error) {
+      console.error("Error fetching portfolios:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+
       set({
-        error:
-          error instanceof Error ? error.message : "An unknown error occurred",
+        error: errorMessage,
         isLoading: false,
+        portfolios: [], // Reset to empty array on error
       });
+
       toast.error("Failed to load portfolios");
+      return []; // Return empty array instead of undefined
     }
   },
 
@@ -144,7 +174,6 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       return null;
     }
   },
-
 
   fetchPortfolioByCustomUrl: async (customUrl: string) => {
     try {
@@ -187,7 +216,7 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
 
       const authStore = useAuthStore.getState();
       const { user, token } = authStore;
-      
+
       if (!user || !user.id || !token) {
         throw new Error("You must be logged in to create a portfolio");
       }
@@ -199,9 +228,9 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` // Make sure this is formatted correctly
+          Authorization: `Bearer ${token}`, // Make sure this is formatted correctly
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
 
       // Debug response
@@ -220,22 +249,21 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       set((state) => ({
         portfolios: [...state.portfolios, responseData.portfolio],
         currentPortfolio: responseData.portfolio,
-        isLoading: false
+        isLoading: false,
       }));
 
       toast.success("Portfolio created successfully!");
       return responseData.portfolio;
     } catch (error) {
       console.error("Portfolio creation error:", error);
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "An unknown error occurred";
-        
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+
       set({
         error: errorMessage,
-        isLoading: false
+        isLoading: false,
       });
-      
+
       toast.error(errorMessage);
       return null;
     }
@@ -252,8 +280,9 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         throw new Error("You must be logged in to update portfolio");
       }
 
+      // Fixed URL to include the portfolio ID
       const response = await fetch(`/api/portfolios/portfolioone/${id}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -261,12 +290,25 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         body: JSON.stringify(data),
       });
 
+      // Add debug logging
+      console.log(
+        `Update portfolio API response status for ID ${id}:`,
+        response.status
+      );
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to update portfolio");
+        const errorData = await response.json();
+        console.error("Portfolio update error:", errorData);
+        throw new Error(errorData.message || "Failed to update portfolio");
       }
 
       const responseData = await response.json();
+
+      // Log successful update
+      console.log(
+        "Portfolio updated successfully:",
+        responseData.portfolio._id
+      );
 
       set((state) => ({
         portfolios: state.portfolios.map((p) =>
@@ -274,19 +316,22 @@ const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         ),
         currentPortfolio: responseData.portfolio,
         isLoading: false,
+        error: null,
       }));
 
       toast.success("Portfolio updated successfully!");
       return responseData.portfolio;
     } catch (error) {
+      console.error("Portfolio update error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+
       set({
-        error:
-          error instanceof Error ? error.message : "An unknown error occurred",
+        error: errorMessage,
         isLoading: false,
       });
-      toast.error(
-        error instanceof Error ? error.message : "Failed to update portfolio"
-      );
+
+      toast.error(errorMessage);
       return null;
     }
   },

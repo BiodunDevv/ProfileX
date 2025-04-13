@@ -139,7 +139,7 @@ const Contact = ({
   return (
     <motion.section
       className="w-full min-h-screen flex items-center bg-[#080808] text-white py-8"
-      id="contact"
+      id="getintouch"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}

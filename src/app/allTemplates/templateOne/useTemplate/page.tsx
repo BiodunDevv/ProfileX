@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect, useRef, Fragment } from "react";
@@ -139,6 +140,7 @@ const Page = () => {
   const [previewPortfolioId, setPreviewPortfolioId] = useState<string | null>(
     null
   );
+  const [isUpdate, setIsUpdate] = useState(false);
 
   const colorOptions = [
     { value: "purple", label: "Purple", bgClass: "bg-purple-500" },
@@ -150,6 +152,127 @@ const Page = () => {
     { value: "red", label: "Red", bgClass: "bg-red-500" },
     { value: "teal", label: "Teal", bgClass: "bg-teal-500" },
   ];
+
+  // Get auth state directly from the store
+  const { isAuthenticated, token } = useAuthStore();
+
+  useEffect(() => {
+    const fetchPortfolio = async () => {
+      try {
+        if (!isAuthenticated || !token) {
+          console.log("User not authenticated, using default data");
+          setIsUpdate(false);
+          return;
+        }
+
+        console.log("Fetching portfolio data...");
+        const response = await fetch("/api/portfolios/portfolioone", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            console.log("No portfolio found, using default data");
+            setIsUpdate(false);
+          } else {
+            const errorData = await response.json();
+            console.error("Error fetching portfolio:", errorData);
+            toast.error(errorData.message || "Failed to load portfolio");
+          }
+          return;
+        }
+
+        // Successfully fetched portfolio data
+        const data = await response.json();
+        console.log("Portfolio data loaded:", data);
+
+        if (data) {
+          // Transform the fetched data into the format expected by our form
+          const transformedData = {
+            id: data._id || uuidv4(),
+            hero: {
+              devName: data.brandName || "",
+              title: data.title || "",
+              description: data.description || "",
+              heroImage: data.heroImage || "",
+              companies: data.companies?.length ? data.companies : ["", "", ""],
+            },
+            about: {
+              title: data.sectionAbout || "About Me",
+              subtitle:
+                data.sectionSubtitle || "Professional Background & Expertise",
+              description: data.aboutMeDescription || "",
+              skills: data.skills?.map((skill: any) => ({
+                name: skill.name || "",
+                level: skill.level || 3,
+                color: skill.color || "bg-purple-500",
+              })) || [
+                { name: "Skill 1", level: 3, color: "bg-purple-500" },
+                { name: "Skill 2", level: 3, color: "bg-blue-500" },
+              ],
+              education: data.education?.map((edu: any) => ({
+                degree: edu.degree || "",
+                institution: edu.institution || "",
+                year: edu.years || "",
+                description: edu.description || "",
+              })) || [
+                { degree: "", institution: "", year: "", description: "" },
+              ],
+            },
+            projects: data.projects?.map((project: any, index: number) => ({
+              id: index + 1,
+              type: project.technologies?.[0] || "Project Type",
+              typeColor:
+                ["purple", "blue", "green", "amber"][index % 4] || "purple",
+              name: project.name || "Project Name",
+              description: project.description || "",
+              image: project.imageUrl || "",
+              sourceLink: project.repoUrl || "",
+              demoLink: project.liveUrl || "",
+            })) || [
+              {
+                id: 1,
+                type: "Project Type",
+                typeColor: "purple",
+                name: "Project Name",
+                description: "",
+                image: "",
+                sourceLink: "",
+                demoLink: "",
+              },
+            ],
+            contact: {
+              // Extract email and phone from contactInfo
+              email: data.contactInfo?.[0]?.emailAddress || "",
+              phone: data.contactInfo?.[0]?.phoneNumber || "",
+              socialLinks: data.socialLinks?.map((link: any) => ({
+                platform: link.platform || "",
+                icon: link.icon || link.platform?.toLowerCase() || "",
+                url: link.url || "",
+              })) || [
+                { platform: "LinkedIn", icon: "linkedin", url: "" },
+                { platform: "GitHub", icon: "github", url: "" },
+                { platform: "Twitter", icon: "twitter", url: "" },
+              ],
+            },
+          };
+          setFormData(transformedData);
+          setIsUpdate(true);
+        } else {
+          console.log("No portfolio data available, using defaults");
+          setIsUpdate(false);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        toast.error("Something went wrong while loading portfolio");
+        setIsUpdate(false);
+      }
+    };
+
+    fetchPortfolio();
+  }, [isAuthenticated, token]);
 
   // Load from localStorage on initial render if available
   useEffect(() => {
@@ -353,26 +476,22 @@ const Page = () => {
         return;
       }
 
-      // Open preview modal and set loading state
-      setIsPreviewModalOpen(true);
-      setPreviewStatus("loading");
+      // Show loading toast
+      toast.loading(
+        isUpdate ? "Updating portfolio..." : "Creating portfolio...",
+        {
+          toastId: "saving-portfolio",
+        }
+      );
 
-      // Get authentication state and token from auth store
-      const authStore = useAuthStore.getState();
-      const { isAuthenticated, token } = authStore;
-
-      // Add this check before making portfolio requests
-      const isAuthenticatedCheck = await useAuthStore.getState().checkAuthState();
+      // Check authentication
+      const isAuthenticatedCheck = await useAuthStore
+        .getState()
+        .checkAuthState();
       if (!isAuthenticatedCheck) {
+        toast.dismiss("saving-portfolio");
         toast.error("Your session has expired. Please log in again.");
-        // Redirect to login or handle accordingly
-        return;
-      }
-
-      if (!isAuthenticated || !token) {
-        setPreviewStatus("error");
-        toast.error("You must be logged in to save your portfolio.");
-        localStorage.setItem("templateOneData", JSON.stringify(formData));
+        router.push("/signin?returnTo=/allTemplates/templateOne/useTemplate");
         return;
       }
 
@@ -382,104 +501,223 @@ const Page = () => {
         brandName: formData.hero.devName,
         title: formData.hero.title,
         description: formData.hero.description,
-        heroImage: formData.hero.heroImage || "https://placehold.co/600x400/1A1D2E/434963?text=No+Image",
-        companies: formData.hero.companies.filter(company => company.trim() !== ""),
+        heroImage:
+          formData.hero.heroImage ||
+          "https://placehold.co/600x400/1A1D2E/434963?text=No+Image",
+        companies: formData.hero.companies.filter(
+          (company) => company.trim() !== ""
+        ),
         sectionAbout: formData.about.title,
         sectionSubtitle: formData.about.subtitle,
         aboutMeDescription: formData.about.description,
-        skills: formData.about.skills.map(skill => ({
+        skills: formData.about.skills.map((skill) => ({
           name: skill.name,
           level: skill.level,
           color: skill.color,
         })),
-        education: formData.about.education.map(edu => ({
+        education: formData.about.education.map((edu) => ({
           degree: edu.degree,
           institution: edu.institution,
           years: edu.year,
           description: edu.description,
         })),
-        projects: formData.projects.map(project => ({
+        projects: formData.projects.map((project) => ({
           name: project.name,
           description: project.description,
           technologies: [project.type],
-          imageUrl: project.image || "https://placehold.co/600x400/1A1D2E/434963?text=No+Image",
+          imageUrl:
+            project.image ||
+            "https://placehold.co/600x400/1A1D2E/434963?text=No+Image",
           liveUrl: project.demoLink,
           repoUrl: project.sourceLink,
           featured: true,
         })),
         socialLinks: formData.contact.socialLinks
-          .filter(link => link.platform && link.url)
-          .map(link => ({
+          .filter((link) => link.platform && link.url)
+          .map((link) => ({
             platform: link.platform,
             icon: link.icon,
             url: link.url,
           })),
+        email: formData.contact.email,
+        phone: formData.contact.phone,
         isPublic: true,
         tags: ["portfolio", "developer", "template1"],
         customUrl: formData.hero.devName.toLowerCase().replace(/\s+/g, "-"),
       };
 
       try {
-        // Include the authorization token in the request headers
-        const response = await fetch("/api/portfolios/portfolioone", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify(portfolioData),
-        });
+        console.log("Portfolio data:", portfolioData);
 
-        // Check if response is 409 (Portfolio already exists)
-        if (response.status === 409) {
-          const data = await response.json();
-          
-          // If portfolio already exists, just redirect to the preview page
-          toast.success("Portfolio already exists, redirecting to preview.");
-          
-          // Store the portfolio ID for future reference
-          if (data.portfolioId) {
-            localStorage.setItem("templateOnePortfolioId", data.portfolioId);
-            
-            // SUCCESS CASE: Navigate directly to the template preview
-            router.push("/allTemplates/templateOne");
+        let result;
+
+        if (isUpdate) {
+          // Use the updatePortfolio function from the store
+          const portfolioStore = usePortfolioStore.getState();
+          const savedPortfolioId = localStorage.getItem(
+            "templateOnePortfolioId"
+          );
+
+          if (!savedPortfolioId) {
+            toast.dismiss("saving-portfolio");
+            toast.error("Portfolio ID not found. Cannot update.");
             return;
           }
-        }
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to create portfolio");
+
+          // Call the updatePortfolio function with properly structured data
+          result = await portfolioStore.updatePortfolio(
+            savedPortfolioId,
+            portfolioData
+          );
+
+          if (!result) {
+            toast.dismiss("saving-portfolio");
+            toast.error("Failed to update portfolio");
+            return;
+          }
+        } else {
+          // Creating a new portfolio with schema-compatible structure
+          const portfolioData = {
+            templateType: "template1",
+            brandName: formData.hero.devName,
+            title: formData.hero.title,
+            description: formData.hero.description,
+            heroImage:
+              formData.hero.heroImage ||
+              "https://placehold.co/600x400/1A1D2E/434963?text=No+Image",
+            companies: formData.hero.companies.filter(
+              (company) => company.trim() !== ""
+            ),
+            sectionAbout: formData.about.title,
+            sectionSubtitle: formData.about.subtitle,
+            aboutMeDescription: formData.about.description,
+            skills: formData.about.skills.map((skill) => ({
+              name: skill.name,
+              level: skill.level,
+              color: skill.color,
+            })),
+            education: formData.about.education.map((edu) => ({
+              degree: edu.degree,
+              institution: edu.institution,
+              years: edu.year,
+              description: edu.description,
+            })),
+            // Properly format projects according to schema
+            projects: formData.projects.map((project) => ({
+              name: project.name,
+              description: project.description,
+              technologies: [project.type],
+              imageUrl:
+                project.image ||
+                "https://placehold.co/600x400/1A1D2E/434963?text=No+Image",
+              liveUrl: project.demoLink,
+              repoUrl: project.sourceLink,
+              featured: true,
+            })),
+            // Add contactInfo structure
+            contactInfo: [
+              {
+                emailAddress: formData.contact.email,
+                phoneNumber: formData.contact.phone || "",
+              },
+            ],
+            socialLinks: formData.contact.socialLinks
+              .filter((link) => link.platform && link.url)
+              .map((link) => ({
+                platform: link.platform,
+                icon: link.icon,
+                url: link.url,
+              })),
+            isPublic: true,
+            tags: ["portfolio", "developer", "template1"],
+            customUrl: formData.hero.devName.toLowerCase().replace(/\s+/g, "-"),
+          };
+
+          try {
+            console.log("Portfolio data:", portfolioData);
+
+            const response = await fetch("/api/portfolios/portfolioone", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(portfolioData),
+            });
+
+            // Check if response is 409 (Portfolio already exists)
+            if (response.status === 409) {
+              const data = await response.json();
+
+              // If portfolio already exists, just redirect to the preview page
+              toast.success(
+                "Portfolio already exists, redirecting to preview."
+              );
+
+              // Store the portfolio ID for future reference
+              if (data.portfolioId) {
+                localStorage.setItem(
+                  "templateOnePortfolioId",
+                  data.portfolioId
+                );
+
+                // SUCCESS CASE: Navigate directly to the template preview
+                router.push("/allTemplates/templateOne");
+                return;
+              }
+            }
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(
+                errorData.message || "Failed to create portfolio"
+              );
+            }
+
+            result = await response.json();
+
+            if (result && result.portfolio) {
+              result = result.portfolio;
+            }
+          } catch (error) {
+            console.error("Portfolio save error:", error);
+            toast.dismiss("saving-portfolio");
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : "Failed to save portfolio"
+            );
+          }
         }
 
-        let result = await response.json();
-        
-        if (result && result.portfolio) {
-          result = result.portfolio;
+        // Store the portfolio ID and custom URL for future reference
+        if (result && result._id) {
           localStorage.setItem("templateOnePortfolioId", result._id);
-          
+
           if (result.customUrl) {
             localStorage.setItem("templateOneCustomUrl", result.customUrl);
           }
-          
-          // SUCCESS CASE: Navigate directly to the template preview
-          toast.success("Portfolio saved successfully!");
-          router.push("/allTemplates/templateOne");
-          return;
         }
 
-        // If we didn't navigate away, update the UI state for the modal
-        setPreviewStatus("success");
-        setPreviewPortfolioId(result._id || null);
-        
+        // Success message and dismiss loading toast
+        toast.dismiss("saving-portfolio");
+        toast.success(
+          isUpdate
+            ? "Portfolio updated successfully!"
+            : "Portfolio created successfully!"
+        );
+
+        // Navigate to the template preview
+        router.push("/allTemplates/templateOne");
       } catch (error) {
         console.error("Portfolio save error:", error);
-        setPreviewStatus("error");
-        toast.error(error instanceof Error ? error.message : "Failed to save portfolio");
+        toast.dismiss("saving-portfolio");
+        toast.error(
+          error instanceof Error ? error.message : "Failed to save portfolio"
+        );
       }
     } catch (error) {
       console.error("Preview error:", error);
-      setPreviewStatus("error");
       toast.error("An unexpected error occurred");
     }
   };
@@ -1694,7 +1932,18 @@ const Page = () => {
                   Previous
                 </motion.button>
 
-                {activeTab !== "contact" ? (
+                {activeTab === "contact" ? (
+                  <motion.button
+                    type="button"
+                    onClick={handlePreview}
+                    className="bg-gradient-to-r from-[#711381] to-purple-600 hover:from-[#5C0F6B] hover:to-purple-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center transition-colors shadow-lg shadow-purple-900/20"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {isUpdate ? "Update Portfolio" : "Create Portfolio"}{" "}
+                    <ArrowRight size={18} className="ml-2" />
+                  </motion.button>
+                ) : (
                   <motion.button
                     type="button"
                     onClick={() => {
@@ -1716,16 +1965,6 @@ const Page = () => {
                     whileTap={{ scale: 0.98 }}
                   >
                     Next <ArrowRight size={18} className="ml-2" />
-                  </motion.button>
-                ) : (
-                  <motion.button
-                    type="button"
-                    onClick={handlePreview}
-                    className="bg-gradient-to-r from-[#711381] to-purple-600 hover:from-[#5C0F6B] hover:to-purple-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center transition-colors shadow-lg shadow-purple-900/20"
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Preview <ArrowRight size={18} className="ml-2" />
                   </motion.button>
                 )}
               </div>
@@ -1971,7 +2210,7 @@ const Page = () => {
                               onClick={() => {
                                 setIsPreviewModalOpen(false);
                                 router.push(
-                                  "/auth/login?returnTo=/allTemplates/templateOne/useTemplate"
+                                  "/signin?returnTo=/allTemplates/templateOne/useTemplate"
                                 );
                               }}
                               className="bg-gradient-to-r from-[#711381] to-purple-600 hover:from-[#5C0F6B] hover:to-purple-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center transition-colors shadow-lg shadow-purple-900/20 w-full justify-center"

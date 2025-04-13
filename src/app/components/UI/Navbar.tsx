@@ -102,8 +102,8 @@ const Navbar = () => {
       icon: Palette,
     },
     {
-      name: "Projects",
-      path: "/projects",
+      name: "Portfolios",
+      path: "/portfolios",
       icon: FileCode,
     },
     {
