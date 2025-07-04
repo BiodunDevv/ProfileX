@@ -16,7 +16,7 @@ const Navbar = ({ DevName }: NavbarProps) => {
 
   return (
     <motion.nav
-      className="w-full max-w-7xl mx-auto py-4 px-4 sm:px-6 md:py-4"
+      className="w-full max-w-9xl mx-auto py-4 px-4 sm:px-6 md:py-4"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
@@ -48,25 +48,23 @@ const Navbar = ({ DevName }: NavbarProps) => {
 
         {/* Desktop menu */}
         <ul className="hidden md:flex justify-center space-x-8 items-center text-center">
-          {["Home", "About", "Experience", "Get in Touch"].map(
-            (item, i) => (
-              <motion.li
-                key={item}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.1, duration: 0.5 }}
-                className="text-base lg:text-lg font-normal hover:text-[#3F8E00] transition-colors"
+          {["Home", "About", "Experience", "Get in Touch"].map((item, i) => (
+            <motion.li
+              key={item}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.1, duration: 0.5 }}
+              className="text-base lg:text-lg font-normal hover:text-[#3F8E00] transition-colors"
+            >
+              <a
+                href={`#${item.toLowerCase().replace(/\s+/g, "")}`}
+                className="relative group"
               >
-                <a
-                  href={`#${item.toLowerCase().replace(/\s+/g, "")}`}
-                  className="relative group"
-                >
-                  {item}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#3F8E00] transition-all group-hover:w-full duration-300"></span>
-                </a>
-              </motion.li>
-            )
-          )}
+                {item}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#3F8E00] transition-all group-hover:w-full duration-300"></span>
+              </a>
+            </motion.li>
+          ))}
         </ul>
       </div>
 

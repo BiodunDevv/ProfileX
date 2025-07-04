@@ -58,7 +58,7 @@ const CallToAction = () => {
 
         {/* Dynamic paragraph based on authentication state */}
         <motion.p
-          className="text-gray-300 text-lg max-w-2xl mx-auto mb-10"
+          className="text-gray-300 text-sm max-w-2xl mx-auto mb-10"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -206,10 +206,10 @@ const CallToAction = () => {
           className="mt-16 flex justify-center"
           viewport={{ once: true }}
         >
-          <div className="flex items-center text-xs text-gray-400">
+          <div className="flex items-center text-[10px] text-gray-400">
             <Rocket className="text-purple-500 mr-1.5" size={12} />
             <span>
-              Join thousands of professionals showcasing their work online
+              Join ProfileX and take your professional presence to the next level!
             </span>
           </div>
         </motion.div>

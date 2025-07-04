@@ -63,7 +63,7 @@ const About = ({
 }: AboutProps) => {
   return (
     <section className={`py-16 bg-gray-50`} id="about">
-      <div className="container mx-auto px-4 max-w-6xl">
+      <div className="container mx-auto px-4 max-w-9xl">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-2">{title}</h2>
           <p className="text-lg text-gray-600">{subtitle}</p>

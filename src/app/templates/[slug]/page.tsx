@@ -38,24 +38,24 @@ const TemplateContent = () => {
 
     const getTemplateFromSlug = async (slug: string) => {
       // This could be an actual API call in production
-     const templateMap: Record<string, { id: string; title: string }> = {
-       templateOne: {
-         id: "templateOne",
-         title: "Modern Pro",
-       },
-       templateTwo: {
-         id: "templateTwo",
-         title: "Minimalist",
-       },
-       templateThree: {
-         id: "templateThree",
-         title: "Creative Portfolio",
-       },
-       templateFour: {
-         id: "templateFour",
-         title: "Tech Resume",
-       },
-     };
+      const templateMap: Record<string, { id: string; title: string }> = {
+        templateOne: {
+          id: "templateOne",
+          title: "Modern Pro",
+        },
+        templateTwo: {
+          id: "templateTwo",
+          title: "Minimalist",
+        },
+        templateThree: {
+          id: "templateThree",
+          title: "Creative Portfolio",
+        },
+        templateFour: {
+          id: "templateFour",
+          title: "Tech Resume",
+        },
+      };
 
       return templateMap[slug] || null;
     };
@@ -66,7 +66,7 @@ const TemplateContent = () => {
         const template = await getTemplateFromSlug(slug);
 
         if (!template) {
-          return; 
+          return;
         }
 
         setTemplateData(template);
@@ -135,7 +135,7 @@ const TemplateContent = () => {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-7xl mx-auto px-2 sm:px-4 py-4 flex justify-between items-center"
+        className="max-w-9xl mx-auto px-2 sm:px-4 py-4 flex justify-between items-center"
       >
         {/* Back button - conditionally show either "Back to Templates" or "Back to Home" */}
         <Link
@@ -173,7 +173,7 @@ const TemplateContent = () => {
 
       {/* Template info */}
       <motion.div
-        className="max-w-7xl mx-auto p-2 sm:p-4"
+        className="max-w-9xl mx-auto p-2 sm:p-4"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
@@ -203,7 +203,7 @@ const TemplateContent = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <div className="bg-white rounded-xl shadow-2xl overflow-hidden max-w-7xl w-full border border-[#2E313C]">
+        <div className="bg-white rounded-xl shadow-2xl overflow-hidden max-w-9xl w-full border border-[#2E313C]">
           {isLoading ? (
             <div className="flex flex-col justify-center items-center h-[600px] bg-[#1E2132]">
               <div className="relative w-16 h-16 mb-4">
@@ -233,7 +233,7 @@ const TemplateContent = () => {
       {/* Auth CTA banner for non-authenticated users */}
       {!isAuthenticated && !isLoading && TemplateComponent && (
         <motion.div
-          className="max-w-7xl mx-auto mt-6 mb-2 p-4 bg-[#252739] border border-purple-500/20 rounded-lg flex flex-col sm:flex-row items-center justify-between"
+          className="max-w-9xl mx-auto mt-6 mb-2 p-4 bg-[#252739] border border-purple-500/20 rounded-lg flex flex-col sm:flex-row items-center justify-between"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.8 }}

@@ -309,7 +309,7 @@ const TemplateOne = () => {
       {/* Modern top navigation - only show if not in public view */}
       {!isPublicView && isAuthenticated && (
         <div className="w-full bg-gradient-to-r from-gray-900 to-gray-800 py-3 px-6 shadow-lg z-40">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="max-w-9xl mx-auto flex justify-between items-center">
             <div className="flex items-center">
               <motion.h3
                 initial={{ opacity: 0, y: -10 }}
@@ -369,7 +369,7 @@ const TemplateOne = () => {
           animate={{ opacity: 1, y: 0 }}
           className="w-full bg-gradient-to-r from-amber-500 to-orange-400 py-2"
         >
-          <div className="max-w-7xl mx-auto flex justify-center items-center gap-2 text-amber-900 font-medium">
+          <div className="max-w-9xl mx-auto flex justify-center items-center gap-2 text-amber-900 font-medium">
             <Eye className="h-4 w-4" />
             <span>Template Preview Mode</span>
           </div>

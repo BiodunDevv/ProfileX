@@ -11,7 +11,6 @@ import {
   Edit3,
   Copy,
   CheckCircle,
-  ArrowUpRight,
   Clock,
   Activity,
   Globe,
@@ -29,7 +28,6 @@ import {
   SlidersHorizontal,
   Trash2,
   X,
-  LayoutGridIcon,
 } from "lucide-react";
 import usePortfolioStore from "../../../../store/portfolioStore";
 import { toast } from "react-hot-toast";
@@ -81,7 +79,9 @@ const Portfolios: React.FC<PortfoliosProps> = () => {
   const [isCheckingUrl, setIsCheckingUrl] = useState(false);
   const [isUrlAvailable, setIsUrlAvailable] = useState<boolean | null>(null);
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
-  const [previewPortfolio, setPreviewPortfolio] = useState<Portfolio | null>(null);
+  const [previewPortfolio, setPreviewPortfolio] = useState<Portfolio | null>(
+    null
+  );
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Use the portfolio store
@@ -196,7 +196,7 @@ const Portfolios: React.FC<PortfoliosProps> = () => {
     try {
       // Update portfolio with new custom URL
       const result = await generateCustomUrl(portfolioId, newCustomUrl);
-      
+
       if (result) {
         toast.success("Custom URL updated successfully");
         setEditingUrlId(null);
@@ -214,7 +214,11 @@ const Portfolios: React.FC<PortfoliosProps> = () => {
 
   // Handle portfolio deletion
   const handleDeletePortfolio = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this portfolio? This action cannot be undone.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this portfolio? This action cannot be undone."
+      )
+    ) {
       try {
         const result = await deletePortfolio(id);
         if (result) {
@@ -230,16 +234,20 @@ const Portfolios: React.FC<PortfoliosProps> = () => {
   // Filter portfolios based on search query
   const filteredBySearch = portfolios.filter((portfolio) => {
     if (!searchQuery) return true;
-    
+
     const searchableFields = [
       portfolio.title,
       portfolio.description,
       portfolio.brandName,
       portfolio.aboutMeDescription,
       ...(portfolio.tags || []),
-    ].filter(Boolean).map(field => field?.toLowerCase());
-    
-    return searchableFields.some(field => field?.includes(searchQuery.toLowerCase()));
+    ]
+      .filter(Boolean)
+      .map((field) => field?.toLowerCase());
+
+    return searchableFields.some((field) =>
+      field?.includes(searchQuery.toLowerCase())
+    );
   });
 
   // Apply additional filters
@@ -256,14 +264,18 @@ const Portfolios: React.FC<PortfoliosProps> = () => {
   const sortedPortfolios = [...filteredPortfolios].sort((a, b) => {
     switch (sortBy) {
       case "created":
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
       case "views":
         return (b.views || 0) - (a.views || 0);
       case "title":
         return a.title.localeCompare(b.title);
       case "updated":
       default:
-        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        return (
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
     }
   });
 
@@ -339,320 +351,321 @@ const Portfolios: React.FC<PortfoliosProps> = () => {
     return templatePreviews[templateType] || TemplateOnePreview;
   };
 
-  // Animation variants
+  // Enhanced animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.05,
+        staggerChildren: 0.08,
+        delayChildren: 0.1,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: {
+      opacity: 0,
+      y: 30,
+      scale: 0.95,
+    },
     visible: {
       opacity: 1,
       y: 0,
+      scale: 1,
       transition: {
         type: "spring",
-        stiffness: 100,
-        damping: 15,
+        stiffness: 120,
+        damping: 20,
+        duration: 0.6,
       },
     },
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A]">
-      <div className="px-4 sm:px-6 lg:px-8 py-6 flex-1 max-w-7xl mx-auto w-full">
-        {/* Header section with title and create button */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A] pt-20 pb-5">
+      <div className="max-w-9xl mx-auto px-2 sm:px-6">
+        {/* Header section with enhanced styling */}
+        <div className="mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-wrap justify-between items-end"
+          >
             <div>
               <div className="inline-flex items-center px-3 py-1 mb-2 rounded-full bg-purple-900/30 border border-purple-500/30 text-sm text-purple-400">
-                <LayoutGrid size={14} className="mr-1.5" />
+                <LayoutGrid size={14} className="mr-1.5" fill="currentColor" />
                 Portfolio Management
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#711381] to-purple-500">
-                Your Portfolios
-              </h1>
-              <p className="mt-2 text-gray-400">
+              <h1 className="text-3xl font-bold text-white">Your Portfolios</h1>
+              <p className="text-gray-400 mt-2">
                 Manage and customize your professional showcases
               </p>
             </div>
 
-            <Link
-              href="/templates"
-              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#711381] to-purple-600 text-white rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 shadow-lg shadow-purple-900/20 transition-all"
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="mt-4 sm:mt-0"
             >
-              <PlusCircle size={18} />
-              <span className="font-medium">Create New</span>
-            </Link>
-          </div>
-        </motion.div>
-
-        {/* Search and filters bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className={`mb-6 ${portfolios.length > 0 && !isLoading && !error ? "block" : "hidden"}`}
-        >
-          <div className="flex flex-col sm:flex-row gap-4 p-4 bg-[#1E2132] border border-[#2E313C] rounded-xl">
-            {/* Search box */}
-            <div className="relative flex-grow">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Search portfolios..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg text-sm bg-[#262A3E] border border-[#3E4154] text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
-              />
-            </div>
-
-            {/* Filter dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
-                  isFilterMenuOpen || filterBy !== "all"
-                    ? "border-purple-500 bg-purple-900/30 text-purple-300"
-                    : "border-[#3E4154] bg-[#262A3E] text-gray-300 hover:bg-[#2A2F45]"
-                }`}
-              >
-                <SlidersHorizontal size={16} />
-                <span>Filter</span>
-              </button>
-
-              <AnimatePresence>
-                {isFilterMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute top-full mt-2 right-0 z-10 bg-[#1E2132] border border-[#3E4154] rounded-xl shadow-lg w-48"
-                  >
-                    <div className="p-2">
-                      <button
-                        onClick={() => {
-                          setFilterBy("all");
-                          setIsFilterMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm ${
-                          filterBy === "all"
-                            ? "bg-purple-600/20 text-purple-300"
-                            : "text-gray-300 hover:bg-[#262A3E]"
-                        }`}
-                      >
-                        All Portfolios
-                      </button>
-                      <button
-                        onClick={() => {
-                          setFilterBy("public");
-                          setIsFilterMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm ${
-                          filterBy === "public"
-                            ? "bg-purple-600/20 text-purple-300"
-                            : "text-gray-300 hover:bg-[#262A3E]"
-                        }`}
-                      >
-                        Public Only
-                      </button>
-                      <button
-                        onClick={() => {
-                          setFilterBy("private");
-                          setIsFilterMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm ${
-                          filterBy === "private"
-                            ? "bg-purple-600/20 text-purple-300"
-                            : "text-gray-300 hover:bg-[#262A3E]"
-                        }`}
-                      >
-                        Private Only
-                      </button>
-                      <button
-                        onClick={() => {
-                          setFilterBy("template1");
-                          setIsFilterMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm ${
-                          filterBy === "template1"
-                            ? "bg-purple-600/20 text-purple-300"
-                            : "text-gray-300 hover:bg-[#262A3E]"
-                        }`}
-                      >
-                        Modern Template
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Sort dropdown */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">Sort:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-[#262A3E] text-gray-300 text-sm rounded-lg block px-3 py-2 border border-[#3E4154] focus:ring-purple-500 focus:border-purple-500"
-              >
-                <option value="updated">Last Updated</option>
-                <option value="created">Created Date</option>
-                <option value="views">Most Views</option>
-                <option value="title">Title</option>
-              </select>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Loading state */}
-        {isLoading && (
-                  <div className="flex justify-center items-center py-20">
-                    <div className="relative w-16 h-16">
-                      <div className="absolute inset-0 border-t-2 border-r-2 border-purple-600 rounded-full animate-spin"></div>
-                      <div className="absolute inset-0 border-2 border-[#2E313C] rounded-full"></div>
-                      <LayoutGridIcon
-                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-purple-500"
-                        size={24}
-                      />
-                    </div>
-                  </div>
-                )}
-
-        {/* Error state */}
-        {!isLoading && error && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-8 text-center"
-          >
-            <div className="max-w-md mx-auto">
-              <div className="bg-red-500/10 p-4 rounded-full inline-block mb-6">
-                <AlertTriangle size={40} className="text-red-400" />
-              </div>
-              <h2 className="text-xl font-bold text-white mb-3">
-                Failed to load portfolios
-              </h2>
-              <p className="text-gray-400 mb-6">
-                {error ||
-                  "There was an error loading your portfolios. Please try again."}
-              </p>
-              <button
-                onClick={handleRetry}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#711381] to-purple-600 text-white rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 shadow-lg shadow-purple-900/20 transition-all"
-              >
-                <RefreshCw size={18} />
-                <span className="font-medium">Retry</span>
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Empty state */}
-        {!isLoading && !error && portfolios.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-10 text-center"
-          >
-            <div className="max-w-md mx-auto">
-              <div className="bg-[#262A3E] p-4 rounded-full inline-block mb-6">
-                <motion.div
-                  animate={{
-                    scale: [1, 1.1, 1],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatType: "reverse",
-                  }}
-                >
-                  <PlusCircle size={40} className="text-purple-500" />
-                </motion.div>
-              </div>
-              <h2 className="text-xl font-bold text-white mb-3">
-                No portfolios yet
-              </h2>
-              <p className="text-gray-400 mb-6">
-                Create your first portfolio to showcase your skills, projects,
-                and expertise to the world.
-              </p>
               <Link
                 href="/templates"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#711381] to-purple-600 text-white rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 shadow-lg shadow-purple-900/20 transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#711381] to-purple-600 text-white rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 shadow-lg shadow-purple-900/20 transition-all"
               >
-                <PlusCircle size={18} />
-                <span className="font-medium">Create Portfolio</span>
+                <PlusCircle size={16} />
+                <span className="font-medium">Create New</span>
               </Link>
+            </motion.div>
+          </motion.div>
+
+          {/* Enhanced search and filters bar */}
+          <motion.div
+            className={`mt-6 ${portfolios.length > 0 && !isLoading && !error ? "block" : "hidden"}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <div className="flex flex-wrap gap-4 items-center justify-between">
+              {/* Enhanced search input */}
+              <div className="relative flex-grow max-w-md">
+                <Search
+                  size={18}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Search portfolios..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#2E313C] focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 text-gray-200 bg-[#1E2132]/70 shadow-sm"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+
+              {/* Enhanced controls */}
+              <div className="flex items-center space-x-3">
+                {/* Filter button */}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
+                    className={`flex items-center space-x-2 px-3 py-2.5 rounded-lg border ${
+                      isFilterMenuOpen || filterBy !== "all"
+                        ? "border-purple-500 bg-purple-900/30 text-purple-300"
+                        : "border-[#2E313C] bg-[#1E2132]/70 text-gray-300 hover:bg-[#262A3E]"
+                    }`}
+                  >
+                    <SlidersHorizontal size={16} />
+                    <span className="font-medium text-sm">Filters</span>
+                    {filterBy !== "all" && (
+                      <span className="bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                        1
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Enhanced filter dropdown */}
+                  <AnimatePresence>
+                    {isFilterMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute top-full mt-2 right-0 bg-[#1E2132] rounded-xl shadow-lg border border-[#2E313C] w-56 z-20 overflow-hidden"
+                      >
+                        <div className="p-4">
+                          <h3 className="font-medium text-gray-200 mb-3">
+                            Filter Portfolios
+                          </h3>
+                          <div className="space-y-2">
+                            {[
+                              { value: "all", label: "All Portfolios" },
+                              { value: "public", label: "Public Only" },
+                              { value: "private", label: "Private Only" },
+                              { value: "template1", label: "Modern Template" },
+                            ].map((filter) => (
+                              <button
+                                key={filter.value}
+                                onClick={() => {
+                                  setFilterBy(filter.value);
+                                  setIsFilterMenuOpen(false);
+                                }}
+                                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                                  filterBy === filter.value
+                                    ? "bg-purple-600/20 text-purple-300"
+                                    : "text-gray-300 hover:bg-[#262A3E]"
+                                }`}
+                              >
+                                {filter.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="border-t border-[#2E313C] p-3 bg-[#181B2B] flex justify-end">
+                          <button
+                            onClick={() => setIsFilterMenuOpen(false)}
+                            className="px-3 py-1.5 text-sm font-medium text-purple-400 hover:text-purple-300"
+                          >
+                            Done
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Enhanced sort dropdown */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-400 hidden sm:block">
+                    Sort:
+                  </span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="bg-[#1E2132]/70 text-gray-300 text-sm rounded-lg px-3 py-2.5 border border-[#2E313C] focus:ring-purple-500 focus:border-purple-500"
+                  >
+                    <option value="updated">Last Updated</option>
+                    <option value="created">Created Date</option>
+                    <option value="views">Most Views</option>
+                    <option value="title">Title</option>
+                  </select>
+                </div>
+              </div>
             </div>
+          </motion.div>
+        </div>
+
+        {/* Enhanced loading state */}
+        {isLoading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 border-t-2 border-r-2 border-purple-600 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 border-2 border-[#2E313C] rounded-full"></div>
+              <LayoutGrid
+                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-purple-500"
+                size={24}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Enhanced error state */}
+        {!isLoading && error && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-[#1E2132] rounded-xl border border-[#2E313C] p-8 flex flex-col items-center text-center shadow-md"
+          >
+            <AlertTriangle size={40} className="text-red-400 mb-3" />
+            <h3 className="text-xl font-medium text-gray-200 mb-2">
+              Failed to load portfolios
+            </h3>
+            <p className="text-gray-400 mb-4">
+              {error ||
+                "There was an error loading your portfolios. Please try again."}
+            </p>
+            <button
+              onClick={handleRetry}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <RefreshCw size={16} className="inline mr-2" />
+              Retry
+            </button>
           </motion.div>
         )}
 
-        {/* No results for search */}
+        {/* Enhanced empty state */}
+        {!isLoading && !error && portfolios.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-[#1E2132] rounded-xl border border-[#2E313C] p-8 flex flex-col items-center text-center shadow-md"
+          >
+            <div className="bg-[#262A3E] p-4 rounded-full inline-block mb-6">
+              <motion.div
+                animate={{
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                }}
+              >
+                <PlusCircle size={40} className="text-purple-500" />
+              </motion.div>
+            </div>
+            <h3 className="text-xl font-medium text-gray-200 mb-2">
+              No portfolios yet
+            </h3>
+            <p className="text-gray-400 mb-4">
+              Create your first portfolio to showcase your skills, projects, and
+              expertise to the world.
+            </p>
+            <Link
+              href="/templates"
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Create Portfolio
+            </Link>
+          </motion.div>
+        )}
+
+        {/* Enhanced no results state */}
         {!isLoading &&
           !error &&
           portfolios.length > 0 &&
           sortedPortfolios.length === 0 && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-8 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-[#1E2132] rounded-xl border border-[#2E313C] p-8 flex flex-col items-center text-center shadow-md"
             >
-              <div className="max-w-md mx-auto">
-                <div className="bg-[#262A3E] p-4 rounded-full inline-block mb-6">
-                  <Search size={32} className="text-gray-400" />
-                </div>
-                <h2 className="text-xl font-bold text-white mb-3">
-                  No matching portfolios
-                </h2>
-                <p className="text-gray-400 mb-6">
-                  We couldn&apos;t find any portfolios matching your search
-                  criteria.
-                </p>
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setFilterBy("all");
-                  }}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#711381] to-purple-600 text-white rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 shadow-lg shadow-purple-900/20 transition-all"
-                >
-                  <RefreshCw size={18} />
-                  <span className="font-medium">Reset Filters</span>
-                </button>
-              </div>
+              <Search size={40} className="text-gray-400 mb-3" />
+              <h3 className="text-xl font-medium text-gray-200 mb-2">
+                No matching portfolios
+              </h3>
+              <p className="text-gray-400 mb-4">
+                We couldn&apos;t find any portfolios matching your search
+                criteria.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setFilterBy("all");
+                }}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Clear all filters
+              </button>
             </motion.div>
           )}
 
-        {/* Portfolio grid/list */}
+        {/* Enhanced Portfolio grid */}
         {!isLoading && !error && sortedPortfolios.length > 0 && (
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr"
+            key="portfolios-grid"
           >
             {sortedPortfolios.map((portfolio) => (
               <motion.div
                 key={portfolio._id}
                 variants={itemVariants}
-                className="bg-[#1E2132] border border-[#2E313C] rounded-xl overflow-hidden hover:border-[#3E4154] transition-all hover:shadow-xl hover:shadow-purple-900/5 group"
+                className="group relative bg-[#1E2132] rounded-2xl overflow-hidden border border-[#2E313C] 
+                         hover:border-[#3E4154] hover:shadow-xl hover:shadow-purple-900/20 
+                         transition-all duration-300 transform hover:-translate-y-1
+                         backdrop-blur-sm"
               >
                 {/* Portfolio header with image */}
                 <div className="relative h-72 sm:h-96 overflow-hidden bg-gradient-to-b from-[#262A3E] to-[#1E2132] rounded-t-xl">
@@ -747,7 +760,7 @@ const Portfolios: React.FC<PortfoliosProps> = () => {
                 </div>
 
                 {/* Portfolio details */}
-                <div className="p-5">
+                <div className="p-2">
                   <h3 className="text-lg font-bold text-white mb-2 line-clamp-1 group-hover:text-purple-400 transition-colors">
                     {portfolio.title}
                   </h3>
@@ -1153,16 +1166,6 @@ const Portfolios: React.FC<PortfoliosProps> = () => {
                   </div>
                 </div>
               ))}
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-[#2E313C] text-center">
-              <Link
-                href="/pricing"
-                className="inline-flex items-center text-purple-400 hover:text-purple-300 font-medium"
-              >
-                <span>Upgrade for premium features</span>
-                <ArrowUpRight size={16} className="ml-1" />
-              </Link>
             </div>
           </motion.div>
         )}

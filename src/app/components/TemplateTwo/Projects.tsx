@@ -37,7 +37,7 @@ const Projects: React.FC<ProjectsProps> = ({ projects = [] }) => {
         <div className="absolute bottom-30 right-0 w-1/4 h-1/4 bg-amber-500/5 rounded-tl-full blur-3xl"></div>
       </div>
 
-      <div className="container mx-auto px-6 z-10 relative max-w-5xl">
+      <div className="container mx-auto px-6 z-10 relative max-w-9xl">
         {/* Section Title */}
         <div className="mb-12 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">

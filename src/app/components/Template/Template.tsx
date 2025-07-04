@@ -13,7 +13,6 @@ import {
   LayoutGrid,
   Sparkles,
   SlidersHorizontal,
-  ChevronRight,
   LayoutTemplate,
 } from "lucide-react";
 
@@ -205,9 +204,7 @@ const Templates = () => {
 
   // Handle template usage
   const handleUseTemplate = (template: any) => {
-    router.push(
-      `/templates/${template.id}/edit`,
-    );
+    router.push(`/templates/${template.id}/edit`);
   };
 
   // Handle tag selection
@@ -223,27 +220,34 @@ const Templates = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.05,
+        staggerChildren: 0.08,
+        delayChildren: 0.1,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: {
+      opacity: 0,
+      y: 30,
+      scale: 0.95,
+    },
     visible: {
       opacity: 1,
       y: 0,
+      scale: 1,
       transition: {
         type: "spring",
-        stiffness: 100,
-        damping: 15,
+        stiffness: 120,
+        damping: 20,
+        duration: 0.6,
       },
     },
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A] pt-20 pb-5">
-      <div className="max-w-7xl mx-auto px-2 sm:px-6">
+      <div className="max-w-9xl mx-auto px-2 sm:px-6 py-5">
         {/* Header section */}
         <div className="mb-8">
           <motion.div
@@ -269,17 +273,6 @@ const Templates = () => {
                 templates
               </p>
             </div>
-
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 mt-4 sm:mt-0 bg-gradient-to-r from-[#711381] to-purple-600 text-white rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 shadow-lg shadow-purple-900/20 transition-all"
-              onClick={() => router.push("/dashboard/custom-templates")}
-            >
-              <Sparkles size={16} />
-              <span className="font-medium">Custom Templates</span>
-              <ChevronRight size={16} />
-            </motion.button>
           </motion.div>
 
           {/* Search and filters bar */}
@@ -457,7 +450,8 @@ const Templates = () => {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 auto-rows-fr"
+            key="templates-grid"
           >
             {filteredTemplates.map((template) => (
               <motion.div
@@ -465,92 +459,223 @@ const Templates = () => {
                 variants={itemVariants}
                 onMouseEnter={() => setIsTemplateHovered(template.id)}
                 onMouseLeave={() => setIsTemplateHovered(null)}
-                className="group bg-[#1E2132] rounded-xl overflow-hidden border border-[#2E313C] hover:border-[#3E4154] hover:shadow-lg hover:shadow-purple-900/10 transition-all"
+                className="group relative bg-[#1E2132] rounded-2xl overflow-hidden border border-[#2E313C] 
+                         hover:border-[#3E4154] hover:shadow-xl hover:shadow-purple-900/20 
+                         transition-all duration-300 transform hover:-translate-y-1
+                         backdrop-blur-sm"
               >
                 {/* Template card - grid view */}
-                <motion.div
-                  layoutId={`template-${template.id}`}
-                  className="h-full flex flex-col"
-                >
+                <div className="h-full flex flex-col relative overflow-hidden">
                   {/* Template image */}
-                  <div className="relative h-50 overflow-hidden">
+                  <div className="relative h-50 overflow-hidden cursor-pointer group/image">
                     <Image
                       src={template.imageUrl}
                       alt={template.title}
-                      className="w-full h-full object-cover sm:group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover/image:scale-105 transition-transform duration-500"
                       width={400}
                       height={300}
                       onClick={() => handlePreviewTemplate(template)}
                     />
 
+                    {/* Image overlay on hover */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={
+                        isTemplateHovered === template.id
+                          ? { opacity: 1 }
+                          : { opacity: 0 }
+                      }
+                      transition={{ duration: 0.3 }}
+                      className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+                    />
+
                     {/* Template badges */}
-                    <div className="absolute top-3 left-3 flex gap-1.5">
+                    <div className="absolute top-3 left-3 flex gap-1.5 z-10">
                       {template.isNew && (
-                        <span className="bg-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-medium flex items-center">
+                        <motion.span
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{
+                            delay: 0.4,
+                            type: "spring",
+                            stiffness: 150,
+                            damping: 15,
+                          }}
+                          className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold flex items-center shadow-lg"
+                        >
                           <Sparkles size={10} className="mr-1" />
                           New
-                        </span>
+                        </motion.span>
                       )}
                       {template.popular && (
-                        <span className="bg-amber-500 text-white px-2 py-0.5 rounded-full text-xs font-medium flex items-center">
-                          <Star size={10} className="mr-1" />
+                        <motion.span
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{
+                            delay: 0.5,
+                            type: "spring",
+                            stiffness: 150,
+                            damping: 15,
+                          }}
+                          className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold flex items-center shadow-lg"
+                        >
+                          <Star
+                            size={10}
+                            className="mr-1"
+                            fill="currentColor"
+                          />
                           Popular
-                        </span>
+                        </motion.span>
                       )}
                     </div>
+
+                    {/* Quick preview icon overlay */}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={
+                        isTemplateHovered === template.id
+                          ? { opacity: 1, scale: 1 }
+                          : { opacity: 0, scale: 0.8 }
+                      }
+                      transition={{ duration: 0.2 }}
+                      className="absolute bottom-3 right-3 bg-white/10 backdrop-blur-md border border-white/20 
+                               rounded-full p-2 text-white/80 hover:text-white hover:bg-white/20 transition-all"
+                      onClick={(e) => handlePreviewTemplate(template, e)}
+                    >
+                      <Eye size={14} />
+                    </motion.div>
                   </div>
 
                   {/* Template info */}
-                  <div className="p-4 flex-grow flex flex-col">
-                    <h3 className="font-medium text-gray-200 text-lg mb-1">
-                      {template.title}
-                    </h3>
-                    <p className="text-gray-400 text-sm mb-3">
+                  <div className="p-5 flex-grow flex flex-col">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-gray-100 text-lg leading-tight">
+                        {template.title}
+                      </h3>
+                      {template.featured && (
+                        <motion.div
+                          initial={{ rotate: 0 }}
+                          animate={{
+                            rotate: isTemplateHovered === template.id ? 360 : 0,
+                          }}
+                          transition={{ duration: 0.5 }}
+                          className="text-purple-400"
+                        >
+                          <Star size={16} fill="currentColor" />
+                        </motion.div>
+                      )}
+                    </div>
+
+                    <p className="text-gray-400 text-sm mb-4 leading-relaxed">
                       {template.description}
                     </p>
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-1.5 mt-auto">
-                      {template.tags.slice(0, 3).map((tag) => (
-                        <span
+                      {template.tags.slice(0, 3).map((tag, index) => (
+                        <motion.span
                           key={tag}
-                          className="bg-[#262A3E] text-gray-300 px-2 py-0.5 rounded-full text-xs font-medium"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="bg-gradient-to-r from-[#262A3E] to-[#2A2E42] text-gray-300 
+                                   px-2.5 py-1 rounded-lg text-xs font-medium
+                                   border border-gray-600/20 hover:border-purple-500/30
+                                   transition-colors duration-200"
                         >
                           {tag}
-                        </span>
+                        </motion.span>
                       ))}
+                      {template.tags.length > 3 && (
+                        <span className="text-gray-500 text-xs px-2 py-1">
+                          +{template.tags.length - 3} more
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   {/* Template footer */}
-                  <div className="p-4 pt-0 flex items-center gap-2 justify-center">
-                    <button
-                      onClick={() => handleUseTemplate(template)}
-                      className="w-full bg-gradient-to-r from-[#711381] to-purple-600 hover:from-[#5C0F6B] hover:to-purple-700 text-white px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2 font-medium group shadow-lg shadow-purple-900/10"
-                    >
-                      Use Template
-                      <motion.div
+                  <div className="p-4 pt-0">
+                    {/* Hover overlay with actions */}
+                    <div className="relative">
+                      {/* Main action button - Use Template */}
+                      <motion.button
+                        onClick={() => handleUseTemplate(template)}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full relative overflow-hidden bg-gradient-to-r from-[#711381] via-purple-600 to-[#8B5CF6] 
+                                 hover:from-[#5C0F6B] hover:via-purple-700 hover:to-[#7C3AED] 
+                                 text-white px-6 py-3 rounded-xl transition-all duration-300 
+                                 flex items-center justify-center gap-3 font-semibold text-sm
+                                 shadow-lg shadow-purple-900/25 hover:shadow-purple-900/40
+                                 group"
+                      >
+                        {/* Animated background shimmer */}
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
+                          initial={{ x: "-100%" }}
+                          animate={
+                            isTemplateHovered === template.id
+                              ? { x: "200%" }
+                              : { x: "-100%" }
+                          }
+                          transition={{ duration: 0.8, ease: "easeInOut" }}
+                        />
+
+                        <span className="relative z-10">Use Template</span>
+                        <motion.div
+                          className="relative z-10"
+                          animate={
+                            isTemplateHovered === template.id
+                              ? { x: 4, scale: 1.1 }
+                              : { x: 0, scale: 1 }
+                          }
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 20,
+                          }}
+                        >
+                          <ArrowRight size={16} className="drop-shadow-sm" />
+                        </motion.div>
+                      </motion.button>
+
+                      {/* Preview button - positioned as floating overlay */}
+                      <motion.button
+                        onClick={(e) => handlePreviewTemplate(template, e)}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        initial={{ opacity: 0, y: 10 }}
                         animate={
                           isTemplateHovered === template.id
-                            ? { x: 3 }
-                            : { x: 0 }
+                            ? { opacity: 1, y: 0 }
+                            : { opacity: 0, y: 10 }
                         }
-                        transition={{ type: "spring", stiffness: 300 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute -top-12 right-0 z-20
+                                 bg-[#1A1D2E]/95 backdrop-blur-md border border-purple-400/30
+                                 text-purple-300 hover:text-white hover:border-purple-400/50
+                                 px-4 py-2 rounded-lg transition-all duration-200
+                                 flex items-center gap-2 text-xs font-medium
+                                 shadow-lg shadow-black/20"
                       >
-                        <ArrowRight size={16} />
-                      </motion.div>
-                    </button>
+                        <Eye size={12} />
+                        <span className="whitespace-nowrap">Preview</span>
+                      </motion.button>
+                    </div>
 
-                    <button
-                      onClick={(e) => handlePreviewTemplate(template, e)}
-                      className="w-full text-purple-400 hover:text-purple-300 text-sm font-medium px-4 py-2 flex items-center justify-center gap-1.5 bg-[#1E2132]/80 hover:bg-[#262A3E] backdrop-blur-sm
-                      border border-purple-500/20 rounded-lg transition-colors"
-                    >
-                      <Eye size={14} />
-                      Preview
-                    </button>
+                    {/* Quick stats bar */}
+                    <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                        <span>Ready to use</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>{template.category}</span>
+                      </div>
+                    </div>
                   </div>
-                </motion.div>
+                </div>
               </motion.div>
             ))}
           </motion.div>
