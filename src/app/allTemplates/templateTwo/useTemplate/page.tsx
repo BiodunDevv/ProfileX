@@ -25,12 +25,6 @@ const page = () => {
           projects.
         </p>
       </motion.div>
-
-      <div>
-        <p className="text-white text-center mt-4">
-          This is a placeholder for Template 2. You can customize this page as needed.
-        </p>
-      </div>
       </div>
       </div>
   )

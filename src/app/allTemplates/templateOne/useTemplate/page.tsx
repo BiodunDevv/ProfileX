@@ -6,11 +6,8 @@ import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { motion } from "framer-motion";
 import {
-  ChevronDown,
-  ChevronUp,
   Plus,
   Trash2,
-  Sparkles,
   ArrowRight,
   Upload,
   LayoutGrid,
@@ -88,7 +85,6 @@ interface FormData {
 const Page = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("hero");
-  const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
   const [formData, setFormData] = useState({
     id: "",
     hero: {
@@ -1049,130 +1045,6 @@ const Page = () => {
               </motion.button>
             ))}
           </div>
-
-          {/* AI Helper Panel */}
-          <motion.div
-            className="mb-8 overflow-hidden"
-            initial={{ height: 0 }}
-            animate={{ height: isAiPanelOpen ? "auto" : 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="bg-gradient-to-r from-indigo-600/90 to-purple-600/90 backdrop-blur-sm rounded-xl shadow-lg p-6 text-white border border-indigo-500/30">
-              <div className="flex items-center mb-4">
-                <Sparkles className="mr-2" size={24} />
-                <h3 className="text-xl font-semibold">AI Assistance</h3>
-              </div>
-              <p className="mb-4">
-                Need help with your content? Let AI assist you in creating
-                compelling descriptions, project details, and more.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {activeTab === "hero" && (
-                  <>
-                    <button
-                      onClick={() => handleAiSuggestion("title")}
-                      className="bg-white/20 hover:bg-white/30 rounded-lg p-3 text-left backdrop-blur-sm transition"
-                    >
-                      Generate catchy title
-                    </button>
-                    <button
-                      onClick={() => handleAiSuggestion("description")}
-                      className="bg-white/20 hover:bg-white/30 rounded-lg p-3 text-left backdrop-blur-sm transition"
-                    >
-                      Draft personal bio
-                    </button>
-                    <button
-                      onClick={() => handleAiSuggestion("companies")}
-                      className="bg-white/20 hover:bg-white/30 rounded-lg p-3 text-left backdrop-blur-sm transition"
-                    >
-                      Suggest company format
-                    </button>
-                  </>
-                )}
-                {activeTab === "about" && (
-                  <>
-                    <button
-                      onClick={() => handleAiSuggestion("skills")}
-                      className="bg-white/20 hover:bg-white/30 rounded-lg p-3 text-left backdrop-blur-sm transition"
-                    >
-                      Recommend skills
-                    </button>
-                    <button
-                      onClick={() => handleAiSuggestion("description")}
-                      className="bg-white/20 hover:bg-white/30 rounded-lg p-3 text-left backdrop-blur-sm transition"
-                    >
-                      Write professional summary
-                    </button>
-                    <button
-                      onClick={() => handleAiSuggestion("education")}
-                      className="bg-white/20 hover:bg-white/30 rounded-lg p-3 text-left backdrop-blur-sm transition"
-                    >
-                      Format education details
-                    </button>
-                  </>
-                )}
-                {activeTab === "projects" && (
-                  <>
-                    <button
-                      onClick={() => handleAiSuggestion("project-name")}
-                      className="bg-white/20 hover:bg-white/30 rounded-lg p-3 text-left backdrop-blur-sm transition"
-                    >
-                      Create project title
-                    </button>
-                    <button
-                      onClick={() => handleAiSuggestion("project-description")}
-                      className="bg-white/20 hover:bg-white/30 rounded-lg p-3 text-left backdrop-blur-sm transition"
-                    >
-                      Write project description
-                    </button>
-                    <button
-                      onClick={() => handleAiSuggestion("project-type")}
-                      className="bg-white/20 hover:bg-white/30 rounded-lg p-3 text-left backdrop-blur-sm transition"
-                    >
-                      Suggest project categories
-                    </button>
-                  </>
-                )}
-                {activeTab === "contact" && (
-                  <>
-                    <button
-                      onClick={() => handleAiSuggestion("social-links")}
-                      className="bg-white/20 hover:bg-white/30 rounded-lg p-3 text-left backdrop-blur-sm transition"
-                    >
-                      Format social links
-                    </button>
-                    <button
-                      onClick={() => handleAiSuggestion("contact-message")}
-                      className="bg-white/20 hover:bg-white/30 rounded-lg p-3 text-left backdrop-blur-sm transition"
-                    >
-                      Create contact messages
-                    </button>
-                    <button
-                      onClick={() => handleAiSuggestion("email")}
-                      className="bg-white/20 hover:bg-white/30 rounded-lg p-3 text-left backdrop-blur-sm transition"
-                    >
-                      Professional email template
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.button
-            onClick={() => setIsAiPanelOpen(!isAiPanelOpen)}
-            className="flex items-center justify-center w-full mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg py-2.5 px-4 font-medium transition-all hover:shadow-lg shadow-purple-900/20 border border-indigo-500/30"
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-          >
-            <Sparkles className="mr-2" size={18} />
-            {isAiPanelOpen ? "Hide AI Assistance" : "Show AI Assistance"}
-            {isAiPanelOpen ? (
-              <ChevronUp className="ml-2" size={18} />
-            ) : (
-              <ChevronDown className="ml-2" size={18} />
-            )}
-          </motion.button>
 
           <form className="space-y-8">
             {/* Hero Section */}
