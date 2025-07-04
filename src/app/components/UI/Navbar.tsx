@@ -9,14 +9,14 @@ import {
   User,
   LogOut,
   Settings,
-  Layout,
-  Plus,
   UserCircle,
   LayoutDashboard,
   FileCode,
   Palette,
   Home,
   AlertTriangle,
+  Monitor,
+  Smartphone,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "../../../../store/useAuthStore";
@@ -28,6 +28,9 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [showAuthWarning, setShowAuthWarning] = useState(false);
+  const [showMobileNotice, setShowMobileNotice] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [hasShownNotice, setHasShownNotice] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -68,6 +71,60 @@ const Navbar = () => {
     verifyAuth();
   }, [pathname, router, checkAuthState]);
 
+  // Mobile detection and notice logic
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobileDevice = window.innerWidth <= 768;
+      setIsMobile(isMobileDevice);
+
+      // Show mobile notice only if:
+      // 1. On mobile device
+      // 2. Haven't been permanently dismissed (localStorage)
+      // 3. Haven't shown this session yet
+      if (isMobileDevice && !hasShownNotice) {
+        const hasSeenNotice = localStorage.getItem("mobileNotice");
+        if (!hasSeenNotice) {
+          setShowMobileNotice(true);
+          setHasShownNotice(true);
+        }
+      }
+    };
+
+    // Only check mobile on initial load
+    if (!hasShownNotice) {
+      checkMobile();
+    }
+
+    const handleResize = () => {
+      // Only update isMobile state on resize, don't trigger notice
+      const isMobileDevice = window.innerWidth <= 768;
+      setIsMobile(isMobileDevice);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [hasShownNotice]);
+
+  // Auto-hide mobile notice after progress bar completes
+  useEffect(() => {
+    if (showMobileNotice) {
+      const timer = setTimeout(() => {
+        setShowMobileNotice(false);
+      }, 8000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showMobileNotice]);
+
+  // Dismiss mobile notice
+  const dismissMobileNotice = () => {
+    setShowMobileNotice(false);
+    localStorage.setItem("mobileNotice", "true");
+  };
+
   // Format user name for avatar
   const getInitials = (name?: string) => {
     if (!name) return "PX";
@@ -106,10 +163,20 @@ const Navbar = () => {
       path: "/portfolios",
       icon: FileCode,
     },
+  ];
+
+  const menuLinks = [
+    {
+      name: "Profile",
+      path: "profile",
+      icon: User,
+      color: "text-blue-400",
+    },
     {
       name: "Settings",
-      path: "/settings",
+      path: "settings",
       icon: Settings,
+      color: "text-purple-400",
     },
   ];
 
@@ -136,13 +203,122 @@ const Navbar = () => {
         )}
       </AnimatePresence>
 
+      {/* Advanced Mobile Notice - Only shows on mobile devices */}
+      <AnimatePresence>
+        {showMobileNotice && isMobile && (
+          <motion.div
+            initial={{ opacity: 0, y: -100, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -100, scale: 0.95 }}
+            transition={{
+              type: "spring",
+              stiffness: 200,
+              damping: 20,
+              duration: 0.6,
+            }}
+            className="fixed top-0 left-0 right-0 z-50 mx-2 mt-2"
+          >
+            <div className="relative overflow-hidden bg-gradient-to-r from-[#711381] to-purple-600 backdrop-blur-md border border-[#711381]/30 rounded-2xl shadow-2xl shadow-[#711381]/30">
+              {/* Animated background pattern */}
+              <div className="absolute inset-0 opacity-20">
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-12"
+                  animate={{ x: ["-100%", "200%"] }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                />
+              </div>
+
+              {/* Content */}
+              <div className="relative p-4 flex items-start gap-3">
+                {/* Icon with animation */}
+                <motion.div
+                  animate={{
+                    rotate: [0, 10, -10, 0],
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                  }}
+                  className="flex-shrink-0 p-2 bg-white/20 rounded-xl backdrop-blur-sm"
+                >
+                  <Monitor className="w-5 h-5 text-white" />
+                </motion.div>
+
+                {/* Text content */}
+                <div className="flex-1 min-w-0">
+                  <motion.h4
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="font-bold text-white text-sm leading-tight"
+                  >
+                    🚀 Best Experience on Desktop
+                  </motion.h4>
+                  <motion.p
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-white/90 text-xs mt-1 leading-relaxed"
+                  >
+                    For the ultimate ProfileX experience with all features, we
+                    recommend using a desktop browser.
+                  </motion.p>
+
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-2 mt-3">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs font-medium rounded-lg transition-all border border-white/20"
+                      onClick={dismissMobileNotice}
+                    >
+                      <Smartphone className="w-3 h-3" />
+                      Continue on Mobile
+                    </motion.button>
+                  </div>
+                </div>
+
+                {/* Dismiss button */}
+                <motion.button
+                  onClick={dismissMobileNotice}
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="flex-shrink-0 p-2 hover:bg-white/20 rounded-lg transition-all group"
+                  aria-label="Dismiss notice"
+                >
+                  <X className="w-4 h-4 text-white/80 group-hover:text-white" />
+                </motion.button>
+              </div>
+
+              {/* Progress bar animation */}
+              <motion.div
+                className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-white/20 via-white/40 to-white/60"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{
+                  duration: 8,
+                  ease: "linear",
+                }}
+                style={{ transformOrigin: "left" }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.nav
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className={`fixed top-0 left-0 right-0 z-20 px-4 sm:px-6 py-3 transition-all duration-300 bg-[#1a1b24]/90 backdrop-blur-md shadow-lg`}
+        className={`fixed top-0 left-0 right-0 z-20 px-2 sm:px-6 py-3 transition-all duration-300 bg-[#1a1b24]/90 backdrop-blur-md shadow-lg`}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="max-w-9xl mx-auto flex justify-between items-center">
           {/* Logo */}
           <motion.div
             className="flex items-center"
@@ -194,103 +370,124 @@ const Navbar = () => {
 
           {/* User Menu - Desktop */}
           <div className="hidden md:flex items-center space-x-4">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="relative group"
-            >
-              <button className="bg-gradient-to-r from-[#711381] to-purple-600 p-2 rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 transition-all shadow-lg">
-                <Link
-                  href="/dashboard/templates"
-                  className="text-sm text-gray-300 hover:bg-[#2E313C] hover:text-purple-400"
-                >
-                  <Plus size={20} className="text-white" />
-                </Link>
-              </button>
-            </motion.div>
-
             {/* User Profile Dropdown */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="relative"
-            >
-              <button
+            <motion.div whileTap={{ scale: 0.98 }} className="relative">
+              <motion.button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="flex items-center space-x-2 bg-[#2E313C]/50 px-3 py-2 rounded-lg hover:bg-[#2E313C]/80 transition-all"
+                whileHover={{ backgroundColor: "rgba(46, 49, 60, 0.9)" }}
+                className="flex items-center space-x-3 bg-[#2E313C]/50 px-4 py-2.5 rounded-xl hover:bg-[#2E313C]/80 transition-all duration-300 border border-transparent hover:border-purple-500/20"
               >
-                <div className="h-7 w-7 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-500 text-white text-xs font-medium">
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  className="h-8 w-8 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 text-white text-sm font-semibold shadow-lg"
+                >
                   {user?.name ? (
                     getInitials(user.name)
                   ) : (
                     <UserCircle size={20} />
                   )}
+                </motion.div>
+                <div className="flex flex-col items-start max-w-[120px]">
+                  <span className="text-gray-200 text-sm font-medium truncate">
+                    {user?.name || "My Account"}
+                  </span>
+                  <span className="text-gray-400 text-xs truncate">
+                    {user?.email?.split("@")[0] || "account"}
+                  </span>
                 </div>
-                <span className="text-gray-300 max-w-[100px] truncate">
-                  {user?.name || "My Account"}
-                </span>
-              </button>
+              </motion.button>
 
               <AnimatePresence>
                 {isProfileMenuOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-60 bg-[#272932] border border-[#2E313C] rounded-lg shadow-xl z-50"
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="absolute right-0 mt-3 w-60 bg-[#272932]/95 backdrop-blur-md border border-[#3E4154] rounded-xl shadow-2xl z-50 overflow-hidden"
                   >
-                    <div className="p-3 border-b border-[#3E4049]">
-                      <p className="text-sm font-medium text-gray-200">
-                        {user?.name || "User"}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5 break-all">
-                        {user?.email}
-                      </p>
-                    </div>
-                    <div className="py-1">
-                      <Link
-                        href="/dashboard/profile"
-                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#2E313C] hover:text-purple-400"
-                        onClick={() => setIsProfileMenuOpen(false)}
-                      >
-                        <div className="flex items-center">
-                          <User size={16} className="mr-2" />
-                          Profile
-                        </div>
-                      </Link>
-                      <Link
-                        href="/dashboard"
-                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#2E313C] hover:text-purple-400"
-                        onClick={() => setIsProfileMenuOpen(false)}
-                      >
-                        <div className="flex items-center">
-                          <Layout size={16} className="mr-2" />
-                          Dashboard
-                        </div>
-                      </Link>
-                      <Link
-                        href="/dashboard/settings"
-                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#2E313C] hover:text-purple-400"
-                        onClick={() => setIsProfileMenuOpen(false)}
-                      >
-                        <div className="flex items-center">
-                          <Settings size={16} className="mr-2" />
-                          Settings
-                        </div>
-                      </Link>
-                      <button
-                        onClick={() => {
-                          handleLogout();
-                          setIsProfileMenuOpen(false);
+                    {/* Menu items */}
+                    <div className="py-2">
+                      <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        variants={{
+                          hidden: { opacity: 0 },
+                          visible: {
+                            opacity: 1,
+                            transition: { staggerChildren: 0.05 },
+                          },
                         }}
-                        className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#2E313C]"
                       >
-                        <div className="flex items-center">
-                          <LogOut size={16} className="mr-2" />
-                          Sign Out
-                        </div>
-                      </button>
+                        {menuLinks.map((item) => (
+                          <motion.div
+                            key={item.path}
+                            variants={{
+                              hidden: { opacity: 0, x: -10 },
+                              visible: { opacity: 1, x: 0 },
+                            }}
+                          >
+                            <Link
+                              href={item.path}
+                              className="group flex items-center px-4 py-3 text-sm text-gray-300 hover:bg-[#2E313C]/70 hover:text-white transition-all duration-200"
+                              onClick={() => setIsProfileMenuOpen(false)}
+                            >
+                              <motion.div
+                                whileHover={{ scale: 1.1 }}
+                                className={`mr-3 ${item.color} group-hover:scale-110 transition-transform`}
+                              >
+                                <item.icon size={18} />
+                              </motion.div>
+                              <span className="font-medium">{item.name}</span>
+                              <motion.div
+                                initial={{ opacity: 0, x: -10 }}
+                                whileHover={{ opacity: 1, x: 0 }}
+                                className="ml-auto text-gray-500"
+                              >
+                                →
+                              </motion.div>
+                            </Link>
+                          </motion.div>
+                        ))}
+
+                        {/* Separator */}
+                        <div className="border-t border-[#3E4049] my-2"></div>
+
+                        {/* Sign out button */}
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, x: -10 },
+                            visible: { opacity: 1, x: 0 },
+                          }}
+                        >
+                          <motion.button
+                            onClick={() => {
+                              handleLogout();
+                              setIsProfileMenuOpen(false);
+                            }}
+                            whileHover={{
+                              backgroundColor: "rgba(239, 68, 68, 0.1)",
+                            }}
+                            whileTap={{ scale: 0.98 }}
+                            className="group flex items-center w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200"
+                          >
+                            <motion.div
+                              whileHover={{ scale: 1.1, rotate: 5 }}
+                              className="mr-3 group-hover:scale-110 transition-transform"
+                            >
+                              <LogOut size={18} />
+                            </motion.div>
+                            <span className="font-medium">Sign Out</span>
+                            <motion.div
+                              initial={{ opacity: 0, x: -10 }}
+                              whileHover={{ opacity: 1, x: 0 }}
+                              className="ml-auto text-red-500/70"
+                            >
+                              ↗
+                            </motion.div>
+                          </motion.button>
+                        </motion.div>
+                      </motion.div>
                     </div>
                   </motion.div>
                 )}
@@ -320,22 +517,42 @@ const Navbar = () => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden fixed z-30 top-16 left-0 w-full bg-gradient-to-b from-[#272932] to-[#1a1b24] shadow-lg backdrop-blur-md"
+            className="h-screen md:hidden fixed z-30 top-16 left-0 w-full bg-gradient-to-b from-[#272932] to-[#1a1b24] shadow-lg backdrop-blur-md"
           >
             {/* User Profile - Mobile */}
-            <div className="p-4 border-b border-[#3E4049]">
-              <div className="flex items-center">
-                <div className="h-10 w-10 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-500 text-white text-sm font-medium">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="p-5 border-b border-[#3E4049] bg-[#2E313C]/50"
+            >
+              <div className="flex items-center space-x-4">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="h-12 w-12 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 text-white text-lg font-semibold shadow-lg"
+                >
                   {user?.name ? getInitials(user.name) : "PX"}
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-200">
+                </motion.div>
+                <div className="flex-1 min-w-0">
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-base font-semibold text-gray-100 truncate"
+                  >
                     {user?.name || "User"}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">{user?.email}</p>
+                  </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-sm text-gray-400 truncate"
+                  >
+                    {user?.email}
+                  </motion.p>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Navigation Links - Mobile */}
             <motion.div
@@ -353,75 +570,151 @@ const Navbar = () => {
               className="flex flex-col items-center space-y-4 py-6"
             >
               <div className="w-full px-6 space-y-3">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.path}
-                    href={link.path}
-                    className={`flex items-center justify-center py-2 px-4 rounded-md transition-colors ${
-                      pathname === link.path
-                        ? "bg-[#2E313C] text-purple-400"
-                        : "bg-[#2E313C]/50 text-gray-300"
-                    }`}
-                    onClick={() => setIsMobileMenuOpen(false)}
+                {menuLinks.map((item, index) => (
+                  <motion.div
+                    key={item.path}
+                    variants={{
+                      hidden: { opacity: 0, x: -20 },
+                      visible: {
+                        opacity: 1,
+                        x: 0,
+                        transition: { delay: index * 0.1 },
+                      },
+                    }}
                   >
-                    <link.icon size={16} className="mr-2" />
-                    {link.name}
-                  </Link>
+                    <Link
+                      href={item.path}
+                      className="flex items-center justify-start py-3 px-4 rounded-xl transition-all duration-300 bg-[#2E313C]/50 text-gray-300 hover:bg-[#2E313C]/80 hover:text-white border border-transparent hover:border-purple-500/20 group"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        className={`mr-3 group-hover:scale-110 transition-transform`}
+                      >
+                        <item.icon size={18} />
+                      </motion.div>
+                      <span className="font-medium">{item.name}</span>
+                      <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        whileHover={{ opacity: 1, x: 0 }}
+                        className="ml-auto text-gray-500 group-hover:text-purple-400"
+                      >
+                        →
+                      </motion.div>
+                    </Link>
+                  </motion.div>
+                ))}
+                {navLinks.map((link, index) => (
+                  <motion.div
+                    key={link.path}
+                    variants={{
+                      hidden: { opacity: 0, x: -20 },
+                      visible: {
+                        opacity: 1,
+                        x: 0,
+                        transition: { delay: index * 0.1 },
+                      },
+                    }}
+                  >
+                    <Link
+                      href={link.path}
+                      className={`flex items-center justify-start py-3 px-4 rounded-xl transition-all duration-300 group ${
+                        pathname === link.path
+                          ? "bg-gradient-to-r from-purple-600/20 to-purple-500/20 text-purple-300 border border-purple-500/30"
+                          : "bg-[#2E313C]/50 text-gray-300 hover:bg-[#2E313C]/80 hover:text-white border border-transparent hover:border-purple-500/20"
+                      }`}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        className={`mr-3 ${
+                          pathname === link.path
+                            ? "text-purple-400"
+                            : "group-hover:text-purple-400"
+                        }`}
+                      >
+                        <link.icon size={18} />
+                      </motion.div>
+                      <span className="font-medium">{link.name}</span>
+                      <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        whileHover={{ opacity: 1, x: 0 }}
+                        className="ml-auto text-gray-500 group-hover:text-purple-400"
+                      >
+                        →
+                      </motion.div>
+                    </Link>
+                  </motion.div>
                 ))}
 
                 {/* Link to home page */}
-                <Link
-                  href="/"
-                  className="flex items-center justify-center py-2 px-4 rounded-md transition-colors bg-[#2E313C]/50 text-gray-300"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, x: -20 },
+                    visible: {
+                      opacity: 1,
+                      x: 0,
+                      transition: { delay: navLinks.length * 0.1 },
+                    },
+                  }}
                 >
-                  <Home size={16} className="mr-2" />
-                  Home
-                </Link>
+                  <Link
+                    href="/"
+                    className="flex items-center justify-start py-3 px-4 rounded-xl transition-all duration-300 bg-[#2E313C]/50 text-gray-300 hover:bg-[#2E313C]/80 hover:text-white border border-transparent hover:border-purple-500/20 group"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      className="mr-3 group-hover:text-purple-400"
+                    >
+                      <Home size={18} />
+                    </motion.div>
+                    <span className="font-medium">Home</span>
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      whileHover={{ opacity: 1, x: 0 }}
+                      className="ml-auto text-gray-500 group-hover:text-purple-400"
+                    >
+                      →
+                    </motion.div>
+                  </Link>
+                </motion.div>
               </div>
 
               <motion.div
-                className="w-full px-6 space-y-3 mt-2 pt-4 border-t border-gray-700/50"
+                className="w-full px-6 space-y-4 mt-2 pt-6 border-t border-gray-700/50"
                 variants={{
                   hidden: { y: 20, opacity: 0 },
-                  visible: { y: 0, opacity: 1 },
+                  visible: { y: 0, opacity: 1, transition: { delay: 0.3 } },
                 }}
               >
-                <Link
-                  href="/dashboard/template-form"
-                  className="block w-full bg-gradient-to-r from-[#711381] to-purple-600 px-4 py-3 rounded-lg text-center hover:from-[#5C0F6B] hover:to-purple-700 transition-all shadow-lg shadow-purple-500/20"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <div className="flex items-center justify-center">
-                    <Plus size={18} className="mr-2" />
-                    Create New Portfolio
-                  </div>
-                </Link>
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="block w-full text-center text-red-400 transition-colors py-2 px-4 bg-[#2E313C]/50 rounded-md hover:bg-[#2E313C]/70"
-                >
-                  <div className="flex items-center justify-center">
-                    <LogOut size={18} className="mr-2" />
-                    Sign Out
-                  </div>
-                </button>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-center text-red-400 hover:text-red-300 transition-all duration-300 py-3 px-6 bg-red-500/10 hover:bg-red-500/20 rounded-xl border border-red-500/20 hover:border-red-500/30 group"
+                  >
+                    <div className="flex items-center justify-center">
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        className="mr-3 group-hover:scale-110 transition-transform"
+                      >
+                        <LogOut size={18} />
+                      </motion.div>
+                      <span className="font-medium">Sign Out</span>
+                    </div>
+                  </button>
+                </motion.div>
               </motion.div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Close profile dropdown when clicking outside */}
-      {isProfileMenuOpen && (
-        <div
-          className="fixed inset-0 z-10"
-          onClick={() => setIsProfileMenuOpen(false)}
-        ></div>
-      )}
     </>
   );
 };

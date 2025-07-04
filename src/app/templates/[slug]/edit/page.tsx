@@ -27,7 +27,9 @@ const LoadingUI = () => (
 );
 
 // Auth required overlay component
-const AuthRequiredOverlay: React.FC<{ onSignIn: () => void }> = ({ onSignIn }) => (
+const AuthRequiredOverlay: React.FC<{ onSignIn: () => void }> = ({
+  onSignIn,
+}) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -177,7 +179,7 @@ const TemplateFormContent = () => {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-7xl mx-auto px-2 sm:px-4 py-6 flex justify-between items-center"
+        className="max-w-9xl mx-auto px-2 sm:px-4 py-6 flex justify-between items-center"
       >
         <Link
           href={isAuthenticated ? "/templates" : "/signin"}
@@ -204,7 +206,7 @@ const TemplateFormContent = () => {
 
       {/* Template info */}
       <motion.div
-        className="max-w-7xl mx-auto px-2 sm:px-4 py-4"
+        className="max-w-9xl mx-auto px-2 sm:px-4 py-4"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
@@ -250,7 +252,7 @@ const TemplateFormContent = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <div className="bg-white rounded-xl shadow-2xl overflow-hidden max-w-7xl w-full border border-[#2E313C] relative">
+        <div className="bg-white rounded-xl shadow-2xl overflow-hidden max-w-9xl w-full border border-[#2E313C] relative">
           {isLoading ? (
             <LoadingUI />
           ) : !TemplateComponent ? (
@@ -275,7 +277,7 @@ const TemplateFormContent = () => {
       </motion.div>
 
       {/* Instructions section */}
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 mt-4 sm:mt-8">
+      <div className="max-w-9xl mx-auto px-2 sm:px-4 mt-4 sm:mt-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

@@ -144,7 +144,7 @@ const Contact = ({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
     >
-      <div className="container mx-auto px-4 max-w-6xl">
+      <div className="container mx-auto px-4 max-w-7xl">
         <motion.div
           className="text-center mb-12"
           initial={{ opacity: 0, y: 20 }}

@@ -62,7 +62,6 @@ const DashboardPage = () => {
   const { user, isAuthenticated, token, checkAuthState } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
   const [welcomeMessage, setWelcomeMessage] = useState("");
-  const [showWelcomeAnimation, setShowWelcomeAnimation] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [hasProjects, setHasProjects] = useState(false);
@@ -104,29 +103,6 @@ const DashboardPage = () => {
     }
 
     setWelcomeMessage(`${greeting}, ${user?.name?.split(" ")[0] || "there"}!`);
-
-    // Check if this is the first visit after login
-    const hasSeenWelcome = localStorage.getItem("hasSeenWelcome");
-    const lastLoginTimestamp = localStorage.getItem("lastLoginTimestamp");
-    const currentTime = Date.now();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-
-    if (
-      !hasSeenWelcome ||
-      (lastLoginTimestamp &&
-        currentTime - parseInt(lastLoginTimestamp) > twentyFourHours)
-    ) {
-      // Mark that user has seen welcome
-      localStorage.setItem("hasSeenWelcome", "true");
-      localStorage.setItem("lastLoginTimestamp", currentTime.toString());
-
-      // Show welcome animation after a slight delay
-      const welcomeTimer = setTimeout(() => {
-        setShowWelcomeAnimation(true);
-      }, 500);
-      return () => clearTimeout(welcomeTimer);
-    }
-
     // Set mock projects
     setHasProjects(mockProjects.length > 0);
     setProjects(mockProjects);
@@ -169,116 +145,15 @@ const DashboardPage = () => {
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A] pb-2">
       <Navbar />
 
-      {/* Enhanced Welcome Message Overlay */}
-      <AnimatePresence>
-        {showWelcomeAnimation && (
-          <motion.div
-            className="fixed inset-0 z-40 flex items-center justify-center bg-gradient-to-br from-[#17181E]/80 via-[#1F2029]/80 to-[#2A2D3A]/80 backdrop-blur-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.5 } }}
-            transition={{ duration: 0.3 }}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative px-8 py-10 bg-gradient-to-br from-[#272A3E]/70 to-[#1D1F2E]/70 backdrop-blur-md rounded-2xl border border-[#3D4156]/30 shadow-2xl max-w-lg w-full mx-4"
-            >
-              {/* Decorative elements */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-purple-500/20 rounded-full blur-xl"></div>
-              <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-indigo-500/20 rounded-full blur-xl"></div>
-
-              <div className="relative z-10">
-                <motion.div
-                  className="flex justify-center mb-6"
-                  initial={{ y: -20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <motion.div
-                        className="w-16 h-16 rounded-full bg-purple-500/20"
-                        animate={{ scale: [1, 1.3, 1] }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          repeatType: "reverse",
-                        }}
-                      />
-                    </div>
-                    <motion.div
-                      className="relative z-10 w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg"
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 20,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                    >
-                      <Rocket size={32} className="text-white" />
-                    </motion.div>
-                  </div>
-                </motion.div>
-
-                <motion.h1
-                  className="text-3xl sm:text-4xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-pink-400 mb-3"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                >
-                  {welcomeMessage}
-                </motion.h1>
-
-                <motion.p
-                  className="text-center text-lg text-gray-300/90 mb-8"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5, duration: 0.6 }}
-                >
-                  Your portfolio journey begins now. Let&apos;s create something
-                  amazing together.
-                </motion.p>
-
-                <motion.button
-                  className="w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg font-medium shadow-lg shadow-purple-900/30 flex items-center justify-center group transition-all"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.7, duration: 0.6 }}
-                  onClick={() => setShowWelcomeAnimation(false)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <span>Let&apos;s Get Started</span>
-                  <motion.div
-                    className="ml-2"
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      repeatType: "reverse",
-                    }}
-                  >
-                    <ChevronRight size={18} />
-                  </motion.div>
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="pt-24 px-2 sm:px-6 md:px-10 flex-1 relative z-10 overflow-hidden "
+        className="pt-24 px-2 sm:px-6 flex-1 relative z-10 overflow-hidden "
       >
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-9xl mx-auto">
           {/* Dashboard Header with Welcome Message and Search */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -321,7 +196,7 @@ const DashboardPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.6 }}
-            className="mb-8 bg-gradient-to-r from-[#1A1E30] to-[#292B3D] border border-[#2E313C] p-5 md:p-7 rounded-2xl overflow-hidden relative"
+            className="mb-4 bg-gradient-to-r from-[#1A1E30] to-[#292B3D] border border-[#2E313C] p-3 md:p-6 rounded-2xl overflow-hidden relative"
           >
             <div className="relative z-10 flex flex-col md:flex-row gap-5 md:gap-8 items-center justify-between">
               <div className="md:max-w-xl">
@@ -329,7 +204,7 @@ const DashboardPage = () => {
                   <Sparkles size={14} className="mr-1.5" fill="currentColor" />
                   New Feature
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                <h2 className="text-xl md:text-3xl font-bold text-white mb-3">
                   Your portfolio is waiting to be created
                 </h2>
                 <p className="text-gray-300 mb-5">
@@ -542,9 +417,7 @@ const DashboardPage = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 * idx, duration: 0.5 }}
                         className="flex flex-col md:flex-row items-start md:items-center gap-4 bg-[#262A3E] hover:bg-[#2A2F45] border border-[#3E4154] rounded-lg p-4 mb-3 last:mb-0 transition-colors cursor-pointer"
-                        onClick={() =>
-                          router.push(`/projects/${project.id}`)
-                        }
+                        onClick={() => router.push(`/projects/${project.id}`)}
                       >
                         {/* Project thumbnail - can be replaced with real images */}
                         <div className="h-16 w-20 bg-[#1E2132] rounded-md flex-shrink-0 overflow-hidden relative">

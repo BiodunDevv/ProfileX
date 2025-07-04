@@ -45,7 +45,7 @@ const Hero = ({
       {isLoaded && (
         <motion.section
           className="w-full min-h-screen flex flex-col items-center bg-[#080808] text-white"
-          id ="home"
+          id="home"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -53,7 +53,7 @@ const Hero = ({
         >
           <Navbar DevName={DevName} />
 
-          <div className="flex flex-col lg:flex-row items-center justify-between w-[90%] max-w-7xl mx-auto px-4 py-6 flex-1 gap-8 lg:gap-12">
+          <div className="flex flex-col lg:flex-row items-center justify-between w-[90%] max-w-9xl mx-auto px-4 py-6 flex-1 gap-8 lg:gap-12">
             <motion.div
               className="flex flex-col justify-center items-center lg:items-start w-full text-center lg:text-left"
               initial={{ opacity: 0, x: -50 }}
@@ -194,7 +194,7 @@ const Hero = ({
 
           {/* Companies Section */}
           <motion.div
-            className="w-full max-w-7xl mx-auto px-4 py-4"
+            className="w-full max-w-9xl mx-auto px-4 py-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}

@@ -55,7 +55,7 @@ const Experience = ({
   return (
     <section id="experience" className="w-full bg-white py-20 px-4">
       <motion.div
-        className="max-w-7xl mx-auto"
+        className="max-w-9xl mx-auto"
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"

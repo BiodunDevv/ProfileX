@@ -134,7 +134,7 @@ const Developers = () => {
         <Coffee size={25} />
       </div>
 
-      <div className="container mx-auto px-2 sm:px-6 relative z-10 max-w-7xl">
+      <div className="container mx-auto px-2 sm:px-6 relative z-10 max-w-9xl">
         <motion.div
           initial="hidden"
           whileInView="visible"
