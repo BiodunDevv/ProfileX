@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { persist } from "zustand/middleware";
+
+const API_BASE_URL = "https://profilexbackend.onrender.com/api";
 
 interface AuthState {
   user: User | null;
@@ -9,19 +11,15 @@ interface AuthState {
   isLoading: boolean;
   token: string | null;
   refreshToken: string | null;
-  lastLogin: number | null; // Track when user last logged in
+  lastLogin: number | null;
   signUp: (userData: SignUpData) => Promise<Response | undefined>;
   signIn: (credentials: SignInCredentials) => Promise<Response | undefined>;
   signOut: () => Promise<void>;
-  verifyCode: (
-    verificationData: VerificationData
-  ) => Promise<Response | undefined>;
+  verifyCode: (verificationData: VerificationData) => Promise<Response | undefined>;
   resendVerificationCode: (email?: string) => Promise<Response | undefined>;
-  resetPassword: (
-    resetData: ResetPasswordData
-  ) => Promise<Response | undefined>;
-  checkAuthState: () => Promise<boolean>; // New method to verify auth state
-  refreshAccessToken: () => Promise<boolean>; // New method to refresh access token
+  resetPassword: (resetData: ResetPasswordData) => Promise<Response | undefined>;
+  forgotPassword: (email: string) => Promise<Response | undefined>;
+  checkAuthState: () => Promise<boolean>;
 }
 
 interface User {
@@ -47,18 +45,15 @@ interface VerificationData {
 }
 
 interface ResetPasswordData {
-  email: string;
+  email?: string;
   password: string;
   token?: string;
 }
 
-// Check if we're running in a browser environment
 const isClient = typeof window !== "undefined";
 
-// Create a safe storage implementation that checks for browser environment
 const createSafeStorage = () => {
   if (!isClient) {
-    // Server-side storage mock
     return {
       getItem: () => null,
       setItem: () => undefined,
@@ -66,7 +61,6 @@ const createSafeStorage = () => {
     };
   }
 
-  // Browser-side storage implementation
   return {
     getItem: (name: string) => {
       try {
@@ -106,14 +100,13 @@ export const useAuthStore = create<AuthState>()(
 
       signUp: async (userData: SignUpData) => {
         try {
-          const response = await fetch("/api/auth/signup", {
+          const response = await fetch(`${API_BASE_URL}/auth/signup`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify(userData),
           });
-
           return response;
         } catch (error) {
           console.error("Signup error:", error);
@@ -123,9 +116,7 @@ export const useAuthStore = create<AuthState>()(
 
       verifyCode: async (verificationData: VerificationData) => {
         try {
-          console.log("Verifying code:", verificationData);
-
-          const response = await fetch("/api/auth/verify", {
+          const response = await fetch(`${API_BASE_URL}/auth/verify`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -135,40 +126,28 @@ export const useAuthStore = create<AuthState>()(
               verificationCode: verificationData.verificationCode,
             }),
           });
-
-          const data = await response.json();
-          console.log("Verification response:", data);
-
-          if (response.ok) {
-            // Optionally update auth state here if you want to log the user in after verification
-            // set({ isAuthenticated: true, user: { ... } });
-          }
-
           return response;
         } catch (error) {
-          console.error("Verification error:", error);
+          console.error("Email verification error:", error);
           return undefined;
         }
       },
 
       resendVerificationCode: async (email?: string) => {
         try {
-          // Get the email from the provided parameter or from localStorage (safely)
-          const emailToUse =
-            email || (isClient ? localStorage.getItem("userEmail") : null);
+          const emailToUse = email || (isClient ? localStorage.getItem("userEmail") : null);
 
           if (!emailToUse) {
             throw new Error("Email address is missing");
           }
 
-          const response = await fetch("/api/auth/resend-verification", {
+          const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ email: emailToUse }),
           });
-
           return response;
         } catch (error) {
           console.error("Error resending verification code:", error);
@@ -180,9 +159,9 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true });
           
-          console.log("SignIn attempt with:", credentials.email);
-      
-          const response = await fetch("/api/auth/signin", {
+          console.log("🔐 SignIn attempt with:", credentials.email);
+          
+          const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -192,155 +171,201 @@ export const useAuthStore = create<AuthState>()(
       
           const data = await response.json();
           
-          console.log("SignIn response data:", {
-            status: response.status,
-            ok: response.ok,
-            hasUser: !!data.user,
-            hasToken: !!data.token
+          console.log("🔐 SignIn response status:", response.status);
+          console.log("🔐 SignIn response ok:", response.ok);
+          console.log("🔐 Full response data:", data);
+          console.log("🔐 Response data keys:", Object.keys(data));
+          
+          // Check different possible data structures from your backend
+          const userData = data.user || data.data?.user || data;
+          const token = data.token || data.accessToken || data.data?.token || data.data?.accessToken;
+          const refreshToken = data.refreshToken || data.data?.refreshToken;
+          
+          console.log("🔍 Parsed data:", {
+            userData,
+            token: token ? token.substring(0, 20) + "..." : "none",
+            refreshToken: refreshToken ? "present" : "none"
           });
       
-          if (response.ok) {
-            // Debug user data
-            console.log("User data received:", {
-              id: data.user?.id,
-              name: data.user?.name,
-              email: data.user?.email
-            });
+          if (response.ok && userData && token) {
+            console.log("✅ SignIn successful - updating auth state");
             
-            // Debug the token details
-            if (data.token) {
-              try {
-                const parts = data.token.split('.');
-                if (parts.length === 3) {
-                  const payload = JSON.parse(atob(parts[1]));
-                  console.log("Token payload:", payload);
-                  console.log("User ID in token vs user object:", {
-                    tokenUserId: payload.userId,
-                    userObjectId: data.user?.id,
-                    match: payload.userId === data.user?.id
-                  });
-                }
-              } catch (e) {
-                console.error("Failed to parse token:", e);
-              }
-            }
-      
-            // Store tokens from response with timestamp
+            // Update auth state
             set({
-              user: data.user,
+              user: {
+                id: userData.id || userData._id,
+                name: userData.name || userData.username,
+                email: userData.email,
+              },
               isAuthenticated: true,
-              token: data.token,
-              refreshToken: data.refreshToken,
+              token: token,
+              refreshToken: refreshToken || null,
               lastLogin: Date.now(),
+              isLoading: false,
             });
       
-            console.log("Auth state updated with new token");
+            console.log("✅ Auth state updated successfully");
+            console.log("🔍 Current auth state:", {
+              isAuthenticated: get().isAuthenticated,
+              hasToken: !!get().token,
+              hasUser: !!get().user,
+              userName: get().user?.name
+            });
             
             return new Response(JSON.stringify(data), {
-              status: response.status,
+              status: 200,
+              statusText: "OK",
               headers: { "Content-Type": "application/json" },
             });
           }
       
-          console.error("SignIn failed:", data.message || "Unknown error");
-          return response;
+          console.error("❌ SignIn failed - missing required data");
+          console.error("❌ Message:", data.message || "Unknown error");
+          console.error("❌ Has user data:", !!userData);
+          console.error("❌ Has token:", !!token);
+          
+          set({
+            user: null,
+            isAuthenticated: false,
+            token: null,
+            refreshToken: null,
+            isLoading: false,
+          });
+          
+          return new Response(JSON.stringify(data), {
+            status: response.status,
+            statusText: response.statusText,
+            headers: { "Content-Type": "application/json" },
+          });
         } catch (error) {
-          console.error("Login error:", error);
+          console.error("❌ SignIn network error:", error);
+          set({
+            user: null,
+            isAuthenticated: false,
+            token: null,
+            refreshToken: null,
+            isLoading: false,
+          });
           return undefined;
-        } finally {
-          set({ isLoading: false });
         }
       },
 
-      // New method to check and refresh auth state
       checkAuthState: async () => {
         try {
-          const { token, refreshToken, lastLogin, isAuthenticated } = get();
+          const { token } = get();
 
-          // If user is not authenticated or no token exists, return false
-          if (!isAuthenticated || !token) {
+          console.log("🔍 Checking auth state:", {
+            hasToken: !!token,
+            tokenPreview: token ? token.substring(0, 20) + "..." : "none"
+          });
+
+          // If no token, user is definitely not authenticated
+          if (!token) {
+            console.log("❌ No token found - user not authenticated");
+            set({
+              isAuthenticated: false,
+              user: null,
+            });
             return false;
           }
 
+          // Verify token with the backend using the /auth/check endpoint
+          console.log("🔑 Token found, verifying with server...");
+          
+          try {
+            const response = await fetch(`${API_BASE_URL}/auth/check`, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+              },
+            });
 
-          console.log("Auth state checked - User is authenticated");
-          return true;
+            console.log("📡 Auth check response status:", response.status);
+            
+            if (response.ok) {
+              const userData = await response.json();
+              console.log("✅ Token is valid - user is authenticated");
+              console.log("👤 User data from server:", userData);
+              
+              // Update user data and ensure isAuthenticated is true
+              set({
+                user: userData.user || userData,
+                isAuthenticated: true,
+              });
+              
+              return true;
+            } else if (response.status === 401) {
+              console.log("❌ Token is invalid/expired - clearing auth state");
+              set({
+                isAuthenticated: false,
+                token: null,
+                refreshToken: null,
+                user: null,
+              });
+              return false;
+            } else {
+              console.log("❌ Auth check failed with status:", response.status);
+              set({
+                isAuthenticated: false,
+                token: null,
+                refreshToken: null,
+                user: null,
+              });
+              return false;
+            }
+          } catch (networkError) {
+            console.error("❌ Network error during auth check:", networkError);
+            // Don't clear auth state on network errors, just return false
+            return false;
+          }
         } catch (error) {
-          console.error("Error checking auth state:", error);
-          // If there's an error, reset auth state
+          console.error("❌ Error checking auth state:", error);
           set({
             isAuthenticated: false,
             token: null,
             refreshToken: null,
+            user: null,
           });
           return false;
         }
       },
 
-      // Add this to your auth store implementation
-      refreshAccessToken: async () => {
+      forgotPassword: async (email: string) => {
         try {
-          const { refreshToken } = get();
-          
-          if (!refreshToken) {
-            console.error("No refresh token available");
-            return false;
-          }
-          
-          const response = await fetch("/api/auth/refresh", {
+          const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ refreshToken }),
+            body: JSON.stringify({ email }),
           });
-          
-          if (!response.ok) {
-            console.error("Failed to refresh token:", response.status);
-            // If refresh fails, sign the user out
-            get().signOut();
-            return false;
-          }
-          
-          const data = await response.json();
-          
-          if (data.token) {
-            // Update the token in the store
-            set({
-              token: data.token,
-              // Optionally update the refresh token if your API provides a new one
-              refreshToken: data.refreshToken || get().refreshToken,
-            });
-            console.log("Access token refreshed successfully");
-            return true;
-          }
-          
-          return false;
+          return response;
         } catch (error) {
-          console.error("Error refreshing token:", error);
-          // On any error, sign the user out for security
-          get().signOut();
-          return false;
+          console.error("Forgot password error:", error);
+          return undefined;
         }
       },
 
       resetPassword: async (resetData: ResetPasswordData) => {
         try {
-          const { email, password, token } = resetData;
-          const tokenToUse = token || get().token;
+          const { password, token } = resetData;
 
-          const response = await fetch("/api/auth/reset-password", {
+          if (!token) {
+            throw new Error("Reset token is required");
+          }
+
+          const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              email,
-              password,
-              token: tokenToUse,
+            body: JSON.stringify({ 
+              password, 
+              token,
+              userId: resetData.email
             }),
           });
-
           return response;
         } catch (error) {
           console.error("Password reset error:", error);
@@ -350,11 +375,21 @@ export const useAuthStore = create<AuthState>()(
 
       signOut: async () => {
         try {
-          await fetch("/api/auth/logout", {
-            method: "POST",
-          });
+          const { token } = get();
+          
+          if (token) {
+            await fetch(`${API_BASE_URL}/auth/logout`, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${token}`,
+              },
+            });
+          }
 
-          // Always clear the auth state, even if the API call fails
+          if (isClient) {
+            localStorage.removeItem("userEmail");
+          }
+
           set({
             user: null,
             isAuthenticated: false,
@@ -363,11 +398,9 @@ export const useAuthStore = create<AuthState>()(
             lastLogin: null,
           });
 
-          console.log("User signed out successfully");
+          console.log("✅ User signed out successfully");
         } catch (error) {
-          console.error("Logout error:", error);
-
-          // Still clear auth state even if API fails
+          console.error("❌ Logout error:", error);
           set({
             user: null,
             isAuthenticated: false,
@@ -380,13 +413,12 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-storage",
-      // Persist more data for authentication
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         token: state.token,
+        refreshToken: state.refreshToken,
         lastLogin: state.lastLogin,
-        // Still don't store refresh token in localStorage for security
       }),
       storage: createSafeStorage(),
     }
@@ -395,14 +427,13 @@ export const useAuthStore = create<AuthState>()(
 
 export async function checkIfUserExists(identifier: string) {
   try {
-    const response = await fetch("/api/auth/check-user", {
+    const response = await fetch(`${API_BASE_URL}/auth/check-user`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ identifier: identifier.toLowerCase() }),
     });
 
     const result = await response.json();
-    console.log("User exists check:", result);
     return result.exists;
   } catch (error) {
     console.error("Error checking user:", error);

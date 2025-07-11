@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import AuthProvider from "../app/components/providers/AuthProvider";
+import AuthProvider from "./components/AuthProvider";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
-  title: "ProfileX - Your Portfolio Platform",
-  description: "Create and share your professional portfolio",
+  title: "ProfileX - Your Professional Portfolio",
+  description: "Create and manage your professional portfolio with ProfileX",
 };
 
 export default function RootLayout({
@@ -16,9 +19,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={inter.className}>
-        <AuthProvider>{children}</AuthProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body 
+        className={`${inter.variable} font-sans antialiased`}
+        suppressHydrationWarning
+      >
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

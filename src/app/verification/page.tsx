@@ -1,259 +1,196 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ChevronRight, AlertCircle, Loader2, CheckCircle } from "lucide-react";
-import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
-import AuthLayout, { itemVariants } from "../components/Auth/AuthLayout";
-import LogoHeader from "../components/UI/LogoHeader";
+import { useAuthStore } from "../../../store/useAuthStore";
 
-// Verification form component
-function VerificationForm() {
+const VerificationPage = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [email, setEmail] = useState("");
-  
-  const searchParams = useSearchParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { verifyCode, resendVerificationCode } = useAuthStore();
 
   useEffect(() => {
-    // Get email from URL query params
     const emailParam = searchParams.get("email");
     if (emailParam) {
       setEmail(emailParam);
     } else {
-      // Try getting from localStorage as fallback
+      // Check localStorage for email
       const storedEmail = localStorage.getItem("userEmail");
       if (storedEmail) {
         setEmail(storedEmail);
+      } else {
+        router.push("/signup");
       }
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   const handleVerification = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!verificationCode) {
-      setErrorMessage("Please enter your verification code");
-      return;
-    }
-    
-    if (!email) {
-      setErrorMessage("Email is required for verification");
+    setIsLoading(true);
+    setError("");
+    setSuccess("");
+
+    if (!verificationCode || verificationCode.length !== 6) {
+      setError("Please enter a valid 6-digit verification code");
+      setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
-    setErrorMessage("");
+    if (!email) {
+      setError("Email address is missing");
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      const response = await fetch("/api/auth/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          verificationCode,
-        }),
+      const response = await verifyCode({
+        email,
+        verificationCode,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setIsSuccess(true);
-        // Redirect to login after 3 seconds
+      if (response && response.ok) {
+        setSuccess("Email verified successfully! Redirecting to sign in...");
+        localStorage.removeItem("userEmail");
         setTimeout(() => {
           router.push("/signin");
-        }, 3000);
+        }, 2000);
       } else {
-        setErrorMessage(data.message || "Verification failed. Please try again.");
+        const data = await response?.json();
+        setError(data?.message || "Verification failed. Please try again.");
       }
     } catch (error) {
       console.error("Verification error:", error);
-      setErrorMessage(
-        error instanceof Error 
-          ? error.message 
-          : "An error occurred during verification"
-      );
+      setError("An error occurred during verification. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleResendCode = async () => {
-    if (!email) {
-      setErrorMessage("Email is required to resend the code");
-      return;
-    }
-
     setIsLoading(true);
-    setErrorMessage("");
+    setError("");
+    setSuccess("");
 
     try {
-      const response = await fetch("/api/auth/resend-code", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
+      const response = await resendVerificationCode(email);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setErrorMessage("");
-        // Show a success message for resending code
-        alert("Verification code has been resent to your email");
+      if (response && response.ok) {
+        setSuccess("Verification code resent successfully!");
       } else {
-        setErrorMessage(data.message || "Failed to resend verification code");
+        const data = await response?.json();
+        setError(data?.message || "Failed to resend verification code.");
       }
     } catch (error) {
-      console.error("Resend code error:", error);
-      setErrorMessage(
-        error instanceof Error 
-          ? error.message 
-          : "An error occurred while resending the code"
-      );
+      console.error("Resend error:", error);
+      setError("An error occurred while resending the code.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <AuthLayout>
-      <LogoHeader title="Verify your account" />
-
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#17181E] via-[#1F2029] to-[#2A2D3A] px-4">
       <motion.div
-        variants={itemVariants}
-        className="bg-[#272932] rounded-2xl shadow-2xl border border-[#2E313C] p-6 space-y-6 w-full max-w-md"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md"
       >
-        {isSuccess ? (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center space-y-4"
-          >
-            <div className="flex justify-center">
-              <CheckCircle className="h-16 w-16 text-green-500" />
-            </div>
-            <h2 className="text-xl font-semibold text-white">Verification Successful</h2>
+        <div className="bg-white/10 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-purple-500/20">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Verify Your Email
+            </h1>
             <p className="text-gray-300">
-              Your account has been verified successfully. You will be redirected to the login page shortly.
+              We sent a verification code to{" "}
+              <span className="text-purple-400 font-semibold">{email}</span>
             </p>
-            <div className="mt-6">
-              <Link
-                href="/signin"
-                className="text-purple-400 hover:text-purple-300 transition-colors"
-              >
-                Go to login page
-              </Link>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.form onSubmit={handleVerification} className="space-y-6">
-            {errorMessage && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg flex items-center gap-2"
-              >
-                <AlertCircle size={16} />
-                <span className="text-sm">{errorMessage}</span>
-              </motion.div>
-            )}
+          </div>
 
+          <form onSubmit={handleVerification} className="space-y-6">
             <div>
-              <p className="text-gray-300 mb-4">
-                We&apos;ve sent a verification code to your email address 
-                {email && <strong className="text-white"> ({email})</strong>}. 
-                Please enter the code below to verify your account.
-              </p>
-            </div>
-
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label
+                htmlFor="code"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
                 Verification Code
               </label>
               <input
                 type="text"
+                id="code"
                 value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-                className="w-full px-4 py-3 bg-[#2E313C] text-white rounded-lg border border-[#3E4049] focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
-                placeholder="Enter verification code"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                  setVerificationCode(value);
+                }}
+                className="w-full px-4 py-3 rounded-lg bg-white/5 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-2xl tracking-widest"
+                placeholder="000000"
+                maxLength={6}
+                required
               />
             </div>
 
-            <motion.button
-              whileHover={{ scale: isLoading ? 1 : 1.05 }}
-              whileTap={{ scale: isLoading ? 1 : 0.95 }}
-              type="submit"
-              disabled={isLoading}
-              className={`w-full bg-gradient-to-r from-[#711381] to-purple-600 text-white py-3 rounded-lg transition-all duration-300 flex items-center justify-center group
-                ${isLoading ? "opacity-80 cursor-not-allowed" : "hover:from-[#5C0F6B] hover:to-purple-700"}`}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                <>
-                  Verify Account
-                  <ChevronRight
-                    className="ml-2 transform transition-transform group-hover:translate-x-1"
-                    size={20}
-                  />
-                </>
-              )}
-            </motion.button>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-500/20 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg"
+              >
+                {error}
+              </motion.div>
+            )}
 
-            <div className="text-center mt-4 space-y-3">
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-green-500/20 border border-green-500/50 text-green-400 px-4 py-3 rounded-lg"
+              >
+                {success}
+              </motion.div>
+            )}
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              disabled={isLoading || !verificationCode}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Verifying..." : "Verify Email"}
+            </motion.button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-gray-400 text-sm">
+              Didn&apos;t receive the code?{" "}
               <button
-                type="button"
                 onClick={handleResendCode}
                 disabled={isLoading}
-                className="text-purple-500 hover:text-purple-400 transition-colors text-sm focus:outline-none"
+                className="text-purple-400 hover:text-purple-300 font-semibold disabled:opacity-50"
               >
-                Didn&apos;t receive a code? Resend
+                Resend Code
               </button>
-              
-              <div>
-                <Link
-                  href="/signin"
-                  className="text-gray-400 hover:text-gray-300 transition-colors text-sm block mt-2"
-                >
-                  Back to Sign In
-                </Link>
-              </div>
-            </div>
-          </motion.form>
-        )}
+            </p>
+          </div>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => router.push("/signup")}
+              className="text-gray-400 hover:text-gray-300 text-sm"
+            >
+              ← Back to Sign Up
+            </button>
+          </div>
+        </div>
       </motion.div>
-    </AuthLayout>
-  );
-}
-
-// Loading fallback component
-function LoadingComponent() {
-  return (
-    <AuthLayout>
-      <LogoHeader title="Loading..." />
-      <div className="flex justify-center items-center h-32">
-        <Loader2 className="h-8 w-8 text-purple-500 animate-spin" />
-      </div>
-    </AuthLayout>
-  );
-}
-
-// Main component with Suspense boundary
-const VerificationPage = () => {
-  return (
-    <Suspense fallback={<LoadingComponent />}>
-      <VerificationForm />
-    </Suspense>
+    </div>
   );
 };
 

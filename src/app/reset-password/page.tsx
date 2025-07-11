@@ -9,6 +9,7 @@ import { z } from "zod";
 import { useSearchParams, useRouter } from "next/navigation";
 import AuthLayout, { itemVariants } from "../components/Auth/AuthLayout";
 import LogoHeader from "../components/UI/LogoHeader";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 // Validation schema with password matching
 const resetPasswordSchema = z
@@ -36,28 +37,20 @@ function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [token, setToken] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { resetPassword } = useAuthStore();
 
   // Get token from URL parameters
   useEffect(() => {
     const tokenParam = searchParams.get("token");
-    const userIdParam = searchParams.get("userId");
     
     if (!tokenParam) {
       setErrorMessage("Invalid or missing reset token. Please request a new password reset link.");
     } else {
       console.log("Token from URL:", tokenParam);
       setToken(tokenParam);
-    }
-    
-    if (userIdParam) {
-      console.log("User ID from URL:", userIdParam);
-      setUserId(userIdParam);
-    } else {
-      console.warn("No userId provided in URL");
     }
   }, [searchParams]);
 
@@ -74,31 +67,23 @@ function ResetPasswordForm() {
       setErrorMessage("Missing reset token. Please request a new password reset link.");
       return;
     }
-    
-    if (!userId) {
-      setErrorMessage("Missing user ID. Please request a new password reset link.");
-      return;
-    }
 
     setErrorMessage("");
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token: token,
-          userId: userId,
-          password: data.password
-        }),
+      const response = await resetPassword({
+        password: data.password,
+        token: token,
       });
 
-      const result = await response.json();
+      if (!response) {
+        setErrorMessage("Network error. Please try again.");
+        return;
+      }
       
       if (!response.ok) {
+        const result = await response.json();
         setErrorMessage(result.message || "An error occurred. Please try again.");
       } else {
         setIsSuccess(true);

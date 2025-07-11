@@ -1,15 +1,15 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, AlertCircle, Loader2, Check, X } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, Loader2, CheckCircle, Shield } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import AuthLayout, { itemVariants } from "../components/Auth/AuthLayout";
 import LogoHeader from "../components/UI/LogoHeader";
 import { useAuthStore } from "../../../store/useAuthStore";
-import { useRouter } from "next/navigation";
 
 // Update Zod schema to match our API
 const loginSchema = z.object({
@@ -34,6 +34,7 @@ const SignInPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [passwordValue, setPasswordValue] = useState("");
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [passwordChecks, setPasswordChecks] = useState({
     hasLength: false,
     hasCapital: false,
@@ -90,6 +91,8 @@ const SignInPage = () => {
     setIsLoading(true);
 
     try {
+      console.log("🔐 Attempting to sign in with:", data.email);
+      
       const response = await signIn({
         email: data.email,
         password: data.password,
@@ -100,11 +103,16 @@ const SignInPage = () => {
         return;
       }
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      // Parse response data
+      const responseData = await response.json();
+      console.log("🔐 Response data:", responseData);
 
+      if (!response.ok) {
+        console.log("🔐 Response not ok, status:", response.status);
+        
         // Handle verification error specifically
-        if (response.status === 403 && errorData.verified === false) {
+        if (response.status === 403 && responseData.verified === false) {
+          console.log("🔐 User not verified, redirecting to verification");
           // Store email in localStorage for verification process
           localStorage.setItem("userEmail", data.email);
           // Redirect to verification page
@@ -112,21 +120,32 @@ const SignInPage = () => {
           return;
         }
 
-        setErrorMessage(errorData.message || "Invalid credentials");
+        setErrorMessage(responseData.message || "Invalid credentials");
         return;
       }
-      const { token, user } = useAuthStore.getState();
 
-      // Log token for verification
-      console.log("Sign-in successful!");
-      console.log("User authenticated:", user?.name);
-      console.log("Token available:", token ? "Yes" : "No");
-      console.log("Token:", token);
+      // Check if signin was successful by checking auth store state
+      const authState = useAuthStore.getState();
+      console.log("🔐 Auth state after signin:", {
+        isAuthenticated: authState.isAuthenticated,
+        hasToken: !!authState.token,
+        hasUser: !!authState.user,
+        userName: authState.user?.name
+      });
 
-      // Navigate to dashboard
-      router.push("/dashboard");
+      if (authState.isAuthenticated && authState.token && authState.user) {
+        console.log("✅ Sign-in successful!");
+        console.log("👤 User authenticated:", authState.user.name);
+        console.log("🔑 Token available:", "Yes");
+
+        // Navigate to dashboard
+        router.push("/dashboard");
+      } else {
+        console.error("❌ Auth state not updated properly after signin");
+        setErrorMessage("Authentication failed. Please try again.");
+      }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("❌ Login error:", error);
       setErrorMessage(
         error instanceof Error
           ? error.message
@@ -179,14 +198,23 @@ const SignInPage = () => {
           <label className="block text-sm font-medium text-gray-300 mb-1">
             Password
           </label>
-          <input
-            type="password"
-            {...register("password")}
-            onFocus={() => setIsPasswordFocused(true)}
-            onBlur={() => setIsPasswordFocused(false)}
-            className="w-full px-4 py-3 bg-[#2E313C] text-white rounded-lg border border-[#3E4049] focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
-            placeholder="Enter your password"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              {...register("password")}
+              onFocus={() => setIsPasswordFocused(true)}
+              onBlur={() => setIsPasswordFocused(false)}
+              className="w-full px-4 py-3 bg-[#2E313C] text-white rounded-lg border border-[#3E4049] focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none pr-10"
+              placeholder="Enter your password"
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
 
           {/* Interactive Password Requirements */}
           <AnimatePresence>
@@ -196,103 +224,44 @@ const SignInPage = () => {
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
-                className="mt-3 overflow-hidden"
+                className="mt-2 bg-[#1E2132] border border-[#3E4049] rounded-lg p-3 space-y-1 text-xs"
               >
-                <div className="p-3 bg-[#1F212A] rounded-lg border border-[#3E4049]/50">
-                  <p className="text-sm text-gray-300 mb-2 font-medium">
-                    Password requirements:
-                  </p>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2 text-xs">
-                      {passwordChecks.hasLength ? (
-                        <Check size={14} className="text-green-400" />
-                      ) : (
-                        <X size={14} className="text-red-400" />
-                      )}
-                      <span
-                        className={
-                          passwordChecks.hasLength
-                            ? "text-green-400"
-                            : "text-gray-400"
-                        }
-                      >
-                        At least 8 characters
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-2 text-xs">
-                      {passwordChecks.hasCapital ? (
-                        <Check size={14} className="text-green-400" />
-                      ) : (
-                        <X size={14} className="text-red-400" />
-                      )}
-                      <span
-                        className={
-                          passwordChecks.hasCapital
-                            ? "text-green-400"
-                            : "text-gray-400"
-                        }
-                      >
-                        At least one capital letter
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-2 text-xs">
-                      {passwordChecks.hasNumber ? (
-                        <Check size={14} className="text-green-400" />
-                      ) : (
-                        <X size={14} className="text-red-400" />
-                      )}
-                      <span
-                        className={
-                          passwordChecks.hasNumber
-                            ? "text-green-400"
-                            : "text-gray-400"
-                        }
-                      >
-                        At least one number
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-2 text-xs">
-                      {passwordChecks.hasSpecial ? (
-                        <Check size={14} className="text-green-400" />
-                      ) : (
-                        <X size={14} className="text-red-400" />
-                      )}
-                      <span
-                        className={
-                          passwordChecks.hasSpecial
-                            ? "text-green-400"
-                            : "text-gray-400"
-                        }
-                      >
-                        At least one special character (@, #, $, etc.)
-                      </span>
-                    </li>
-                  </ul>
-                </div>
+                <p className="text-gray-400 font-medium mb-2 flex items-center">
+                  <Shield size={12} className="mr-1" />
+                  Password Requirements:
+                </p>
+                {[
+                  { key: "hasLength", text: "At least 8 characters" },
+                  { key: "hasCapital", text: "One uppercase letter" },
+                  { key: "hasNumber", text: "One number" },
+                  { key: "hasSpecial", text: "One special character" },
+                ].map((req) => (
+                  <div key={req.key} className="flex items-center">
+                    <CheckCircle
+                      size={12}
+                      className={`mr-2 ${
+                        passwordChecks[req.key as keyof typeof passwordChecks]
+                          ? "text-green-400"
+                          : "text-gray-500"
+                      }`}
+                    />
+                    <span
+                      className={
+                        passwordChecks[req.key as keyof typeof passwordChecks]
+                          ? "text-green-400"
+                          : "text-gray-400"
+                      }
+                    >
+                      {req.text}
+                    </span>
+                  </div>
+                ))}
               </motion.div>
             )}
-
-            {/* Success message when all requirements are met while focused */}
-            {isPasswordFocused &&
-              passwordValue.length > 0 &&
-              allRequirementsMet && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="mt-3"
-                >
-                  <div className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm flex items-center gap-2">
-                    <Check size={16} />
-                    <span>Password meets all requirements</span>
-                  </div>
-                </motion.div>
-              )}
           </AnimatePresence>
 
           {errors.password && (
-            <p className="text-red-400 text-sm mt-2">
+            <p className="text-red-400 text-sm mt-1">
               {errors.password.message}
             </p>
           )}
@@ -303,38 +272,29 @@ const SignInPage = () => {
           variants={itemVariants}
           className="flex items-center justify-between"
         >
-          <div className="flex items-center">
+          <label className="flex items-center">
             <input
               type="checkbox"
-              id="rememberMe"
               checked={rememberMe}
-              onChange={() => setRememberMe(!rememberMe)}
-              className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded bg-[#2E313C]"
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="rounded border-gray-600 text-purple-600 focus:ring-purple-500 focus:ring-offset-0"
             />
-            <label
-              htmlFor="rememberMe"
-              className="ml-2 block text-sm text-gray-300"
-            >
-              Remember me
-            </label>
-          </div>
+            <span className="ml-2 text-sm text-gray-300">Remember me</span>
+          </label>
           <Link
             href="/forgotpassword"
-            className="text-sm text-purple-500 hover:text-purple-400 transition-colors"
+            className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
           >
-            Forgot Password?
+            Forgot password?
           </Link>
         </motion.div>
 
-        {/* Login Button */}
+        {/* Submit Button */}
         <motion.div variants={itemVariants}>
-          <motion.button
-            whileHover={{ scale: isLoading ? 1 : 1.05 }}
-            whileTap={{ scale: isLoading ? 1 : 0.95 }}
+          <button
             type="submit"
             disabled={isLoading}
-            className={`w-full bg-gradient-to-r from-[#711381] to-purple-600 text-white py-3 rounded-lg transition-all duration-300 flex items-center justify-center group
-              ${isLoading ? "opacity-80 cursor-not-allowed" : "hover:from-[#5C0F6B] hover:to-purple-700"}`}
+            className="w-full bg-gradient-to-r from-[#711381] to-purple-600 text-white py-3 rounded-lg font-medium transition-all duration-300 hover:from-[#5C0F6B] hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {isLoading ? (
               <>
@@ -342,15 +302,9 @@ const SignInPage = () => {
                 Signing in...
               </>
             ) : (
-              <>
-                Login
-                <ChevronRight
-                  className="ml-2 transform transition-transform group-hover:translate-x-1"
-                  size={20}
-                />
-              </>
+              "Sign In"
             )}
-          </motion.button>
+          </button>
         </motion.div>
 
         {/* Sign Up Link */}

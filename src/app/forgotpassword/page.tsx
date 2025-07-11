@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import AuthLayout, { itemVariants } from "../components/Auth/AuthLayout";
 import LogoHeader from "../components/UI/LogoHeader";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 // Validation schema
 const forgotPasswordSchema = z.object({
@@ -20,6 +21,8 @@ const ForgotPasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const { forgotPassword } = useAuthStore();
 
   // Use react-hook-form with zod validation
   const {
@@ -35,17 +38,15 @@ const ForgotPasswordPage = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: data.email }),
-      });
+      const response = await forgotPassword(data.email);
 
-      const result = await response.json();
+      if (!response) {
+        setErrorMessage("Network error. Please try again.");
+        return;
+      }
       
       if (!response.ok) {
+        const result = await response.json();
         setErrorMessage(result.message || "An error occurred. Please try again.");
       } else {
         setIsSuccess(true);
