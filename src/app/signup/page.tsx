@@ -61,27 +61,52 @@ const Page = () => {
     try {
       setIsSubmitting(true);
 
+      console.log("📝 Attempting signup with:", formData.email);
+
       const response = await signUp({
         name: formData.fullName,
-        email: formData.email.toLowerCase(), // Ensure email is lowercase
+        email: formData.email.toLowerCase(),
         password: formData.password,
       });
 
-      if (response?.status === 200 || response?.status === 201) {
+      if (!response) {
+        setErrorMessage("Network error. Please try again.");
+        return;
+      }
+
+      console.log("📝 Signup response status:", response.status);
+
+      if (response.status === 200 || response.status === 201) {
+        console.log("✅ Signup successful, redirecting to verification");
         router.push(
           `/verification?email=${encodeURIComponent(formData.email.toLowerCase())}`
         );
-      } else if (response?.status === 409) {
-        setErrorMessage("Email already registered");
-      } else if (response?.status === 400) {
-        setErrorMessage("All fields are required");
-      } else if (response?.status === 500) {
-        setErrorMessage("Failed to send verification email");
       } else {
-        setErrorMessage("Something went wrong. Please try again.");
+        // Parse error response
+        try {
+          const errorData = await response.json();
+          console.log("❌ Signup failed:", errorData);
+
+          if (response.status === 409) {
+            setErrorMessage(
+              "Email already registered. Please use a different email."
+            );
+          } else if (response.status === 400) {
+            setErrorMessage(errorData.message || "All fields are required");
+          } else if (response.status === 500) {
+            setErrorMessage("Server error. Please try again later.");
+          } else {
+            setErrorMessage(
+              errorData.message || "Something went wrong. Please try again."
+            );
+          }
+        } catch (parseError) {
+          console.error("Error parsing response:", parseError);
+          setErrorMessage("Something went wrong. Please try again.");
+        }
       }
     } catch (error) {
-      console.error("Signup failed:", error);
+      console.error("❌ Signup failed:", error);
       setErrorMessage("Failed to create account. Please try again later.");
     } finally {
       setIsSubmitting(false);
@@ -114,8 +139,8 @@ const Page = () => {
                 delayChildren: 0.2,
                 staggerChildren: 0.1,
               },
-            },
-          }}
+            }}
+          }
           className="space-y-6"
         >
           {errorMessage && (

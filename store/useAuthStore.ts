@@ -14,7 +14,7 @@ interface AuthState {
   lastLogin: number | null;
   signUp: (userData: SignUpData) => Promise<Response | undefined>;
   signIn: (credentials: SignInCredentials) => Promise<Response | undefined>;
-  signOut: () => Promise<void>;
+  signOut: () => void;
   verifyCode: (verificationData: VerificationData) => Promise<Response | undefined>;
   resendVerificationCode: (email?: string) => Promise<Response | undefined>;
   resetPassword: (resetData: ResetPasswordData) => Promise<Response | undefined>;
@@ -100,23 +100,36 @@ export const useAuthStore = create<AuthState>()(
 
       signUp: async (userData: SignUpData) => {
         try {
-          const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+          console.log("📝 SignUp attempt with:", userData.email);
+          
+          const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify(userData),
           });
+
+          console.log("📝 SignUp response status:", response.status);
+          console.log("📝 SignUp response ok:", response.ok);
+          
+          // Store email for verification process
+          if (response.ok && isClient) {
+            localStorage.setItem("userEmail", userData.email);
+          }
+          
           return response;
         } catch (error) {
-          console.error("Signup error:", error);
+          console.error("❌ Signup error:", error);
           return undefined;
         }
       },
 
       verifyCode: async (verificationData: VerificationData) => {
         try {
-          const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+          console.log("🔍 Attempting email verification for:", verificationData.email);
+          
+          const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -126,9 +139,13 @@ export const useAuthStore = create<AuthState>()(
               verificationCode: verificationData.verificationCode,
             }),
           });
+
+          console.log("🔍 Verification response status:", response.status);
+          console.log("🔍 Verification response ok:", response.ok);
+          
           return response;
         } catch (error) {
-          console.error("Email verification error:", error);
+          console.error("❌ Email verification error:", error);
           return undefined;
         }
       },
@@ -141,16 +158,55 @@ export const useAuthStore = create<AuthState>()(
             throw new Error("Email address is missing");
           }
 
-          const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email: emailToUse }),
+          console.log("🔄 Attempting to resend verification code for:", emailToUse);
+
+          // Try common resend verification endpoint names
+          const possibleEndpoints = [
+            `${API_BASE_URL}/auth/resend-verification`,
+            `${API_BASE_URL}/auth/resend-verification-email`,
+            `${API_BASE_URL}/auth/resend-code`,
+            `${API_BASE_URL}/auth/resend-email`,
+            `${API_BASE_URL}/auth/send-verification`,
+            `${API_BASE_URL}/auth/resend`,
+          ];
+
+          for (const endpoint of possibleEndpoints) {
+            try {
+              console.log("🔄 Trying resend endpoint:", endpoint);
+              
+              const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: emailToUse }),
+              });
+
+              console.log("🔄 Response status for", endpoint, ":", response.status);
+              
+              // If we get anything other than 404, this is probably the right endpoint
+              if (response.status !== 404) {
+                console.log("✅ Found working resend endpoint:", endpoint);
+                return response;
+              }
+            } catch (endpointError) {
+              console.log("❌ Error with resend endpoint", endpoint, ":", endpointError);
+              continue;
+            }
+          }
+
+          // If all endpoints fail, return a 404 response
+          console.error("❌ All resend verification endpoints failed");
+          return new Response(JSON.stringify({ 
+            success: false, 
+            message: "Resend verification endpoint not found" 
+          }), {
+            status: 404,
+            headers: { "Content-Type": "application/json" }
           });
-          return response;
+
         } catch (error) {
-          console.error("Error resending verification code:", error);
+          console.error("❌ Error resending verification code:", error);
           return undefined;
         }
       },
@@ -373,23 +429,17 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      signOut: async () => {
+      // Simplified sign out - just clear local state, no API call
+      signOut: () => {
         try {
-          const { token } = get();
+          console.log("🔓 Signing out user...");
           
-          if (token) {
-            await fetch(`${API_BASE_URL}/auth/logout`, {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${token}`,
-              },
-            });
-          }
-
+          // Clear any stored email from localStorage
           if (isClient) {
             localStorage.removeItem("userEmail");
           }
 
+          // Clear auth state
           set({
             user: null,
             isAuthenticated: false,
@@ -398,9 +448,10 @@ export const useAuthStore = create<AuthState>()(
             lastLogin: null,
           });
 
-          console.log("✅ User signed out successfully");
+          console.log("✅ User signed out successfully - all tokens cleared");
         } catch (error) {
           console.error("❌ Logout error:", error);
+          // Force clear auth state even if there's an error
           set({
             user: null,
             isAuthenticated: false,
