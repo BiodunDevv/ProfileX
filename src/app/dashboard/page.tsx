@@ -112,15 +112,12 @@ const DashboardPage = () => {
   useEffect(() => {
     // Only finish loading if auth check is complete
     if (authChecked) {
-      // Simulate data loading with a minimum display time for the preloader
+      // Reduced loading time for better performance
       const timer = setTimeout(() => {
         setIsLoading(false);
-
-        // Trigger stats animation after a brief delay
-        setTimeout(() => {
-          setAnimateStats(true);
-        }, 300);
-      }, 1500); // Show preloader for at least 1.5 seconds for a smooth experience
+        // Trigger stats animation immediately
+        setAnimateStats(true);
+      }, 300); // Reduced from 1.5s to 300ms
 
       return () => clearTimeout(timer);
     }
@@ -148,7 +145,7 @@ const DashboardPage = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.3 }}
         className="pt-24 px-2 sm:px-6 flex-1 relative z-10 overflow-hidden "
       >
         <div className="max-w-9xl mx-auto">
@@ -157,7 +154,7 @@ const DashboardPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
               className="flex-grow"
             >
               <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#711381] to-purple-500">
@@ -171,7 +168,7 @@ const DashboardPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
+              transition={{ delay: 0.15, duration: 0.3 }}
               className="flex gap-3"
             >
               <button
@@ -195,7 +192,7 @@ const DashboardPage = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6 }}
+            transition={{ delay: 0.05, duration: 0.4 }}
             className="mb-4 bg-gradient-to-r from-[#1A1E30] to-[#292B3D] border border-[#2E313C] p-3 md:p-6 rounded-2xl overflow-hidden relative"
           >
             <div className="relative z-10 flex flex-col md:flex-row gap-5 md:gap-8 items-center justify-between">
@@ -240,11 +237,11 @@ const DashboardPage = () => {
                     <motion.div
                       className="relative h-44 w-44 bg-gradient-to-br from-[#711381] to-purple-700 rounded-xl rotate-6 shadow-xl"
                       animate={{
-                        rotate: [6, -3, 6],
-                        y: [0, -5, 0],
+                        rotate: [6, -2, 6],
+                        y: [0, -3, 0],
                       }}
                       transition={{
-                        duration: 5,
+                        duration: 4,
                         repeat: Infinity,
                         ease: "easeInOut",
                       }}
@@ -252,13 +249,13 @@ const DashboardPage = () => {
                       <motion.div
                         className="absolute right-0 bottom-0 p-3 bg-white/10 backdrop-blur-md rounded-lg m-2"
                         animate={{
-                          rotate: [-6, 3, -6],
+                          rotate: [-6, 2, -6],
                         }}
                         transition={{
-                          duration: 5,
+                          duration: 4,
                           repeat: Infinity,
                           ease: "easeInOut",
-                          delay: 0.3,
+                          delay: 0.2,
                         }}
                       >
                         <CheckCircle size={24} className="text-white" />
@@ -284,7 +281,7 @@ const DashboardPage = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
+                transition={{ delay: 0.2, duration: 0.3 }}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
               >
                 {[
@@ -337,15 +334,15 @@ const DashboardPage = () => {
                       y: animateStats ? 0 : 20,
                     }}
                     transition={{
-                      delay: 0.2 + index * 0.1,
-                      duration: 0.5,
+                      delay: 0.1 + index * 0.05,
+                      duration: 0.3,
                       type: "spring",
-                      stiffness: 100,
+                      stiffness: 200,
                     }}
                     whileHover={{
-                      y: -5,
-                      scale: 1.02,
-                      transition: { type: "spring", stiffness: 300 },
+                      y: -3,
+                      scale: 1.01,
+                      transition: { type: "spring", stiffness: 400 },
                     }}
                     className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-4 flex flex-col"
                   >
@@ -371,18 +368,9 @@ const DashboardPage = () => {
                       )}
                     </div>
                     <p className="text-sm text-gray-400 mb-1.5">{stat.title}</p>
-                    <AnimatePresence>
-                      <motion.div
-                        key={stat.value}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        transition={{ duration: 0.3 }}
-                        className="text-xl font-bold text-white"
-                      >
-                        {stat.value}
-                      </motion.div>
-                    </AnimatePresence>
+                    <div className="text-xl font-bold text-white">
+                      {stat.value}
+                    </div>
                   </motion.div>
                 ))}
               </motion.div>
@@ -391,7 +379,7 @@ const DashboardPage = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
+                transition={{ delay: 0.25, duration: 0.3 }}
                 className="bg-[#1E2132] border border-[#2E313C] rounded-xl overflow-hidden"
               >
                 <div className="flex justify-between items-center p-5 border-b border-[#2E313C]">
@@ -415,7 +403,7 @@ const DashboardPage = () => {
                         key={project.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 * idx, duration: 0.5 }}
+                        transition={{ delay: 0.05 * idx, duration: 0.3 }}
                         className="flex flex-col md:flex-row items-start md:items-center gap-4 bg-[#262A3E] hover:bg-[#2A2F45] border border-[#3E4154] rounded-lg p-4 mb-3 last:mb-0 transition-colors cursor-pointer"
                         onClick={() => router.push(`/projects/${project.id}`)}
                       >
@@ -462,8 +450,8 @@ const DashboardPage = () => {
                               initial={{ width: 0 }}
                               animate={{ width: `${project.progress}%` }}
                               transition={{
-                                delay: 0.3,
-                                duration: 0.8,
+                                delay: 0.2,
+                                duration: 0.5,
                                 ease: "easeOut",
                               }}
                             />
@@ -518,7 +506,7 @@ const DashboardPage = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
+                transition={{ delay: 0.3, duration: 0.3 }}
                 className="bg-[#1E2132] border border-[#2E313C] rounded-xl overflow-hidden"
               >
                 <div className="flex justify-between items-center p-5 border-b border-[#2E313C]">
@@ -578,7 +566,7 @@ const DashboardPage = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
+                transition={{ delay: 0.35, duration: 0.3 }}
                 className="bg-[#1E2132] border border-[#2E313C] rounded-xl overflow-hidden"
               >
                 <div className="flex justify-between items-center p-5 border-b border-[#2E313C]">
@@ -641,7 +629,7 @@ const DashboardPage = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.9, duration: 0.5 }}
+                transition={{ delay: 0.4, duration: 0.3 }}
                 className="bg-[#1E2132] border border-[#2E313C] rounded-xl overflow-hidden"
               >
                 <div className="flex justify-between items-center p-5 border-b border-[#2E313C]">
@@ -686,8 +674,9 @@ const DashboardPage = () => {
                         className="group cursor-pointer relative overflow-hidden rounded-lg"
                       >
                         <motion.div
-                          whileHover={{ scale: 1.05 }}
+                          whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
+                          transition={{ type: "spring", stiffness: 400 }}
                           className={`${template.color} h-26 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all`}
                         >
                           <span className="text-white font-medium text-sm relative z-10">

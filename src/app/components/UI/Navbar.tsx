@@ -35,7 +35,7 @@ const Navbar = () => {
   const router = useRouter();
 
   // Use auth store for authentication status
-  const { user, signOut, checkAuthState } = useAuthStore();
+  const { user, signOut, checkAuthState, isAuthenticated } = useAuthStore();
 
   // Check authentication on component mount and route changes
   useEffect(() => {
@@ -70,6 +70,25 @@ const Navbar = () => {
 
     verifyAuth();
   }, [pathname, router, checkAuthState]);
+
+  // Additional effect to ensure auth state is checked on mount
+  useEffect(() => {
+    if (!PUBLIC_ROUTES.includes(pathname)) {
+      checkAuthState();
+    }
+  }, [checkAuthState, pathname]);
+
+  // Debug effect to log user data
+  useEffect(() => {
+    console.log("🔍 UI Navbar - Current user data:", {
+      user,
+      isAuthenticated,
+      userName: user?.name,
+      userEmail: user?.email,
+      hasUser: !!user,
+      userKeys: user ? Object.keys(user) : [],
+    });
+  }, [user, isAuthenticated]);
 
   // Mobile detection and notice logic
   useEffect(() => {
@@ -389,10 +408,10 @@ const Navbar = () => {
                 </motion.div>
                 <div className="flex flex-col items-start max-w-[120px]">
                   <span className="text-gray-200 text-sm font-medium truncate">
-                    {user?.name || "My Account"}
+                    {user?.name || "Loading..."}
                   </span>
                   <span className="text-gray-400 text-xs truncate">
-                    {user?.email?.split("@")[0] || "account"}
+                    {user?.email?.split("@")[0] || "user"}
                   </span>
                 </div>
               </motion.button>
@@ -531,7 +550,7 @@ const Navbar = () => {
                   whileHover={{ scale: 1.05 }}
                   className="h-12 w-12 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 text-white text-lg font-semibold shadow-lg"
                 >
-                  {user?.name ? getInitials(user.name) : "PX"}
+                  {user?.name ? getInitials(user.name) : "U"}
                 </motion.div>
                 <div className="flex-1 min-w-0">
                   <motion.p
@@ -540,7 +559,7 @@ const Navbar = () => {
                     transition={{ delay: 0.2 }}
                     className="text-base font-semibold text-gray-100 truncate"
                   >
-                    {user?.name || "User"}
+                    {user?.name || "Loading..."}
                   </motion.p>
                   <motion.p
                     initial={{ opacity: 0 }}
@@ -548,7 +567,7 @@ const Navbar = () => {
                     transition={{ delay: 0.3 }}
                     className="text-sm text-gray-400 truncate"
                   >
-                    {user?.email}
+                    {user?.email || "user@example.com"}
                   </motion.p>
                 </div>
               </div>

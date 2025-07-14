@@ -23,7 +23,24 @@ const Navbar = () => {
   const router = useRouter();
 
   // Get auth status from store instead of path-based detection
-  const { isAuthenticated, user, signOut } = useAuthStore();
+  const { isAuthenticated, user, signOut, checkAuthState } = useAuthStore();
+
+  // Check auth state on mount to ensure user data is loaded
+  useEffect(() => {
+    checkAuthState();
+  }, [checkAuthState]);
+
+  // Debug effect to log user data
+  useEffect(() => {
+    console.log("🔍 Landing Navbar - User data:", {
+      user,
+      isAuthenticated,
+      userName: user?.name,
+      userEmail: user?.email,
+      hasUser: !!user,
+      userKeys: user ? Object.keys(user) : [],
+    });
+  }, [user, isAuthenticated]);
 
   // Handle scroll effect and mobile detection
   useEffect(() => {

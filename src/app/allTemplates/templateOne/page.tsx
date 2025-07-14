@@ -12,6 +12,7 @@ import Contact from "../../components/TemplateOne/Contact";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuthStore } from "../../../../store/useAuthStore";
+import usePortfolioOneStore from "../../../../store/portfolioOneStore";
 import { LayoutGrid, Loader2 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { PencilIcon, Home, ChevronLeft, Eye } from "lucide-react";
@@ -153,10 +154,17 @@ const TemplateOne = () => {
 
   // Get auth state directly from the store
   const { isAuthenticated, token } = useAuthStore();
+  const {
+    getMyPortfolio,
+    portfolio,
+    isLoading: isPortfolioLoading,
+  } = usePortfolioOneStore();
 
   // Determine if we should use default data or fetch from backend
-  // based on the URL pattern
+  // based on the URL pattern - either the public template view or viewing a specific portfolio
   const isPublicView = pathname === "/templates/templateOne";
+  const isPortfolioView = pathname.startsWith("/templates/templateOne/");
+  const portfolioId = isPortfolioView ? pathname.split("/").pop() : null;
 
   useEffect(() => {
     if (isPublicView) {
@@ -170,17 +178,115 @@ const TemplateOne = () => {
       try {
         setLoading(true);
 
-        if (!isAuthenticated || !token) {
+        // If user is authenticated, try to fetch their portfolio first using the store
+        if (isAuthenticated && !portfolioId) {
+          console.log("Fetching user's portfolio from store...");
+
+          // Use the store's loading state
+          if (isPortfolioLoading) {
+            return; // Wait for store to finish loading
+          }
+
+          // Get portfolio from the store
+          const userPortfolio = await getMyPortfolio();
+
+          if (userPortfolio) {
+            // Cast to any to handle dynamic API response structure
+            const portfolioAny =
+              (userPortfolio as any)?.data?.portfolio || userPortfolio;
+
+            // Transform the fetched data into the format expected by our components
+            const transformedData = {
+              hero: {
+                DevName: portfolioAny.brandName || defaultHeroDetails.DevName,
+                title: portfolioAny.title || defaultHeroDetails.title,
+                description:
+                  portfolioAny.description || defaultHeroDetails.description,
+                heroImage:
+                  portfolioAny.heroImage || defaultHeroDetails.heroImage,
+                Companies:
+                  portfolioAny.companies || defaultHeroDetails.Companies,
+              },
+              about: {
+                title: portfolioAny.sectionAbout || defaultAboutData.title,
+                subtitle:
+                  portfolioAny.sectionSubtitle || defaultAboutData.subtitle,
+                description:
+                  portfolioAny.aboutMeDescription ||
+                  defaultAboutData.description,
+                skills:
+                  portfolioAny.skills?.map((skill: any) => ({
+                    name: skill.name,
+                    level: skill.level || 3,
+                    color: skill.color || "bg-purple-500",
+                  })) || defaultAboutData.skills,
+                education:
+                  portfolioAny.education?.map((edu: any) => ({
+                    degree: edu.degree,
+                    institution: edu.institution,
+                    year: edu.years || edu.year,
+                    description: edu.description,
+                  })) || defaultAboutData.education,
+              },
+              projects:
+                portfolioAny.projects?.map((project: any, index: number) => ({
+                  id: index + 1,
+                  type: project.technologies?.[0] || "Project",
+                  typeColor: ["blue", "purple", "green", "amber"][index % 4],
+                  name: project.name || project.title,
+                  description: project.description,
+                  image: project.imageUrl || Projects,
+                  sourceLink: project.repoUrl || project.githubUrl || "#",
+                  demoLink: project.liveUrl || "#",
+                })) || defaultProjects,
+              contact: {
+                email:
+                  portfolioAny.contactInfo?.[0]?.emailAddress ||
+                  portfolioAny.personalInfo?.email ||
+                  defaultContactData.email,
+                phone:
+                  portfolioAny.contactInfo?.[0]?.phoneNumber ||
+                  portfolioAny.personalInfo?.phone ||
+                  defaultContactData.phone,
+                socialLinks:
+                  portfolioAny.socialLinks?.map((link: any) => ({
+                    platform: link.platform,
+                    icon: link.icon || link.platform.toLowerCase(),
+                    url: link.url,
+                  })) || defaultContactData.socialLinks,
+              },
+            };
+
+            setPortfolioData(transformedData);
+            setLoading(false);
+            return;
+          } else {
+            console.log("No portfolio found in store, using default data");
+            setLoading(false);
+            return;
+          }
+        }
+
+        // For portfolio view by ID, we don't need authentication
+        let apiUrl = "/api/portfolios/portfolioone";
+        const headers: Record<string, string> = {};
+
+        if (portfolioId) {
+          // If viewing a specific portfolio by ID
+          apiUrl = `/api/portfolios/${portfolioId}`;
+          console.log(`Fetching portfolio with ID: ${portfolioId}`);
+        } else if (!isAuthenticated || !token) {
           console.log("User not authenticated, using default data");
           setLoading(false);
           return;
+        } else {
+          // Add auth token if user is authenticated
+          headers.Authorization = `Bearer ${token}`;
         }
 
-        console.log("Fetching portfolio data...");
-        const response = await fetch("/api/portfolios/portfolioone", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        console.log("Fetching portfolio data from API...");
+        const response = await fetch(apiUrl, {
+          headers,
         });
 
         if (!response.ok) {
@@ -274,17 +380,24 @@ const TemplateOne = () => {
     };
 
     fetchPortfolio();
-  }, [isAuthenticated, token, pathname, isPublicView]);
+  }, [
+    isAuthenticated,
+    token,
+    pathname,
+    isPublicView,
+    portfolioId,
+    getMyPortfolio,
+  ]);
 
   const handleEditPortfolio = () => {
-    router.push("/templates/templateOne/edit");
+    router.push("/allTemplates/templateOne/useTemplate");
   };
 
   const handleBackToPortfolios = () => {
     router.push("/portfolios");
   };
 
-  if (loading) {
+  if (loading || isPortfolioLoading) {
     return (
       <div className="h-screen flex flex-col gap-2.5 items-center justify-center bg-gradient-to-br from-[#171826] to-[#0D0F1A]">
         <div className="relative w-16 h-16">
@@ -294,6 +407,16 @@ const TemplateOne = () => {
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-purple-500"
             size={24}
           />
+        </div>
+        <div className="text-center mt-4">
+          <h3 className="text-white font-medium text-lg mb-2">
+            Loading Portfolio
+          </h3>
+          <p className="text-gray-400 text-sm">
+            {isPortfolioLoading
+              ? "Fetching your portfolio data..."
+              : "Please wait..."}
+          </p>
         </div>
       </div>
     );
