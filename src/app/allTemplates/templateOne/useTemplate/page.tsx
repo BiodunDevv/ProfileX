@@ -927,8 +927,8 @@ const Page = () => {
             </h1>
             {isUpdate && (
               <p className="text-gray-400 mb-4">
-                You're editing your existing portfolio. Changes will be saved
-                when you click Preview.
+                You&apos;re editing your existing portfolio. Changes will be
+                saved when you click Preview.
               </p>
             )}
           </motion.div>

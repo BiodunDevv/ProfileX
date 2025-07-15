@@ -23,7 +23,6 @@ const containerVariants = {
     opacity: 1,
     transition: {
       duration: 0.4,
-      ease: "easeInOut",
       delayChildren: 0.1,
       staggerChildren: 0.08,
     },
@@ -34,7 +33,7 @@ const containerVariants = {
       duration: 0.2,
     },
   },
-};
+} as const;
 
 export const itemVariants = {
   hidden: { y: 20, opacity: 0 },

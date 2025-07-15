@@ -1,13 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import {
-  Upload,
-  Loader2,
-  AlertTriangle,
-  ImageIcon,
-  X,
-  RefreshCw,
-  Check,
-} from "lucide-react";
+import { Upload, Loader2, AlertTriangle, X, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ImageUploaderProps {

@@ -387,6 +387,7 @@ const TemplateOne = () => {
     isPublicView,
     portfolioId,
     getMyPortfolio,
+    isPortfolioLoading,
   ]);
 
   const handleEditPortfolio = () => {

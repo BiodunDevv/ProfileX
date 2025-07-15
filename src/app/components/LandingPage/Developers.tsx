@@ -102,7 +102,7 @@ const Developers = () => {
         staggerChildren: 0.15,
       },
     },
-  };
+  } as const;
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -110,12 +110,12 @@ const Developers = () => {
       y: 0,
       opacity: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 100,
         damping: 12,
       },
     },
-  };
+  } as const;
 
   // Get active developer
   const activeMember =

@@ -6,7 +6,6 @@ import {
   ImageIcon,
   X,
   RefreshCw,
-  Check,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
