@@ -1,62 +1,18 @@
 "use client";
-import React, { useEffect, useState, Suspense } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { IoArrowBack } from "react-icons/io5";
-import {
-  Eye,
-  ArrowRight,
-  Sparkles,
-  CheckCircle,
-  LogIn,
-  Lock,
-} from "lucide-react";
-import { useAuthStore } from "../../../../../store/useAuthStore";
-
-// Loading component
-const LoadingUI = () => (
-  <div className="flex flex-col justify-center items-center h-[600px] bg-[#1E2132]">
-    <div className="relative w-16 h-16 mb-4">
-      <div className="absolute inset-0 border-t-2 border-r-2 border-purple-600 rounded-full animate-spin"></div>
-      <div className="absolute inset-0 border-2 border-[#2E313C] rounded-full"></div>
-    </div>
-    <p className="text-gray-400">Loading template editor...</p>
-  </div>
-);
-
-// Auth required overlay component
-const AuthRequiredOverlay: React.FC<{ onSignIn: () => void }> = ({
-  onSignIn,
-}) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    className="absolute inset-0 bg-[#0D0F1A]/90 backdrop-blur-sm flex flex-col items-center justify-center z-10"
-  >
-    <div className="p-5 rounded-full bg-[#262A3E]/80 mb-5 border border-[#3E4154]">
-      <Lock size={40} className="text-purple-400" />
-    </div>
-    <h3 className="text-2xl font-bold text-white mb-3">
-      Authentication Required
-    </h3>
-    <p className="text-gray-400 text-center max-w-md mb-5">
-      You need to sign in to customize this template and save your changes.
-    </p>
-    <button
-      onClick={onSignIn}
-      className="px-6 py-2.5 rounded-lg shadow-lg shadow-purple-900/20 flex items-center gap-2 bg-gradient-to-r from-[#711381] to-purple-600 hover:from-[#5C0F6B] hover:to-purple-700 text-white transition-all font-medium"
-    >
-      Sign In to Edit
-      <LogIn size={18} />
-    </button>
-  </motion.div>
-);
+import { ArrowRight, LogIn, Sparkles, CheckCircle } from "lucide-react";
+import Link from "next/link";
+import { useAuthStore } from "../../../store/useAuthStore";
+import LoadingUI from "../components/UI/Preloader";
+import { Eye } from "lucide-react";
 
 const TemplateFormContent = () => {
-  const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated } = useAuthStore();
   const [templateData, setTemplateData] = useState({
     id: "",
@@ -79,67 +35,83 @@ const TemplateFormContent = () => {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    const slug = params.slug as string;
+    // Get template type from URL parameters
+    const getTemplateFromParams = () => {
+      // Check for template parameter in URL
+      const templateParam =
+        searchParams.get("template") || Array.from(searchParams.keys())[0]; // Get first param key if no 'template' key
 
-    // Similar function to get template data from slug
-    const getTemplateFromSlug = async (slug: string) => {
-      // Implementation similar to display page
+      if (!templateParam) return null;
+
+      // Map template parameters to template data
       const templateMap: Record<string, { id: string; title: string }> = {
-        templateOne: {
-          id: "templateOne",
+        template1: {
+          id: "template1",
           title: "Modern Pro",
         },
-        templateTwo: {
-          id: "templateTwo",
+        template2: {
+          id: "template2",
           title: "Minimalist",
         },
-        templateThree: {
-          id: "templateThree",
+        template3: {
+          id: "template3",
           title: "Creative Portfolio",
         },
-        templateFour: {
-          id: "templateFour",
+        template4: {
+          id: "template4",
           title: "Tech Resume",
         },
       };
 
-      return templateMap[slug] || null;
+      return templateMap[templateParam] || null;
     };
 
     const loadTemplate = async () => {
       try {
         setIsLoading(true);
-        const template = await getTemplateFromSlug(slug);
+        const template = getTemplateFromParams();
 
         if (!template) {
-          return; // Template not found
+          console.error("Template not found");
+          return;
         }
 
         setTemplateData(template);
 
-        // Load the appropriate template editor component
-        if (template.id.includes("templateOne")) {
+        // Load the appropriate template editor component based on template ID
+        if (
+          template.id.includes("template1") ||
+          template.id.includes("templateOne")
+        ) {
           const Template = dynamic(
-            () => import("../../../allTemplates/templateOne/useTemplate/page"),
+            () => import("../allTemplates/templateOne/useTemplate/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (template.id.includes("templateTwo")) {
+        } else if (
+          template.id.includes("template2") ||
+          template.id.includes("templateTwo")
+        ) {
           const Template = dynamic(
-            () => import("../../../allTemplates/templateTwo/useTemplate/page"),
+            () => import("../allTemplates/templateTwo/useTemplate/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (template.id.includes("templateThree")) {
+        } else if (
+          template.id.includes("template3") ||
+          template.id.includes("templateThree")
+        ) {
           const Template = dynamic(
-            () =>
-              import("../../../allTemplates/templateThree/useTemplate/page"),
+            () => import("../allTemplates/templateThree/useTemplate/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (template.id.includes("templateFour")) {
+        } else if (
+          template.id.includes("template4") ||
+          template.id.includes("templateFour")
+        ) {
           const Template = dynamic(
-            () => import("../../../allTemplates/templateFour/useTemplate/page"),
+            () => import("../allTemplates/templateFour/useTemplate/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
@@ -152,16 +124,18 @@ const TemplateFormContent = () => {
     };
 
     loadTemplate();
-  }, [params]);
+  }, [searchParams]);
 
   const handlePreviewTemplate = () => {
-    router.push(`/templates/${params.slug}`);
+    router.push(`/templatePreview?${templateData.id}`);
   };
 
   const handleSignIn = () => {
     setShowAuthRedirect(true);
+    const templateParam =
+      searchParams.get("template") || Array.from(searchParams.keys())[0];
     setTimeout(() => {
-      router.push(`/signin?redirect=templates/${params.slug}/edit`);
+      router.push(`/signin?redirect=templateForm?${templateParam}`);
     }, 1000);
   };
 
@@ -267,9 +241,6 @@ const TemplateFormContent = () => {
             </div>
           ) : (
             <div className="template-editor-container relative">
-              {!isAuthenticated && showAuthRedirect && (
-                <AuthRequiredOverlay onSignIn={handleSignIn} />
-              )}
               <TemplateComponent />
             </div>
           )}
@@ -365,10 +336,4 @@ const TemplateFormContent = () => {
   );
 };
 
-export default function TemplateEditPage() {
-  return (
-    <Suspense fallback={<LoadingUI />}>
-      <TemplateFormContent />
-    </Suspense>
-  );
-}
+export default TemplateFormContent;

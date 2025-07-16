@@ -25,6 +25,8 @@ interface AuthState {
   forgotPassword: (email: string) => Promise<Response | undefined>;
   checkAuthState: () => Promise<boolean>;
   getUserProfile: () => Promise<Response | undefined>;
+  getAllUserPortfolios: () => Promise<PortfolioResponse | undefined>;
+  getPortfolioStats: () => Promise<PortfolioStatsResponse | undefined>;
 }
 
 interface User {
@@ -54,6 +56,67 @@ interface ResetPasswordData {
   email?: string;
   password: string;
   token?: string;
+}
+
+interface Portfolio {
+  id: string;
+  type: string;
+  templateType: string;
+  title: string;
+  brandName?: string;
+  name?: string;
+  devName?: string;
+  slug: string;
+  isPublic: boolean;
+  views: number;
+  createdAt: string;
+  updatedAt: string;
+  apiEndpoint: string;
+  editEndpoint: string;
+  publicUrl: string;
+}
+
+interface PortfolioStats {
+  totalPortfolios: number;
+  totalViews: number;
+  publicPortfolios: number;
+  privatePortfolios: number;
+  mostRecentUpdate: string;
+  oldestPortfolio: string;
+  portfolio1Stats?: {
+    views: number;
+    isPublic: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  portfolio2Stats?: {
+    views: number;
+    isPublic: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
+interface PortfolioResponse {
+  success: boolean;
+  message: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  data: {
+    totalPortfolios: number;
+    hasPortfolio1: boolean;
+    hasPortfolio2: boolean;
+    portfolios: Portfolio[];
+  };
+}
+
+interface PortfolioStatsResponse {
+  success: boolean;
+  message: string;
+  data: PortfolioStats;
 }
 
 const isClient = typeof window !== "undefined";
@@ -361,7 +424,7 @@ export const useAuthStore = create<AuthState>()(
                 id: userData.id || userData._id,
                 name: userData.name,
                 email: userData.email,
-                isEmailVerified: userData.isEmailVerified,               
+                isEmailVerified: userData.isEmailVerified,
               },
             });
           }
@@ -411,6 +474,65 @@ export const useAuthStore = create<AuthState>()(
           return response;
         } catch (error) {
           console.error("Password reset error:", error);
+          return undefined;
+        }
+      },
+
+      getAllUserPortfolios: async () => {
+        try {
+          const { token } = get();
+
+          if (!token) {
+            return undefined;
+          }
+
+          const response = await fetch(`${API_BASE_URL}/user/portfolios`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            return result as PortfolioResponse;
+          }
+
+          return undefined;
+        } catch (error) {
+          console.error("❌ Error fetching user portfolios:", error);
+          return undefined;
+        }
+      },
+
+      getPortfolioStats: async () => {
+        try {
+          const { token } = get();
+
+          if (!token) {
+            return undefined;
+          }
+
+          const response = await fetch(
+            `${API_BASE_URL}/user/portfolios/stats`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (response.ok) {
+            const result = await response.json();
+            return result as PortfolioStatsResponse;
+          }
+
+          return undefined;
+        } catch (error) {
+          console.error("❌ Error fetching portfolio stats:", error);
           return undefined;
         }
       },
@@ -476,3 +598,10 @@ export async function checkIfUserExists(identifier: string) {
     return false;
   }
 }
+
+export type {
+  Portfolio,
+  PortfolioStats,
+  PortfolioResponse,
+  PortfolioStatsResponse,
+};

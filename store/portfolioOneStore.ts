@@ -2,7 +2,8 @@
 import { create } from "zustand";
 
 const API_BASE_URL =
-  process.env.API_BASE_URL || "https://profilexbackend.onrender.com/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://profilexbackend.onrender.com/api";
 
 interface SocialLink {
   platform: string;
@@ -84,6 +85,8 @@ interface PortfolioOneState {
     data: Omit<PortfolioData, "_id" | "createdAt" | "updatedAt">
   ) => Promise<PortfolioData | null>;
   getMyPortfolio: () => Promise<PortfolioData | null>;
+  getPortfolioById: (id: string) => Promise<PortfolioData | null>;
+  getPortfolioInfo: (id: string, portfolioType?: string) => Promise<any>;
   updatePortfolio: (
     id: string,
     data: Partial<PortfolioData>
@@ -93,6 +96,12 @@ interface PortfolioOneState {
   createPasswordProtectedLink: (
     portfolioId: string,
     linkData: any
+  ) => Promise<any>;
+  getLinkAnalytics: (portfolioId: string) => Promise<any>;
+  getPortfolioByCustomLink: (slug: string) => Promise<any>;
+  getPortfolioByProtectedLink: (
+    slug: string,
+    password?: string
   ) => Promise<any>;
   setPortfolio: (portfolio: PortfolioData | null) => void;
   setLoading: (loading: boolean) => void;
@@ -185,6 +194,89 @@ export const usePortfolioOneStore = create<PortfolioOneState>((set, get) => ({
       return result;
     } catch (error: any) {
       console.error("Error fetching portfolio:", error);
+      set({ error: error.message, isLoading: false });
+      return null;
+    }
+  },
+
+  getPortfolioById: async (id) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const token = JSON.parse(localStorage.getItem("auth-storage") || "{}")
+        ?.state?.token;
+
+      if (!token) {
+        throw new Error("Authentication required");
+      }
+
+      const response = await fetch(`${API_BASE_URL}/portfolio1/${id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch portfolio");
+      }
+
+      const result = await response.json();
+      console.log("Portfolio fetched successfully:", result);
+
+      set({ portfolio: result, isLoading: false });
+      return result;
+    } catch (error: any) {
+      console.error("Error fetching portfolio:", error);
+      set({ error: error.message, isLoading: false });
+      return null;
+    }
+  },
+
+  getPortfolioInfo: async (id, portfolioType = "template1") => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const token = JSON.parse(localStorage.getItem("auth-storage") || "{}")
+        ?.state?.token;
+
+      if (!token) {
+        throw new Error("Authentication required");
+      }
+
+      // Determine the correct endpoint based on portfolio type
+      let endpoint = "";
+      if (portfolioType === "template1") {
+        endpoint = `${API_BASE_URL}/portfolio1/${id}/info`;
+      } else if (portfolioType === "template2") {
+        endpoint = `${API_BASE_URL}/portfolio2/${id}/info`;
+      } else {
+        // Fallback to portfolio1 for unknown types
+        endpoint = `${API_BASE_URL}/portfolio1/${id}/info`;
+      }
+
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch portfolio info");
+      }
+
+      const result = await response.json();
+      console.log("Portfolio info fetched successfully:", result);
+
+      set({ isLoading: false });
+      return result;
+    } catch (error: any) {
+      console.error("Error fetching portfolio info:", error);
       set({ error: error.message, isLoading: false });
       return null;
     }
@@ -351,6 +443,113 @@ export const usePortfolioOneStore = create<PortfolioOneState>((set, get) => ({
       return result;
     } catch (error: any) {
       console.error("Error creating password protected link:", error);
+      set({ error: error.message, isLoading: false });
+      return null;
+    }
+  },
+
+  getLinkAnalytics: async (portfolioId: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const token = JSON.parse(localStorage.getItem("auth-storage") || "{}")
+        ?.state?.token;
+
+      if (!token) {
+        throw new Error("Authentication required");
+      }
+
+      console.log("Fetching link analytics for portfolio:", portfolioId);
+
+      const response = await fetch(
+        `${API_BASE_URL}/link/portfolio1/${portfolioId}/analytics`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch link analytics");
+      }
+
+      const result = await response.json();
+      console.log("Link analytics fetched successfully:", result);
+
+      set({ isLoading: false });
+      return result;
+    } catch (error: any) {
+      console.error("Error fetching link analytics:", error);
+      set({ error: error.message, isLoading: false });
+      return null;
+    }
+  },
+
+  getPortfolioByCustomLink: async (slug: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      console.log("Fetching portfolio by custom link:", slug);
+
+      const response = await fetch(`${API_BASE_URL}/link/custom/${slug}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch portfolio");
+      }
+
+      const result = await response.json();
+      console.log("Portfolio fetched by custom link:", result);
+
+      set({ isLoading: false });
+      return result;
+    } catch (error: any) {
+      console.error("Error fetching portfolio by custom link:", error);
+      set({ error: error.message, isLoading: false });
+      return null;
+    }
+  },
+
+  getPortfolioByProtectedLink: async (slug: string, password?: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      console.log("Fetching portfolio by protected link:", slug);
+
+      const body: any = {};
+      if (password) {
+        body.password = password;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/link/protected/${slug}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch portfolio");
+      }
+
+      const result = await response.json();
+      console.log("Portfolio fetched by protected link:", result);
+
+      set({ isLoading: false });
+      return result;
+    } catch (error: any) {
+      console.error("Error fetching portfolio by protected link:", error);
       set({ error: error.message, isLoading: false });
       return null;
     }

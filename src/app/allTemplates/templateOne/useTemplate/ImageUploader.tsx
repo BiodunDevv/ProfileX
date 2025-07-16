@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Upload, Loader2, AlertTriangle, X, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import NextImage from "next/image";
 
 interface ImageUploaderProps {
   section: string;
@@ -12,12 +13,12 @@ interface ImageUploaderProps {
     section: string,
     index?: number
   ) => Promise<void>;
-  handleInputChange: (section: any, field: string, value: string) => void;
+  handleInputChange: (section: string, field: string, value: string) => void;
   handleNestedInputChange: (
-    section: any,
+    section: string,
     index: number,
     field: string | null,
-    value: any
+    value: Record<string, unknown>
   ) => void;
   maxSize?: number; // Maximum file size in MB, defaults to 10MB
 }
@@ -105,56 +106,59 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     }
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  const handleUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
 
-    const file = files[0];
+      const file = files[0];
 
-    // Validate file size
-    if (file.size > maxSize * 1024 * 1024) {
-      setErrorMessage(`File size exceeds ${maxSize}MB limit`);
-      return;
-    }
+      // Validate file size
+      if (file.size > maxSize * 1024 * 1024) {
+        setErrorMessage(`File size exceeds ${maxSize}MB limit`);
+        return;
+      }
 
-    // Simulate upload progress
-    setIsUploading(true);
-    setUploadProgress(0);
+      // Simulate upload progress
+      setIsUploading(true);
+      setUploadProgress(0);
 
-    const progressInterval = setInterval(() => {
-      setUploadProgress((prev) => {
-        const newProgress = prev + Math.random() * 15;
-        return newProgress >= 95 ? 95 : newProgress;
-      });
-    }, 200);
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          const newProgress = prev + Math.random() * 15;
+          return newProgress >= 95 ? 95 : newProgress;
+        });
+      }, 200);
 
-    try {
-      await handleFileChange(e, section, index);
-      setUploadProgress(100);
+      try {
+        await handleFileChange(e, section, index);
+        setUploadProgress(100);
 
-      // Get file information for preview
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          setImageInfo({
-            width: img.naturalWidth,
-            height: img.naturalHeight,
-            type: file.type.split("/")[1].toUpperCase(),
-            size: formatFileSize(file.size),
-          });
+        // Get file information for preview
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            setImageInfo({
+              width: img.naturalWidth,
+              height: img.naturalHeight,
+              type: file.type.split("/")[1].toUpperCase(),
+              size: formatFileSize(file.size),
+            });
+          };
+          img.src = event.target?.result as string;
         };
-        img.src = event.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error("Error in handleUpload:", error);
-      setErrorMessage("Upload failed. Please try again.");
-    } finally {
-      clearInterval(progressInterval);
-      setIsUploading(false);
-    }
-  };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error("Error in handleUpload:", error);
+        setErrorMessage("Upload failed. Please try again.");
+      } finally {
+        clearInterval(progressInterval);
+        setIsUploading(false);
+      }
+    },
+    [handleFileChange, section, index, maxSize]
+  );
 
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return bytes + " B";
@@ -198,7 +202,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         handleUpload(event);
       }
     },
-    [handleUpload, maxSize]
+    [handleUpload]
   );
 
   const clearImage = () => {
@@ -433,9 +437,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <img
+                <NextImage
                   src={currentImageUrl}
                   alt="Preview"
+                  width={500}
+                  height={isExpanded ? 800 : 256}
                   className={`w-full ${isExpanded ? "" : "h-64"} object-contain bg-[#13151f]`}
                   onLoad={() => setIsImageLoading(false)}
                   onError={() => {

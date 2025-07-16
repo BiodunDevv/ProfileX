@@ -1,27 +1,16 @@
 "use client";
-import React, { useEffect, useState, Suspense } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoArrowBack } from "react-icons/io5";
-import { Eye, ArrowRight, CheckCircle, LogIn } from "lucide-react";
-import { useAuthStore } from "../../../../store/useAuthStore";
+import { ArrowRight, LogIn, Eye, CheckCircle } from "lucide-react";
+import Link from "next/link";
+import { useAuthStore } from "../../../store/useAuthStore";
 
-// Loading component for Suspense fallback
-const LoadingUI = () => (
-  <div className="flex flex-col justify-center items-center h-[600px] bg-[#1E2132]">
-    <div className="relative w-16 h-16 mb-4">
-      <div className="absolute inset-0 border-t-2 border-r-2 border-purple-600 rounded-full animate-spin"></div>
-      <div className="absolute inset-0 border-2 border-[#2E313C] rounded-full"></div>
-    </div>
-    <p className="text-gray-400">Loading template...</p>
-  </div>
-);
-
-const TemplateContent = () => {
-  const params = useParams();
+const TemplatePreview = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated } = useAuthStore();
   const [templateData, setTemplateData] = useState({
     id: "",
@@ -34,11 +23,32 @@ const TemplateContent = () => {
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   useEffect(() => {
-    const slug = params.slug as string;
+    // Get template type from URL parameters
+    const getTemplateFromParams = () => {
+      // Check for template parameter in URL
+      const templateParam =
+        searchParams.get("template") || Array.from(searchParams.keys())[0]; // Get first param key if no 'template' key
 
-    const getTemplateFromSlug = async (slug: string) => {
-      // This could be an actual API call in production
+      if (!templateParam) return null;
+
+      // Map template parameters to template data
       const templateMap: Record<string, { id: string; title: string }> = {
+        template1: {
+          id: "template1",
+          title: "Modern Pro",
+        },
+        template2: {
+          id: "template2",
+          title: "Minimalist",
+        },
+        template3: {
+          id: "template3",
+          title: "Creative Portfolio",
+        },
+        template4: {
+          id: "template4",
+          title: "Tech Resume",
+        },
         templateOne: {
           id: "templateOne",
           title: "Modern Pro",
@@ -57,41 +67,43 @@ const TemplateContent = () => {
         },
       };
 
-      return templateMap[slug] || null;
+      return templateMap[templateParam] || null;
     };
 
     const loadTemplate = async () => {
       try {
         setIsLoading(true);
-        const template = await getTemplateFromSlug(slug);
+        const template = getTemplateFromParams();
 
         if (!template) {
+          console.error("Template not found");
           return;
         }
 
         setTemplateData(template);
 
-        if (template.id.includes("templateOne")) {
+        // Load the appropriate template preview component based on template ID
+        if (template.id.includes("template1")) {
           const Template = dynamic(
-            () => import("../../allTemplates/templateOne/page"),
+            () => import("../allTemplates/templateOne/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (template.id.includes("templateTwo")) {
+        } else if (template.id.includes("template2")) {
           const Template = dynamic(
-            () => import("../../allTemplates/templateTwo/page"),
+            () => import("../allTemplates/templateTwo/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (template.id.includes("templateThree")) {
+        } else if (template.id.includes("template3")) {
           const Template = dynamic(
-            () => import("../../allTemplates/templateThree/page"),
+            () => import("../allTemplates/templateThree/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (template.id.includes("templateFour")) {
+        } else if (template.id.includes("template4")) {
           const Template = dynamic(
-            () => import("../../allTemplates/templateFour/page"),
+            () => import("../allTemplates/templateFour/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
@@ -104,22 +116,10 @@ const TemplateContent = () => {
     };
 
     loadTemplate();
-  }, [params]);
+  }, [searchParams]);
 
   const handleUseTemplate = () => {
-    if (!isAuthenticated) {
-      setShowAuthPrompt(true);
-      setTimeout(() => {
-        setShowAuthPrompt(false);
-        router.push(`/signin?redirect=templates/${params.slug}`);
-      }, 1500);
-      return;
-    }
-
-    setShowConfirmation(true);
-    setTimeout(() => {
-      router.push(`/templates/${params.slug}/edit`);
-    }, 800);
+    router.push(`/templateForm?${templateData.id}`);
   };
 
   return (
@@ -304,10 +304,4 @@ const TemplateContent = () => {
   );
 };
 
-export default function TemplatePage() {
-  return (
-    <Suspense fallback={<LoadingUI />}>
-      <TemplateContent />
-    </Suspense>
-  );
-}
+export default TemplatePreview;

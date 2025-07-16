@@ -162,6 +162,7 @@ const Page = () => {
   const [lastRemoveTime, setLastRemoveTime] = useState<number | null>(null);
   const [formIsValid, setFormIsValid] = useState(false);
   const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(false);
+  const [hasExistingPortfolio, setHasExistingPortfolio] = useState(false);
 
   const colorOptions = [
     { value: "purple", label: "Purple", bgClass: "bg-purple-500" },
@@ -226,6 +227,7 @@ const Page = () => {
             existingPortfolio &&
             (existingPortfolio.id || existingPortfolio._id)
           ) {
+            setHasExistingPortfolio(true);
             setPortfolioId(
               existingPortfolio.id || existingPortfolio._id || null
             );
@@ -566,6 +568,38 @@ const Page = () => {
 
   // Auto-validate when form data changes (for API data loading)
   useEffect(() => {
+    const validateForm = () => {
+      // Validate hero section
+      if (!formData.hero.devName?.trim()) {
+        return false;
+      }
+      if (!formData.hero.title?.trim()) {
+        return false;
+      }
+      if (!formData.hero.description?.trim()) {
+        return false;
+      }
+
+      // Validate projects (at least one project with name and description)
+      if (formData.projects.length === 0) {
+        return false;
+      }
+
+      const hasValidProject = formData.projects.some(
+        (project) => project.name?.trim() && project.description?.trim()
+      );
+      if (!hasValidProject) {
+        return false;
+      }
+
+      // Validate contact section
+      if (!formData.contact.email?.trim()) {
+        return false;
+      }
+
+      return true;
+    };
+
     const isValid = validateForm();
     setFormIsValid(isValid);
   }, [formData]);
@@ -691,16 +725,10 @@ const Page = () => {
           throw new Error("Failed to update portfolio");
         }
       } else {
-        // Check if user already has a portfolio
-        console.log("Checking if user already has a portfolio");
         const existingPortfolio = await getMyPortfolio();
 
         if (existingPortfolio) {
-          // Update the existing portfolio
-          console.log(
-            "Updating existing portfolio with ID:",
-            existingPortfolio._id
-          );
+        
           result = await updatePortfolio(
             existingPortfolio._id as string,
             apiPortfolioData as any
@@ -716,7 +744,6 @@ const Page = () => {
           }
         } else {
           // Create a new portfolio
-          console.log("Creating new portfolio");
           result = await createPortfolio(apiPortfolioData as any);
           if (result) {
             setPortfolioId(result._id || null);
@@ -802,6 +829,29 @@ const Page = () => {
       toast.dismiss("uploading");
       toast.error("Failed to upload image. Please try again.");
     }
+  };
+
+  // Wrapper functions for ImageUploader component compatibility
+  const handleInputChangeWrapper = (
+    section: string,
+    field: string,
+    value: string
+  ) => {
+    handleInputChange(section as keyof FormData, field, value);
+  };
+
+  const handleNestedInputChangeWrapper = (
+    section: string,
+    index: number,
+    field: string | null,
+    value: Record<string, unknown>
+  ) => {
+    handleNestedInputChange(
+      section as keyof FormData,
+      index,
+      field,
+      value as NestedInputChangeValue | string
+    );
   };
 
   const inputClass =
@@ -1048,8 +1098,8 @@ const Page = () => {
                         currentImageUrl={formData.hero.heroImage}
                         label="Profile Image"
                         handleFileChange={handleFileChange}
-                        handleInputChange={handleInputChange}
-                        handleNestedInputChange={handleNestedInputChange}
+                        handleInputChange={handleInputChangeWrapper}
+                        handleNestedInputChange={handleNestedInputChangeWrapper}
                       />
                     </div>
                   </div>
@@ -1427,8 +1477,10 @@ const Page = () => {
                             currentImageUrl={project.image}
                             label="Project Screenshot"
                             handleFileChange={handleFileChange}
-                            handleInputChange={handleInputChange}
-                            handleNestedInputChange={handleNestedInputChange}
+                            handleInputChange={handleInputChangeWrapper}
+                            handleNestedInputChange={
+                              handleNestedInputChangeWrapper
+                            }
                           />
 
                           <div className="mb-6">
@@ -1604,46 +1656,168 @@ const Page = () => {
               </div>
             )}
 
-            <div className="mt-10 flex flex-wrap gap-4 justify-between items-center">
-              <button
-                type="button"
-                onClick={() => setIsResetDialogOpen(true)}
-                className="text-gray-300 hover:text-white border border-[#2E313C] hover:border-red-500/50 px-5 py-2.5 rounded-lg transition-colors"
-              >
-                Reset Form
-              </button>
+            {/* Advanced Footer with Better Button Layout */}
+            <div className="mt-12 mb-8">
+              {/* Progress indicator */}
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-sm text-gray-400">
+                    Portfolio Progress
+                  </span>
+                  <span className="text-sm text-purple-400 font-medium">
+                    {formIsValid ? "Ready to Save" : "Continue Editing"}
+                  </span>
+                </div>
+                <div className="w-full bg-[#1A1D2E] rounded-full h-2 border border-[#2E313C]">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      formIsValid
+                        ? "bg-gradient-to-r from-green-500 to-emerald-400"
+                        : "bg-gradient-to-r from-purple-600 to-purple-400"
+                    }`}
+                    style={{
+                      width: formIsValid ? "100%" : "75%",
+                    }}
+                  ></div>
+                </div>
+              </div>
 
-              <div className="flex gap-3">
-                {/* Next button - always visible, only changes tab */}
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="bg-gray-700 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors flex items-center"
-                >
-                  Next Tab <ArrowRight size={18} className="ml-2" />
-                </button>
+              {/* Main Footer */}
+              <div className="bg-gradient-to-r from-[#171826] to-[#1A1D2E] border border-[#2E313C] rounded-2xl p-6 shadow-2xl">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                  {/* Left Section - Status & Quick Actions */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-3 h-3 rounded-full ${
+                          formIsValid ? "bg-green-400" : "bg-amber-400"
+                        } animate-pulse`}
+                      ></div>
+                      <div>
+                        <p className="text-white font-medium">
+                          {isUpdate
+                            ? "Editing Existing Portfolio"
+                            : "Creating New Portfolio"}
+                        </p>
+                        <p className="text-gray-400 text-sm">
+                          {formIsValid
+                            ? "All required fields completed"
+                            : "Please fill in all required fields"}
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Save & Preview button - only visible if form is properly filled */}
-                {formIsValid && (
-                  <button
-                    type="button"
-                    onClick={handleSavePortfolioOne}
-                    className={`${buttonClass} flex items-center`}
-                    disabled={isPortfolioLoading}
-                  >
-                    {isPortfolioLoading ? (
-                      <>
-                        <Loader2 size={18} className="mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        {isUpdate ? "Update" : "Save"}{" "}
-                        <Eye size={18} className="ml-2" />
-                      </>
+                    <motion.button
+                      type="button"
+                      onClick={() => setIsResetDialogOpen(true)}
+                      className="group flex items-center gap-2 text-gray-400 hover:text-red-400 border border-[#2E313C] hover:border-red-500/30 px-4 py-2 rounded-lg transition-all duration-200 bg-[#1A1D2E] hover:bg-red-900/10"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <svg
+                        className="w-4 h-4 group-hover:rotate-12 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
+                      </svg>
+                      <span className="text-sm font-medium">Reset</span>
+                    </motion.button>
+                  </div>
+
+                  {/* Right Section - Main Actions */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                    {/* Tab Navigation Button */}
+                    <motion.button
+                      type="button"
+                      onClick={handleNext}
+                      className="group flex items-center justify-center gap-2 bg-[#2A2D3E] hover:bg-[#3A3D4E] text-gray-200 hover:text-white px-6 py-3 rounded-xl transition-all duration-200 font-medium border border-[#3E4152] hover:border-[#4E5162] shadow-lg"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <span>Continue Editing</span>
+                      <ArrowRight
+                        size={18}
+                        className="group-hover:translate-x-1 transition-transform"
+                      />
+                    </motion.button>
+
+                    {/* Preview Existing Portfolio Button - if user has one */}
+                    {hasExistingPortfolio && !formIsValid && (
+                      <motion.button
+                        type="button"
+                        onClick={() => router.push("/allTemplates/templateOne")}
+                        className="group flex items-center justify-center gap-2 bg-blue-600/90 hover:bg-blue-600 text-white px-6 py-3 rounded-xl transition-all duration-200 font-medium shadow-lg hover:shadow-blue-500/25"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 }}
+                      >
+                        <Eye
+                          size={18}
+                          className="group-hover:scale-110 transition-transform"
+                        />
+                        <span>Preview Current</span>
+                      </motion.button>
                     )}
-                  </button>
-                )}
+
+                    {/* Save & Preview button - prominent when form is ready */}
+                    {formIsValid && (
+                      <motion.button
+                        type="button"
+                        onClick={handleSavePortfolioOne}
+                        className="group relative overflow-hidden flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-8 py-3 rounded-xl transition-all duration-200 font-semibold shadow-lg hover:shadow-purple-500/25 min-w-[140px]"
+                        disabled={isPortfolioLoading}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        {/* Animated background */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-indigo-400 opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
+
+                        {isPortfolioLoading ? (
+                          <>
+                            <Loader2 size={18} className="animate-spin" />
+                            <span>Saving...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Eye
+                              size={18}
+                              className="group-hover:scale-110 transition-transform"
+                            />
+                            <span>
+                              {isUpdate ? "Update & Preview" : "Save & Preview"}
+                            </span>
+                          </>
+                        )}
+                      </motion.button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bottom helper text */}
+                <div className="mt-4 pt-4 border-t border-[#2E313C]/50">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs text-gray-500">
+                    <span>
+                      💡 Use the tabs above to navigate between sections
+                    </span>
+                    <span>
+                      {formIsValid
+                        ? "✅ Ready to save your portfolio"
+                        : `⏳ ${4 - ["hero", "about", "projects", "contact"].indexOf(activeTab)} sections remaining`}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </form>

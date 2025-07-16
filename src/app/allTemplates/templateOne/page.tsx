@@ -14,8 +14,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { useAuthStore } from "../../../../store/useAuthStore";
 import usePortfolioOneStore from "../../../../store/portfolioOneStore";
 import { LayoutGrid, Loader2 } from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
-import { PencilIcon, Home, ChevronLeft, Eye } from "lucide-react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { PencilIcon, Home, ChevronLeft, Eye, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 const defaultHeroDetails = {
@@ -143,6 +143,7 @@ const defaultContactData = {
 const TemplateOne = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [portfolioData, setPortfolioData] = useState({
     hero: { ...defaultHeroDetails },
@@ -151,6 +152,7 @@ const TemplateOne = () => {
     contact: { ...defaultContactData },
   });
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [hasExistingPortfolio, setHasExistingPortfolio] = useState(false);
 
   // Get auth state directly from the store
   const { isAuthenticated, token } = useAuthStore();
@@ -160,15 +162,14 @@ const TemplateOne = () => {
     isLoading: isPortfolioLoading,
   } = usePortfolioOneStore();
 
-  // Determine if we should use default data or fetch from backend
-  // based on the URL pattern - either the public template view or viewing a specific portfolio
-  const isPublicView = pathname === "/templates/templateOne";
-  const isPortfolioView = pathname.startsWith("/templates/templateOne/");
-  const portfolioId = isPortfolioView ? pathname.split("/").pop() : null;
+  // Updated URL detection logic to properly handle template preview URLs
+  const isPublicTemplatePreview =
+    pathname === "/templatePreview" && searchParams.has("template1");
 
   useEffect(() => {
-    if (isPublicView) {
-      // Use default data for public template view
+    // If this is a public template preview (templatePreview?template1), always use default data
+    if (isPublicTemplatePreview) {
+      console.log("Public template preview detected, using default data");
       setLoading(false);
       setIsPreviewMode(true);
       return;
@@ -178,199 +179,94 @@ const TemplateOne = () => {
       try {
         setLoading(true);
 
-        // If user is authenticated, try to fetch their portfolio first using the store
-        if (isAuthenticated && !portfolioId) {
+        // For allTemplates/templateOne URL, always try to fetch portfolio using getMyPortfolio
+        if (pathname.startsWith("/allTemplates/templateOne")) {
           console.log("Fetching user's portfolio from store...");
 
-          // Use the store's loading state
-          if (isPortfolioLoading) {
-            return; // Wait for store to finish loading
+          try {
+            // Get portfolio from the store using the getMyPortfolio API
+            const userPortfolio = await getMyPortfolio();
+
+            if (userPortfolio) {
+              // User has an existing portfolio
+              setHasExistingPortfolio(true);
+
+              // Cast to any to handle dynamic API response structure
+              const portfolioAny =
+                (userPortfolio as any)?.data?.portfolio || userPortfolio;
+
+              // Transform the fetched data into the format expected by our components
+              const transformedData = {
+                hero: {
+                  DevName: portfolioAny.brandName || defaultHeroDetails.DevName,
+                  title: portfolioAny.title || defaultHeroDetails.title,
+                  description:
+                    portfolioAny.description || defaultHeroDetails.description,
+                  heroImage:
+                    portfolioAny.heroImage || defaultHeroDetails.heroImage,
+                  Companies:
+                    portfolioAny.companies || defaultHeroDetails.Companies,
+                },
+                about: {
+                  title: portfolioAny.sectionAbout || defaultAboutData.title,
+                  subtitle:
+                    portfolioAny.sectionSubtitle || defaultAboutData.subtitle,
+                  description:
+                    portfolioAny.aboutMeDescription ||
+                    defaultAboutData.description,
+                  skills:
+                    portfolioAny.skills?.map((skill: any) => ({
+                      name: skill.name,
+                      level: skill.level || 3,
+                      color: skill.color || "bg-purple-500",
+                    })) || defaultAboutData.skills,
+                  education:
+                    portfolioAny.education?.map((edu: any) => ({
+                      degree: edu.degree,
+                      institution: edu.institution,
+                      year: edu.years || edu.year,
+                      description: edu.description,
+                    })) || defaultAboutData.education,
+                },
+                projects:
+                  portfolioAny.projects?.map((project: any, index: number) => ({
+                    id: index + 1,
+                    type: project.technologies?.[0] || "Project",
+                    typeColor: ["blue", "purple", "green", "amber"][index % 4],
+                    name: project.name || project.title,
+                    description: project.description,
+                    image: project.imageUrl || Projects,
+                    sourceLink: project.repoUrl || project.githubUrl || "#",
+                    demoLink: project.liveUrl || "#",
+                  })) || defaultProjects,
+                contact: {
+                  email:
+                    portfolioAny.contactInfo?.[0]?.emailAddress ||
+                    portfolioAny.personalInfo?.email ||
+                    defaultContactData.email,
+                  phone:
+                    portfolioAny.contactInfo?.[0]?.phoneNumber ||
+                    portfolioAny.personalInfo?.phone ||
+                    defaultContactData.phone,
+                  socialLinks:
+                    portfolioAny.socialLinks?.map((link: any) => ({
+                      platform: link.platform,
+                      icon: link.icon || link.platform.toLowerCase(),
+                      url: link.url,
+                    })) || defaultContactData.socialLinks,
+                },
+              };
+
+              setPortfolioData(transformedData);
+              console.log("Portfolio data set successfully");
+            } else {
+              console.log("No portfolio found, using default data");
+            }
+          } catch (storeError) {
+            console.error("Error fetching from store:", storeError);
+            console.log("Store error, using default data");
           }
-
-          // Get portfolio from the store
-          const userPortfolio = await getMyPortfolio();
-
-          if (userPortfolio) {
-            // Cast to any to handle dynamic API response structure
-            const portfolioAny =
-              (userPortfolio as any)?.data?.portfolio || userPortfolio;
-
-            // Transform the fetched data into the format expected by our components
-            const transformedData = {
-              hero: {
-                DevName: portfolioAny.brandName || defaultHeroDetails.DevName,
-                title: portfolioAny.title || defaultHeroDetails.title,
-                description:
-                  portfolioAny.description || defaultHeroDetails.description,
-                heroImage:
-                  portfolioAny.heroImage || defaultHeroDetails.heroImage,
-                Companies:
-                  portfolioAny.companies || defaultHeroDetails.Companies,
-              },
-              about: {
-                title: portfolioAny.sectionAbout || defaultAboutData.title,
-                subtitle:
-                  portfolioAny.sectionSubtitle || defaultAboutData.subtitle,
-                description:
-                  portfolioAny.aboutMeDescription ||
-                  defaultAboutData.description,
-                skills:
-                  portfolioAny.skills?.map((skill: any) => ({
-                    name: skill.name,
-                    level: skill.level || 3,
-                    color: skill.color || "bg-purple-500",
-                  })) || defaultAboutData.skills,
-                education:
-                  portfolioAny.education?.map((edu: any) => ({
-                    degree: edu.degree,
-                    institution: edu.institution,
-                    year: edu.years || edu.year,
-                    description: edu.description,
-                  })) || defaultAboutData.education,
-              },
-              projects:
-                portfolioAny.projects?.map((project: any, index: number) => ({
-                  id: index + 1,
-                  type: project.technologies?.[0] || "Project",
-                  typeColor: ["blue", "purple", "green", "amber"][index % 4],
-                  name: project.name || project.title,
-                  description: project.description,
-                  image: project.imageUrl || Projects,
-                  sourceLink: project.repoUrl || project.githubUrl || "#",
-                  demoLink: project.liveUrl || "#",
-                })) || defaultProjects,
-              contact: {
-                email:
-                  portfolioAny.contactInfo?.[0]?.emailAddress ||
-                  portfolioAny.personalInfo?.email ||
-                  defaultContactData.email,
-                phone:
-                  portfolioAny.contactInfo?.[0]?.phoneNumber ||
-                  portfolioAny.personalInfo?.phone ||
-                  defaultContactData.phone,
-                socialLinks:
-                  portfolioAny.socialLinks?.map((link: any) => ({
-                    platform: link.platform,
-                    icon: link.icon || link.platform.toLowerCase(),
-                    url: link.url,
-                  })) || defaultContactData.socialLinks,
-              },
-            };
-
-            setPortfolioData(transformedData);
-            setLoading(false);
-            return;
-          } else {
-            console.log("No portfolio found in store, using default data");
-            setLoading(false);
-            return;
-          }
         }
-
-        // For portfolio view by ID, we don't need authentication
-        let apiUrl = "/api/portfolios/portfolioone";
-        const headers: Record<string, string> = {};
-
-        if (portfolioId) {
-          // If viewing a specific portfolio by ID
-          apiUrl = `/api/portfolios/${portfolioId}`;
-          console.log(`Fetching portfolio with ID: ${portfolioId}`);
-        } else if (!isAuthenticated || !token) {
-          console.log("User not authenticated, using default data");
-          setLoading(false);
-          return;
-        } else {
-          // Add auth token if user is authenticated
-          headers.Authorization = `Bearer ${token}`;
-        }
-
-        console.log("Fetching portfolio data from API...");
-        const response = await fetch(apiUrl, {
-          headers,
-        });
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            console.log("No portfolio found, using default data");
-          } else {
-            const errorData = await response.json();
-            console.error("Error fetching portfolio:", errorData);
-            toast.error(errorData.message || "Failed to load portfolio");
-          }
-          setLoading(false);
-          return;
-        }
-
-        // Successfully fetched portfolio data
-        const data = await response.json();
-        console.log("Portfolio data loaded:", data);
-
-        // The portfolio data is directly in the response, not nested under a 'portfolio' property
-        if (!data) {
-          console.log("No portfolio data available, using defaults");
-          setLoading(false);
-          return;
-        }
-
-        const portfolio = data;
-        // Transform the fetched data into the format expected by our components
-        const transformedData = {
-          hero: {
-            DevName: portfolio.brandName || defaultHeroDetails.DevName,
-            title: portfolio.title || defaultHeroDetails.title,
-            description:
-              portfolio.description || defaultHeroDetails.description,
-            heroImage: portfolio.heroImage || defaultHeroDetails.heroImage,
-            Companies: portfolio.companies || defaultHeroDetails.Companies,
-          },
-          about: {
-            title: portfolio.sectionAbout || defaultAboutData.title,
-            subtitle: portfolio.sectionSubtitle || defaultAboutData.subtitle,
-            description:
-              portfolio.aboutMeDescription || defaultAboutData.description,
-            skills:
-              portfolio.skills?.map((skill: any) => ({
-                name: skill.name,
-                level: skill.level || 3,
-                color: skill.color || "bg-purple-500",
-              })) || defaultAboutData.skills,
-            education:
-              portfolio.education?.map((edu: any) => ({
-                degree: edu.degree,
-                institution: edu.institution,
-                year: edu.years,
-                description: edu.description,
-              })) || defaultAboutData.education,
-          },
-          projects:
-            portfolio.projects?.map((project: any, index: number) => ({
-              id: index + 1,
-              type: project.technologies?.[0] || "Project",
-              typeColor: ["blue", "purple", "green", "amber"][index % 4], // Rotate colors
-              name: project.name,
-              description: project.description,
-              image: project.imageUrl || Projects,
-              sourceLink: project.repoUrl || "#",
-              demoLink: project.liveUrl || "#",
-            })) || defaultProjects,
-          contact: {
-            // Extract email and phone from contactInfo array
-            email:
-              portfolio.contactInfo?.[0]?.emailAddress ||
-              defaultContactData.email,
-            phone:
-              portfolio.contactInfo?.[0]?.phoneNumber ||
-              defaultContactData.phone,
-            socialLinks:
-              portfolio.socialLinks?.map((link: any) => ({
-                platform: link.platform,
-                icon: link.icon || link.platform.toLowerCase(),
-                url: link.url,
-              })) || defaultContactData.socialLinks,
-          },
-        };
-
-        setPortfolioData(transformedData);
       } catch (error) {
         console.error("Error:", error);
         toast.error("Something went wrong while loading portfolio");
@@ -380,25 +276,33 @@ const TemplateOne = () => {
     };
 
     fetchPortfolio();
-  }, [
-    isAuthenticated,
-    token,
-    pathname,
-    isPublicView,
-    portfolioId,
-    getMyPortfolio,
-    isPortfolioLoading,
-  ]);
+  }, [pathname, searchParams, isPublicTemplatePreview, getMyPortfolio]);
+
+  // Fallback timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.log("Loading timeout reached, forcing default data");
+        setLoading(false);
+      }
+    }, 8000); // 8 second maximum loading time
+
+    return () => clearTimeout(timeout);
+  }, [loading]);
+
+  const handlePreviewPortfolio = () => {
+    router.push("/allTemplates/templateOne");
+  };
 
   const handleEditPortfolio = () => {
-    router.push("/allTemplates/templateOne/useTemplate");
+    router.push("/templates/templateOne/edit");
   };
 
   const handleBackToPortfolios = () => {
     router.push("/portfolios");
   };
 
-  if (loading || isPortfolioLoading) {
+  if (loading) {
     return (
       <div className="h-screen flex flex-col gap-2.5 items-center justify-center bg-gradient-to-br from-[#171826] to-[#0D0F1A]">
         <div className="relative w-16 h-16">
@@ -430,8 +334,8 @@ const TemplateOne = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Modern top navigation - only show if not in public view */}
-      {!isPublicView && isAuthenticated && (
+      {/* Modern top navigation - only show if not in public template preview */}
+      {!isPublicTemplatePreview && isAuthenticated && (
         <div className="w-full bg-gradient-to-r from-gray-900 to-gray-800 py-3 px-6 shadow-lg z-40">
           <div className="max-w-9xl mx-auto flex justify-between items-center">
             <div className="flex items-center">
@@ -487,15 +391,17 @@ const TemplateOne = () => {
       )}
 
       {/* Preview mode banner */}
-      {isPublicView && (
+      {isPublicTemplatePreview && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full bg-gradient-to-r from-amber-500 to-orange-400 py-2"
+          className="w-full bg-gradient-to-r from-amber-500 to-orange-400 py-2 flex justify-center items-center"
         >
-          <div className="max-w-9xl mx-auto flex justify-center items-center gap-2 text-amber-900 font-medium">
-            <Eye className="h-4 w-4" />
-            <span>Template Preview Mode</span>
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 px-4">
+            <div className="flex items-center gap-2 text-amber-900 font-medium">
+              <Eye className="h-4 w-4" />
+              <span>Template Preview Mode</span>
+            </div>
           </div>
         </motion.div>
       )}

@@ -24,31 +24,31 @@ import TemplateFourPreview from "../../../../public/TemplateFourPreview.png";
 
 const templates = [
   {
-    id: "templateOne",
+    id: "template1",
     imageUrl: TemplateOnePreview,
     title: "Modern Pro",
     description: "Clean & Professional",
     templatePath: "TemplateOne",
     category: "Professional",
-    tags: ["Minimal", "Light", "Corporate"],
+    tags: ["Minimal", "Dark", "Corporate"],
     featured: true,
     popular: true,
     isNew: false,
   },
   {
-    id: "templateTwo",
+    id: "template2",
     imageUrl: TemplateTwoPreview,
     title: "Minimalist",
     description: "Simple & Elegant",
     templatePath: "TemplateTwo",
     category: "Minimal",
-    tags: ["Clean", "Light", "Simple"],
+    tags: ["Clean", "Dark", "Simple"],
     featured: false,
     popular: true,
     isNew: false,
   },
   {
-    id: "templateThree",
+    id: "template3",
     imageUrl: TemplateThreePreview,
     title: "Creative Portfolio",
     description: "Bold & Innovative",
@@ -60,7 +60,7 @@ const templates = [
     isNew: true,
   },
   {
-    id: "templateFour",
+    id: "template4",
     imageUrl: TemplateFourPreview,
     title: "Tech Resume",
     description: "Digital & Dynamic",
@@ -72,7 +72,7 @@ const templates = [
     isNew: true,
   },
   {
-    id: "templateFive",
+    id: "template5",
     imageUrl: TemplateOnePreview,
     title: "Portfolio Plus",
     description: "Comprehensive showcase",
@@ -84,7 +84,7 @@ const templates = [
     isNew: false,
   },
   {
-    id: "templateSix",
+    id: "template6",
     imageUrl: TemplateThreePreview,
     title: "Art Display",
     description: "Visual showcase",
@@ -96,7 +96,7 @@ const templates = [
     isNew: true,
   },
   {
-    id: "templateSeven",
+    id: "template7",
     imageUrl: TemplateFourPreview,
     title: "Developer CV",
     description: "Code & skills focus",
@@ -108,7 +108,7 @@ const templates = [
     isNew: false,
   },
   {
-    id: "templateEight",
+    id: "template8",
     imageUrl: TemplateTwoPreview,
     title: "Business Card",
     description: "Professional identity",
@@ -199,12 +199,12 @@ const Templates = () => {
       e.stopPropagation();
     }
 
-    router.push(`/templates/${template.id}`);
+    router.push(`/templatePreview?${template.id}`);
   };
 
   // Handle template usage
   const handleUseTemplate = (template: any) => {
-    router.push(`/templates/${template.id}/edit`);
+    router.push(`/templateForm?${template.id}`);
   };
 
   // Handle tag selection
@@ -222,25 +222,6 @@ const Templates = () => {
       transition: {
         staggerChildren: 0.08,
         delayChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: {
-      opacity: 0,
-      y: 30,
-      scale: 0.95,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 120,
-        damping: 20,
-        duration: 0.6,
       },
     },
   };
@@ -456,12 +437,11 @@ const Templates = () => {
             {filteredTemplates.map((template) => (
               <motion.div
                 key={template.id}
-                variants={itemVariants}
                 onMouseEnter={() => setIsTemplateHovered(template.id)}
                 onMouseLeave={() => setIsTemplateHovered(null)}
                 className="group relative bg-[#1E2132] rounded-2xl overflow-hidden border border-[#2E313C] 
                          hover:border-[#3E4154] hover:shadow-xl hover:shadow-purple-900/20 
-                         transition-all duration-300 transform hover:-translate-y-1
+                         transition-all duration-300 transform
                          backdrop-blur-sm"
               >
                 {/* Template card - grid view */}
@@ -471,7 +451,7 @@ const Templates = () => {
                     <Image
                       src={template.imageUrl}
                       alt={template.title}
-                      className="w-full h-full object-cover group-hover/image:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover"
                       width={400}
                       height={300}
                       onClick={() => handlePreviewTemplate(template)}
@@ -603,9 +583,7 @@ const Templates = () => {
                         onClick={() => handleUseTemplate(template)}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full relative overflow-hidden bg-gradient-to-r from-[#711381] via-purple-600 to-[#8B5CF6] 
-                                 hover:from-[#5C0F6B] hover:via-purple-700 hover:to-[#7C3AED] 
-                                 text-white px-6 py-3 rounded-xl transition-all duration-300 
+                        className="w-full relative overflow-hidden bg-gradient-to-r from-[#711381] via-purple-600 to-[#8B5CF6] text-white px-6 py-3 rounded-xl transition-all duration-300 
                                  flex items-center justify-center gap-3 font-semibold text-sm
                                  shadow-lg shadow-purple-900/25 hover:shadow-purple-900/40
                                  group"
