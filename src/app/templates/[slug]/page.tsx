@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   ExternalLink,
@@ -25,16 +26,9 @@ import {
 } from "lucide-react";
 import { getPortfolioBySlug } from "@/lib/portfolio-data";
 
-interface PortfolioDetailPageProps {
-  params: Promise<{
-    slug: string;
-  }>;
-}
-
-export default async function PortfolioDetailPage({
-  params,
-}: PortfolioDetailPageProps) {
-  const { slug } = await params;
+export default function PortfolioDetailPage() {
+  const params = useParams();
+  const slug = params.slug as string;
   const portfolio = getPortfolioBySlug(slug);
 
   if (!portfolio) {
@@ -168,7 +162,7 @@ export default async function PortfolioDetailPage({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="bg-slate-800/30 rounded-2xl p-8 border border-slate-700/50"
+              className="bg-slate-800/30 rounded-2xl p-4 sm:p-6 border border-slate-700/50"
             >
               <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white flex items-center gap-3">
                 <Target className="h-8 w-8 text-purple-400" />
@@ -186,7 +180,7 @@ export default async function PortfolioDetailPage({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-2xl p-8 border border-purple-500/20"
+              className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-2xl p-4 sm:p-6 border border-purple-500/20"
             >
               <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white flex items-center gap-3">
                 <Star className="h-8 w-8 text-yellow-400" />
@@ -202,7 +196,7 @@ export default async function PortfolioDetailPage({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="bg-slate-800/30 rounded-2xl p-8 border border-slate-700/50"
+              className="bg-slate-800/30 rounded-2xl p-4 sm:p-6 border border-slate-700/50"
             >
               <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white flex items-center gap-3">
                 <Zap className="h-8 w-8 text-blue-400" />
@@ -225,12 +219,12 @@ export default async function PortfolioDetailPage({
             </motion.section>
 
             {/* Best For / Not Recommended */}
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-2 gap-4 sm:p-6">
               <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
-                className="bg-green-900/20 rounded-2xl p-6 border border-green-500/20"
+                className="bg-green-900/20 rounded-2xl p-4 sm-p-6 border border-green-500/20"
               >
                 <h2 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
                   <CheckCircle className="h-6 w-6 text-green-400" />
@@ -250,7 +244,7 @@ export default async function PortfolioDetailPage({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.7 }}
-                className="bg-red-900/20 rounded-2xl p-6 border border-red-500/20"
+                className="bg-red-900/20 rounded-2xl p-4 sm:p-6 border border-red-500/20"
               >
                 <h2 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
                   <XCircle className="h-6 w-6 text-red-400" />
@@ -273,7 +267,7 @@ export default async function PortfolioDetailPage({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.8 }}
-                className="bg-slate-800/30 rounded-2xl p-8 border border-slate-700/50"
+                className="bg-slate-800/30 rounded-2xl p-4 sm:p-6 border border-slate-700/50"
               >
                 <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white flex items-center gap-3">
                   <Layout className="h-8 w-8 text-purple-400" />
@@ -310,7 +304,7 @@ export default async function PortfolioDetailPage({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50"
+              className="bg-slate-800/30 rounded-2xl p-4 sm:p-6 border border-slate-700/50"
             >
               <h3 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
                 <Code className="h-6 w-6 text-blue-400" />
@@ -333,46 +327,60 @@ export default async function PortfolioDetailPage({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50"
+              className="bg-slate-800/30 rounded-2xl p-4 sm:p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300"
             >
-              <h3 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
+              <h3 className="text-xl sm:text-2xl font-bold mb-6 text-white flex items-center gap-2">
                 <Palette className="h-6 w-6 text-purple-400" />
                 Design Details
               </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Style:</span>
-                  <span className="text-gray-300 font-medium">
-                    {portfolio.designStyle}
-                  </span>
+              <div className="space-y-4">
+                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-medium">Style:</span>
+                    <span className="text-gray-300 font-semibold text-right">
+                      {portfolio.designStyle}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Theme:</span>
-                  <span className="text-gray-300 font-medium">
-                    {portfolio.colorScheme}
-                  </span>
+                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-medium">Theme:</span>
+                    <span className="text-gray-300 font-semibold text-right">
+                      {portfolio.colorScheme}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Layout:</span>
-                  <span className="text-gray-300 font-medium">
-                    {portfolio.layout}
-                  </span>
+                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-medium">Layout:</span>
+                    <span className="text-gray-300 font-semibold text-right">
+                      {portfolio.layout}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Responsive:</span>
-                  <span
-                    className={`font-medium ${portfolio.responsive ? "text-green-400" : "text-red-400"}`}
-                  >
-                    {portfolio.responsive ? "Yes" : "No"}
-                  </span>
+                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-medium">
+                      Responsive:
+                    </span>
+                    <span
+                      className={`font-semibold ${portfolio.responsive ? "text-green-400" : "text-red-400"}`}
+                    >
+                      {portfolio.responsive ? "Yes" : "No"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Animations:</span>
-                  <span
-                    className={`font-medium ${portfolio.animations ? "text-green-400" : "text-red-400"}`}
-                  >
-                    {portfolio.animations ? "Yes" : "No"}
-                  </span>
+                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-medium">
+                      Animations:
+                    </span>
+                    <span
+                      className={`font-semibold ${portfolio.animations ? "text-green-400" : "text-red-400"}`}
+                    >
+                      {portfolio.animations ? "Yes" : "No"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -382,7 +390,7 @@ export default async function PortfolioDetailPage({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50"
+              className="bg-slate-800/30 rounded-2xl p-4 sm:p-6 border border-slate-700/50"
             >
               <h3 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
                 <Users className="h-6 w-6 text-green-400" />
@@ -404,7 +412,7 @@ export default async function PortfolioDetailPage({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.7 }}
-              className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-2xl p-6 border border-purple-500/20"
+              className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-2xl p-4 sm:p-6 border border-purple-500/20"
             >
               <h3 className="text-xl font-bold mb-4 text-white">
                 Quick Actions

@@ -26,6 +26,7 @@ import { useAuthStore } from "../../../store/useAuthStore";
 import Navbar from "../components/UI/Navbar";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Preloader from "../components/UI/Preloader";
 
 interface Portfolio {
   id: string;
@@ -150,9 +151,7 @@ const Page = () => {
 
   // Animation variants
   const containerVariants = {
-    hidden: { opacity: 0 },
     visible: {
-      opacity: 1,
       transition: {
         staggerChildren: 0.08,
         delayChildren: 0.1,
@@ -174,83 +173,10 @@ const Page = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A]">
-        <Navbar />
-        <div className="max-w-9xl mx-auto px-2 sm:px-6 py-5 pt-24">
-          {/* Header section with loading skeleton */}
-          <div className="mb-8">
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="flex flex-wrap justify-between items-end"
-            >
-              <div>
-                <div className="inline-flex items-center px-3 py-1 mb-2 rounded-full bg-purple-900/30 border border-purple-500/30 text-sm text-purple-400">
-                  <FolderOpen
-                    size={14}
-                    className="mr-1.5"
-                    fill="currentColor"
-                  />
-                  My Portfolios
-                </div>
-                <h1 className="text-3xl font-bold text-white">
-                  Your Portfolio Collection
-                </h1>
-                <p className="text-gray-400 mt-2">
-                  Manage and showcase your professional portfolios
-                </p>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Loading skeleton grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-[#1E2132] rounded-2xl overflow-hidden border border-[#2E313C] h-80"
-              >
-                <div className="h-48 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 animate-pulse" />
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
-                  </div>
-                </div>
-                <div className="p-5">
-                  <div className="h-6 bg-gray-700/50 rounded-lg mb-2 animate-pulse" />
-                  <div className="h-4 bg-gray-700/30 rounded-lg mb-4 animate-pulse" />
-                  <div className="flex gap-2 mb-4">
-                    <div className="h-6 w-16 bg-gray-700/30 rounded-lg animate-pulse" />
-                    <div className="h-6 w-20 bg-gray-700/30 rounded-lg animate-pulse" />
-                  </div>
-                  <div className="h-10 bg-purple-900/30 rounded-lg animate-pulse" />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Loading message */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-center mt-8"
-          >
-            <p className="text-gray-400">Loading your portfolios...</p>
-          </motion.div>
-        </div>
-
-        {/* Background decorative elements */}
-        <div className="fixed inset-0 pointer-events-none -z-10">
-          <div className="absolute right-0 top-1/4 w-96 h-96 bg-purple-900/20 rounded-full blur-3xl"></div>
-          <div className="absolute left-1/4 bottom-0 w-64 h-64 bg-purple-800/10 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/3 left-10 w-72 h-72 bg-pink-900/10 rounded-full blur-3xl"></div>
-        </div>
-      </div>
+      <Preloader
+        loadingText="Loading Your Portfolios..."
+        loadingSubtitle="Please wait while we fetch your portfolios."
+      />
     );
   }
 
@@ -261,8 +187,8 @@ const Page = () => {
         {/* Header section */}
         <div className="mb-8">
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ y: -10 }}
+            animate={{ y: 0 }}
             transition={{ duration: 0.5 }}
             className="flex flex-wrap justify-between items-end"
           >
@@ -354,8 +280,8 @@ const Page = () => {
         {/* Portfolio Grid */}
         {filteredPortfolios.length === 0 ? (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ y: 20 }}
+            animate={{ y: 0 }}
             className="bg-[#1E2132] rounded-xl border border-[#2E313C] p-8 flex flex-col items-center text-center shadow-md"
           >
             <LayoutTemplate size={40} className="text-gray-400 mb-3" />
@@ -414,7 +340,6 @@ const Page = () => {
 
                     {/* Image overlay on hover */}
                     <motion.div
-                      initial={{ opacity: 0 }}
                       animate={
                         hoveredPortfolio === portfolio.id
                           ? { opacity: 1 }

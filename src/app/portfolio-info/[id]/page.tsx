@@ -200,10 +200,10 @@ const PortfolioInfoPage = () => {
                   href="/dashboard"
                   className="p-2 bg-[#1E2132] border border-[#2E313C] rounded-lg hover:bg-[#262A3E] transition-colors"
                 >
-                  <ArrowLeft size={20} className="text-gray-300" />
+                  <ArrowLeft size={18} className="text-gray-300" />
                 </Link>
                 <div>
-                  <div className="inline-flex items-center px-3 py-1 mb-2 rounded-full bg-purple-900/30 border border-purple-500/30 text-sm text-purple-400">
+                  <div className="inline-flex items-center px-3 py-1 mb-2 rounded-full bg-purple-900/30 border border-purple-500/30 text-xs sm:text-sm text-purple-400">
                     <BarChart3
                       size={14}
                       className="mr-1.5"
@@ -211,10 +211,10 @@ const PortfolioInfoPage = () => {
                     />
                     Portfolio Analytics
                   </div>
-                  <h1 className="text-4xl font-bold text-white mb-1">
+                  <h1 className="text-2xl font-bold text-white mb-1">
                     {portfolioData.title}
                   </h1>
-                  <p className="text-gray-400">
+                  <p className="text-gray-400 text-sm">
                     Detailed insights and analytics for your portfolio
                   </p>
                 </div>
@@ -224,7 +224,7 @@ const PortfolioInfoPage = () => {
                 <motion.button
                   onClick={handleRefresh}
                   disabled={refreshing}
-                  className="p-2.5 bg-[#1E2132] border border-[#2E313C] rounded-lg hover:bg-[#262A3E] transition-colors disabled:opacity-50"
+                  className="p-2 bg-[#1E2132] border border-[#2E313C] rounded-lg hover:bg-[#262A3E] transition-colors disabled:opacity-50"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -318,7 +318,7 @@ const PortfolioInfoPage = () => {
                 animate={{ y: 0 }}
                 transition={{ delay: 0.1 + index * 0.05, duration: 0.3 }}
                 whileHover={{ y: -2, scale: 1.01 }}
-                className={`bg-[#1E2132] border ${stat.border} rounded-xl p-6 hover:shadow-lg hover:shadow-purple-900/20 transition-all duration-300`}
+                className={`bg-[#1E2132] border ${stat.border} rounded-xl p-4 sm:p-6 hover:shadow-lg hover:shadow-purple-900/20 transition-all duration-300`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`${stat.bg} p-3 rounded-lg`}>
@@ -338,7 +338,7 @@ const PortfolioInfoPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.3 }}
-              className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-6"
+              className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-4 sm:p-6"
             >
               <h2 className="text-xl font-bold text-white flex items-center mb-6">
                 <User size={20} className="text-purple-400 mr-2" />
@@ -409,7 +409,7 @@ const PortfolioInfoPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}
-              className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-6"
+              className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-4 sm:p-6"
             >
               <h2 className="text-xl font-bold text-white flex items-center mb-6">
                 <Code size={20} className="text-green-400 mr-2" />
@@ -452,7 +452,7 @@ const PortfolioInfoPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.3 }}
-              className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-6"
+              className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-4 sm:p-6"
             >
               <h2 className="text-xl font-bold text-white flex items-center mb-6">
                 <BarChart3 size={20} className="text-blue-400 mr-2" />
@@ -517,7 +517,7 @@ const PortfolioInfoPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.3 }}
-              className="mt-8 bg-[#1E2132] border border-[#2E313C] rounded-xl p-6"
+              className="mt-8 bg-[#1E2132] border border-[#2E313C] rounded-xl p-4 sm:p-6"
             >
               <h2 className="text-xl font-bold text-white flex items-center mb-6">
                 <Briefcase size={20} className="text-purple-400 mr-2" />
@@ -591,7 +591,7 @@ const PortfolioInfoPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.3 }}
-              className="mt-8 bg-[#1E2132] border border-[#2E313C] rounded-xl p-6"
+              className="mt-8 bg-[#1E2132] border border-[#2E313C] rounded-xl p-4 sm:p-6"
             >
               <h2 className="text-xl font-bold text-white flex items-center mb-6">
                 <GraduationCap size={20} className="text-blue-400 mr-2" />
@@ -619,7 +619,7 @@ const PortfolioInfoPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.3 }}
-              className="mt-8 bg-[#1E2132] border border-[#2E313C] rounded-xl p-6"
+              className="mt-8 bg-[#1E2132] border border-[#2E313C] rounded-xl p-6 sm:p-8"
             >
               <h2 className="text-xl font-bold text-white flex items-center mb-6">
                 <Award size={20} className="text-green-400 mr-2" />
