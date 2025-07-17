@@ -153,7 +153,7 @@ const PortfolioInfoPage = () => {
 
   // Show preloader while loading
   if (isLoading || !authChecked) {
-    return <Preloader />;
+    return <Preloader loadingText="Loading Portfolio Information" loadingSubtitle="Please wait while we fetch your data..." />;
   }
 
   // Do not render if not authenticated
@@ -264,8 +264,8 @@ const PortfolioInfoPage = () => {
           {/* Overview Stats */}
           <motion.div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ y: 20 }}
+            animate={{ y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             {[
@@ -314,8 +314,8 @@ const PortfolioInfoPage = () => {
             ].map((stat, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ y: 20 }}
+                animate={{ y: 0 }}
                 transition={{ delay: 0.1 + index * 0.05, duration: 0.3 }}
                 whileHover={{ y: -2, scale: 1.01 }}
                 className={`bg-[#1E2132] border ${stat.border} rounded-xl p-6 hover:shadow-lg hover:shadow-purple-900/20 transition-all duration-300`}

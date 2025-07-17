@@ -164,7 +164,7 @@ const TemplateOne = () => {
 
   // Updated URL detection logic to properly handle template preview URLs
   const isPublicTemplatePreview =
-    pathname === "/templatePreview" && searchParams.has("template1");
+    pathname === "/template" || searchParams.has("template1");
 
   useEffect(() => {
     // If this is a public template preview (templatePreview?template1), always use default data
@@ -345,7 +345,7 @@ const TemplateOne = () => {
                 transition={{ delay: 0.1 }}
                 className="text-white font-medium text-lg mr-6"
               >
-                Preview Mode
+                My Portfolio
               </motion.h3>
             </div>
 

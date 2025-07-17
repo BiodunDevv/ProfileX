@@ -108,7 +108,7 @@ const Page = () => {
   });
 
   const handlePortfolioInfo = (portfolio: Portfolio) => {
-    router.push(`/portfolio-info/${portfolio.id}/info?type=${portfolio.type}`);
+    router.push(`/portfolio-info/${portfolio.id}?type=${portfolio.type}`);
   };
 
   const handleEditPortfolio = (portfolio: Portfolio) => {
@@ -161,9 +161,8 @@ const Page = () => {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { y: 20 },
     visible: {
-      opacity: 1,
       y: 0,
       transition: {
         type: "spring" as const,
@@ -207,7 +206,7 @@ const Page = () => {
 
           {/* Loading skeleton grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {Array.from({ length: 8 }).map((_, index) => (
+            {Array.from({ length: 4 }).map((_, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
@@ -479,7 +478,7 @@ const Page = () => {
                   {/* Portfolio info */}
                   <div className="p-5 flex-grow flex flex-col">
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-gray-100 text-lg leading-tight">
+                      <h3 className="font-semibold text-gray-100 text-lg leading-tight truncate pr-2 flex-1">
                         {portfolio.title}
                       </h3>
                       <motion.div
@@ -488,7 +487,7 @@ const Page = () => {
                           rotate: hoveredPortfolio === portfolio.id ? 360 : 0,
                         }}
                         transition={{ duration: 0.5 }}
-                        className="text-purple-400"
+                        className="text-purple-400 flex-shrink-0"
                       >
                         <Sparkles size={16} fill="currentColor" />
                       </motion.div>
@@ -518,22 +517,6 @@ const Page = () => {
                         <Calendar size={12} />
                         {formatDate(portfolio.updatedAt)}
                       </span>
-                    </div>
-
-                    {/* Tags/Categories */}
-                    <div className="flex flex-wrap gap-1.5 mt-auto mb-4">
-                      <motion.span
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-gradient-to-r from-[#262A3E] to-[#2A2E42] text-gray-300 
-                                 px-2.5 py-1 rounded-lg text-xs font-medium
-                                 border border-gray-600/20 hover:border-purple-500/30
-                                 transition-colors duration-200"
-                      >
-                        {portfolio.type === "template1"
-                          ? "Modern Pro"
-                          : "Minimalist"}
-                      </motion.span>
                     </div>
                   </div>
 

@@ -215,7 +215,7 @@ const DashboardPage = () => {
 
   // Show preloader while loading or checking auth
   if (isLoading || !authChecked) {
-    return <Preloader />;
+    return <Preloader loadingText="Loading Dashboard" loadingSubtitle="Preparing your workspace..." />;
   }
 
   // Do not render page content if not authenticated
@@ -364,13 +364,13 @@ const DashboardPage = () => {
               </div>
 
               <div className="hidden lg:block relative w-80 h-56">
-                {/* Abstract decoration element */}
+                {/* Portfolio maker showcase */}
                 <div className="absolute right-0 inset-y-0 w-full h-full">
                   <div className="absolute right-5 top-1/2 transform -translate-y-1/2 h-40 w-40 bg-purple-500/30 rounded-full blur-2xl"></div>
                   <div className="absolute right-20 top-10 h-20 w-20 bg-pink-500/20 rounded-full blur-xl"></div>
                   <div className="absolute w-full h-full flex items-center justify-center">
                     <motion.div
-                      className="relative h-44 w-44 bg-gradient-to-br from-[#711381] to-purple-700 rounded-xl rotate-6 shadow-xl"
+                      className="relative h-60 w-60 bg-gradient-to-br from-[#711381] to-purple-700 rounded-xl rotate-4 shadow-xl overflow-hidden"
                       animate={{
                         rotate: [6, -2, 6],
                         y: [0, -3, 0],
@@ -381,6 +381,13 @@ const DashboardPage = () => {
                         ease: "easeInOut",
                       }}
                     >
+                      {/* Portfolio preview image */}
+                      <img
+                        src="https://images.unsplash.com/photo-1618477247222-acbdb0e159b3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2128&q=80"
+                        alt="Portfolio maker preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-purple-900/60 to-purple-500/20"></div>
                       <motion.div
                         className="absolute right-0 bottom-0 p-3 bg-white/10 backdrop-blur-md rounded-lg m-2"
                         animate={{

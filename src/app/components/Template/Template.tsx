@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -29,11 +30,15 @@ const templates = [
     title: "Modern Pro",
     description: "Clean & Professional",
     templatePath: "TemplateOne",
-    category: "Professional",
+    category: "Web Developer",
     tags: ["Minimal", "Dark", "Corporate"],
     featured: true,
     popular: true,
     isNew: false,
+    portfolioType:
+      "Full-stack developers, software engineers, tech professionals",
+    industry: "Technology, Software Development",
+    designStyle: "Modern, Minimalist, Professional",
   },
   {
     id: "template2",
@@ -41,11 +46,14 @@ const templates = [
     title: "Minimalist",
     description: "Simple & Elegant",
     templatePath: "TemplateTwo",
-    category: "Minimal",
+    category: "Designer",
     tags: ["Clean", "Dark", "Simple"],
     featured: false,
     popular: true,
     isNew: false,
+    portfolioType: "UX/UI designers, graphic designers, creative professionals",
+    industry: "Design, Creative Services, Digital Agencies",
+    designStyle: "Minimalist, Elegant, Typography-focused",
   },
   {
     id: "template3",
@@ -53,71 +61,14 @@ const templates = [
     title: "Creative Portfolio",
     description: "Bold & Innovative",
     templatePath: "TemplateThree",
-    category: "Creative",
-    tags: ["Bold", "Dark", "Modern"],
+    category: "Creative Professional",
+    tags: ["Bold", "Light", "Modern"],
     featured: true,
     popular: false,
     isNew: true,
-  },
-  {
-    id: "template4",
-    imageUrl: TemplateFourPreview,
-    title: "Tech Resume",
-    description: "Digital & Dynamic",
-    templatePath: "TemplateFour",
-    category: "Technical",
-    tags: ["Modern", "Dark", "Interactive"],
-    featured: false,
-    popular: false,
-    isNew: true,
-  },
-  {
-    id: "template5",
-    imageUrl: TemplateOnePreview,
-    title: "Portfolio Plus",
-    description: "Comprehensive showcase",
-    templatePath: "TemplateOne",
-    category: "Professional",
-    tags: ["Gallery", "Light", "Feature-rich"],
-    featured: false,
-    popular: true,
-    isNew: false,
-  },
-  {
-    id: "template6",
-    imageUrl: TemplateThreePreview,
-    title: "Art Display",
-    description: "Visual showcase",
-    templatePath: "TemplateThree",
-    category: "Creative",
-    tags: ["Gallery", "Dark", "Artistic"],
-    featured: true,
-    popular: false,
-    isNew: true,
-  },
-  {
-    id: "template7",
-    imageUrl: TemplateFourPreview,
-    title: "Developer CV",
-    description: "Code & skills focus",
-    templatePath: "TemplateFour",
-    category: "Technical",
-    tags: ["Code", "Dark", "Skills"],
-    featured: false,
-    popular: true,
-    isNew: false,
-  },
-  {
-    id: "template8",
-    imageUrl: TemplateTwoPreview,
-    title: "Business Card",
-    description: "Professional identity",
-    templatePath: "TemplateTwo",
-    category: "Minimal",
-    tags: ["Simple", "Light", "Contact"],
-    featured: false,
-    popular: false,
-    isNew: true,
+    portfolioType: "Creative designers, artists, brand specialists",
+    industry: "Creative Industries, Design Agencies, Art",
+    designStyle: "Bold, Innovative, Artistic",
   },
 ];
 
@@ -125,10 +76,10 @@ const templates = [
 const categories = [
   { id: "all", name: "All Templates" },
   { id: "featured", name: "Featured" },
-  { id: "professional", name: "Professional" },
-  { id: "creative", name: "Creative" },
-  { id: "minimal", name: "Minimal" },
-  { id: "technical", name: "Technical" },
+  { id: "web developer", name: "Web Developer" },
+  { id: "designer", name: "Designer" },
+  { id: "creative professional", name: "Creative Professional" },
+  { id: "technical professional", name: "Technical Professional" },
 ];
 
 const Templates = () => {
@@ -546,9 +497,21 @@ const Templates = () => {
                       )}
                     </div>
 
-                    <p className="text-gray-400 text-sm mb-4 leading-relaxed">
+                    <p className="text-gray-400 text-sm mb-3 leading-relaxed">
                       {template.description}
                     </p>
+
+                    {/* Portfolio Type */}
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-medium text-purple-400">
+                          Perfect for:
+                        </span>
+                      </div>
+                      <p className="text-gray-300 text-xs leading-relaxed">
+                        {template.portfolioType}
+                      </p>
+                    </div>
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-1.5 mt-auto">
@@ -586,7 +549,7 @@ const Templates = () => {
                         className="w-full relative overflow-hidden bg-gradient-to-r from-[#711381] via-purple-600 to-[#8B5CF6] text-white px-6 py-3 rounded-xl transition-all duration-300 
                                  flex items-center justify-center gap-3 font-semibold text-sm
                                  shadow-lg shadow-purple-900/25 hover:shadow-purple-900/40
-                                 group"
+                                 group mb-3"
                       >
                         {/* Animated background shimmer */}
                         <motion.div
@@ -618,28 +581,28 @@ const Templates = () => {
                         </motion.div>
                       </motion.button>
 
-                      {/* Preview button - positioned as floating overlay */}
-                      <motion.button
-                        onClick={(e) => handlePreviewTemplate(template, e)}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={
-                          isTemplateHovered === template.id
-                            ? { opacity: 1, y: 0 }
-                            : { opacity: 0, y: 10 }
-                        }
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute -top-12 right-0 z-20
-                                 bg-[#1A1D2E]/95 backdrop-blur-md border border-purple-400/30
-                                 text-purple-300 hover:text-white hover:border-purple-400/50
-                                 px-4 py-2 rounded-lg transition-all duration-200
-                                 flex items-center gap-2 text-xs font-medium
-                                 shadow-lg shadow-black/20"
-                      >
-                        <Eye size={12} />
-                        <span className="whitespace-nowrap">Preview</span>
-                      </motion.button>
+                      {/* Secondary Actions */}
+                      <div className="flex gap-2">
+                        <motion.button
+                          onClick={(e) => handlePreviewTemplate(template, e)}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="flex-1 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium border border-slate-700/50 hover:border-slate-600"
+                        >
+                          <Eye size={14} />
+                          Preview
+                        </motion.button>
+                        <Link
+                          href={`/templates/${template.id}`}
+                          className="flex-1 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium border border-slate-700/50 hover:border-slate-600 group"
+                        >
+                          <LayoutTemplate
+                            size={14}
+                            className="group-hover:rotate-12 transition-transform"
+                          />
+                          Details
+                        </Link>
+                      </div>
                     </div>
 
                     {/* Quick stats bar */}

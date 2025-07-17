@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import Navbar from "@/components/TemplateThree/Navbar";
-import Hero from "@/components/TemplateThree/Hero";
-import About from "@/components/TemplateThree/About";
-import Projects from "@/components/TemplateThree/Projects";
-import Contact from "@/components/TemplateThree/Contact";
+import Navbar from "@/app/components/TemplateThree/Navbar";
+import Hero from "@/app/components/TemplateThree/Hero";
+import About from "@/app/components/TemplateThree/About";
+import Projects from "@/app/components/TemplateThree/Projects";
+import Contact from "@/app/components/TemplateThree/Contact";
 
 const TemplateThree: React.FC = () => {
   // Mock data for the template
