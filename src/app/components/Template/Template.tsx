@@ -86,6 +86,22 @@ const templates = [
     industry: "Technology, Design, Creative Tech, Enterprise Software",
     designStyle: "Premium, Modern, Glassmorphism, Enterprise-grade",
   },
+  {
+    id: "template5",
+    imageUrl: "/TemplateFivePreview.png",
+    title: "CLI-Verse",
+    description: "CLI-Inspired Interface",
+    templatePath: "TemplateFive",
+    category: "CLI Developer",
+    tags: ["Terminal", "Interactive", "Developer", "CLI"],
+    featured: true,
+    popular: false,
+    isNew: true,
+    portfolioType:
+      "Backend developers, DevOps engineers, CLI tool creators, system administrators",
+    industry: "Technology, DevOps, Infrastructure, Developer Tools",
+    designStyle: "Terminal, Command-line, Minimalist, Interactive",
+  },
 ];
 
 // Available categories for filtering
@@ -97,6 +113,7 @@ const categories = [
   { id: "developer & designer", name: "Developer & Designer" },
   { id: "creative professional", name: "Creative Professional" },
   { id: "technical professional", name: "Technical Professional" },
+  { id: "cli developer", name: "CLI Developer" },
 ];
 
 const Templates = () => {

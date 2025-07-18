@@ -39,7 +39,7 @@ const TemplateFormContent = () => {
     const getTemplateFromParams = () => {
       // Check for template parameter in URL
       const templateParam =
-        searchParams.get("template") || Array.from(searchParams.keys())[0]; // Get first param key if no 'template' key
+        searchParams.get("template") || Array.from(searchParams.keys())[0];
 
       if (!templateParam) return null;
 
@@ -59,7 +59,11 @@ const TemplateFormContent = () => {
         },
         template4: {
           id: "template4",
-          title: "Tech Resume",
+          title: "Dual Persona Pro",
+        },
+        template5: {
+          id: "template5",
+          title: "CLI-Verse",
         },
       };
 
@@ -112,6 +116,42 @@ const TemplateFormContent = () => {
         ) {
           const Template = dynamic(
             () => import("../allTemplates/templateFour/useTemplate/page"),
+            { ssr: false }
+          );
+          setTemplateComponent(() => Template);
+        } else if (
+          template.id.includes("template5") ||
+          template.id.includes("templateFive")
+        ) {
+          const Template = dynamic(
+            () => import("../allTemplates/templateFive/useTemplate/page"),
+            { ssr: false }
+          );
+          setTemplateComponent(() => Template);
+        } else if (
+          template.id.includes("template6") ||
+          template.id.includes("templateSix")
+        ) {
+          const Template = dynamic(
+            () => import("../allTemplates/templateSix/useTemplate/page"),
+            { ssr: false }
+          );
+          setTemplateComponent(() => Template);
+        } else if (
+          template.id.includes("template7") ||
+          template.id.includes("templateSeven")
+        ) {
+          const Template = dynamic(
+            () => import("../allTemplates/templateSeven/useTemplate/page"),
+            { ssr: false }
+          );
+          setTemplateComponent(() => Template);
+        } else if (
+          template.id.includes("template8") ||
+          template.id.includes("templateEight")
+        ) {
+          const Template = dynamic(
+            () => import("../allTemplates/templateEight/useTemplate/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
