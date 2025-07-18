@@ -142,50 +142,54 @@ const processCommand = (command: string, profile: any): React.ReactNode => {
           >
             All Projects:
           </div>
-          {profile.projects
-            .map((project: any, index: number) => (
-              <div
-                key={project.name}
-                className="mb-4 border-l-2 pl-4"
-                style={{ borderColor: profile.theme.accentColor + "60" }}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <div
-                    className="font-semibold"
-                    style={{ color: profile.theme.accentColor }}
+          {profile.projects.map((project: any, index: number) => (
+            <div
+              key={project.name}
+              className="mb-4 border-l-2 pl-4"
+              style={{ borderColor: profile.theme.accentColor + "60" }}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div
+                  className="font-semibold"
+                  style={{ color: profile.theme.accentColor }}
+                >
+                  {project.name}
+                </div>
+                {project.featured && (
+                  <span
+                    className="text-xs px-2 py-0.5 rounded bg-opacity-20 font-medium"
+                    style={{
+                      backgroundColor: profile.theme.accentColor + "30",
+                      color: profile.theme.accentColor,
+                    }}
                   >
-                    {project.name}
-                  </div>
-                  {project.featured && (
-                    <span
-                      className="text-xs px-2 py-0.5 rounded bg-opacity-20 font-medium"
-                      style={{
-                        backgroundColor: profile.theme.accentColor + "30",
-                        color: profile.theme.accentColor,
-                      }}
-                    >
-                      ⭐ Featured
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs sm:text-sm mb-2">{project.description}</div>
-                <div className="text-xs opacity-70 mb-2">
-                  <span style={{ color: profile.theme.accentColor }}>Tech Stack:</span> {project.technologies.join(", ")}
-                </div>
-                <div className="flex gap-3 text-xs">
-                  {project.githubUrl && project.githubUrl !== "#" && (
-                    <span style={{ color: profile.theme.accentColor }}>
-                      📂 GitHub: {project.githubUrl}
-                    </span>
-                  )}
-                  {project.liveUrl && project.liveUrl !== "#" && (
-                    <span style={{ color: profile.theme.accentColor }}>
-                      🌐 Live: {project.liveUrl}
-                    </span>
-                  )}
-                </div>
+                    ⭐ Featured
+                  </span>
+                )}
               </div>
-            ))}
+              <div className="text-xs sm:text-sm mb-2">
+                {project.description}
+              </div>
+              <div className="text-xs opacity-70 mb-2">
+                <span style={{ color: profile.theme.accentColor }}>
+                  Tech Stack:
+                </span>{" "}
+                {project.technologies.join(", ")}
+              </div>
+              <div className="flex gap-3 text-xs">
+                {project.githubUrl && project.githubUrl !== "#" && (
+                  <span style={{ color: profile.theme.accentColor }}>
+                    📂 GitHub: {project.githubUrl}
+                  </span>
+                )}
+                {project.liveUrl && project.liveUrl !== "#" && (
+                  <span style={{ color: profile.theme.accentColor }}>
+                    🌐 Live: {project.liveUrl}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       );
     case "skills":
