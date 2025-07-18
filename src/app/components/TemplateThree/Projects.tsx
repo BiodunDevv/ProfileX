@@ -129,8 +129,8 @@ const Projects: React.FC<ProjectsProps> = ({ projects, AllProjectLink }) => {
                     </span>
                   </div>
 
-                  {/* Hover Actions */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  {/* Hover Actions - Desktop Only */}
+                  <div className="hidden sm:flex absolute inset-0 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="flex space-x-3">
                       <motion.a
                         href={project.demoLink}
@@ -166,6 +166,36 @@ const Projects: React.FC<ProjectsProps> = ({ projects, AllProjectLink }) => {
                   >
                     {project.description}
                   </p>
+
+                  {/* Mobile Action Buttons */}
+                  <div className="flex sm:hidden space-x-3 pt-3">
+                    <motion.a
+                      href={project.demoLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-lg px-4 py-3 flex items-center justify-center transition-all duration-300"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <SocialIcon className="w-4 h-4 text-slate-700 mr-2" />
+                      <span className="text-slate-700 text-sm font-medium">
+                        {project.icon === "Behance"
+                          ? "View Design"
+                          : "View Demo"}
+                      </span>
+                    </motion.a>
+
+                    <motion.a
+                      href={project.sourceLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-gray-100 hover:bg-gray-200 rounded-lg px-4 py-3 flex items-center justify-center transition-all duration-300"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <ExternalLink className="w-4 h-4 text-slate-700" />
+                    </motion.a>
+                  </div>
                 </div>
               </motion.div>
             );

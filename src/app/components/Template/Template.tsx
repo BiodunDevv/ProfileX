@@ -70,6 +70,22 @@ const templates = [
     industry: "Creative Industries, Design Agencies, Art",
     designStyle: "Bold, Innovative, Artistic",
   },
+  {
+    id: "template4",
+    imageUrl: TemplateFourPreview,
+    title: "Dual Persona Pro",
+    description: "Premium Enterprise Design",
+    templatePath: "TemplateFour",
+    category: "Developer & Designer",
+    tags: ["Premium", "Dual-Persona", "Enterprise", "Glassmorphism"],
+    featured: true,
+    popular: true,
+    isNew: true,
+    portfolioType:
+      "Full-stack developers with design skills, UX engineers, design-dev hybrids, senior professionals",
+    industry: "Technology, Design, Creative Tech, Enterprise Software",
+    designStyle: "Premium, Modern, Glassmorphism, Enterprise-grade",
+  },
 ];
 
 // Available categories for filtering
@@ -78,6 +94,7 @@ const categories = [
   { id: "featured", name: "Featured" },
   { id: "web developer", name: "Web Developer" },
   { id: "designer", name: "Designer" },
+  { id: "developer & designer", name: "Developer & Designer" },
   { id: "creative professional", name: "Creative Professional" },
   { id: "technical professional", name: "Technical Professional" },
 ];
