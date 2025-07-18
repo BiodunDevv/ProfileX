@@ -339,11 +339,11 @@ const TemplateSix = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <motion.h1
-              className="text-lg sm:text-xl font-['DM_Serif_Display'] text-[#A6785C]"
+              className="text-2xl sm:text-3xl font-['DM_Serif_Display'] text-[#A6785C]"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
             >
-              {portfolioData.personal.name.split(" ")[0]}
+              {portfolioData.personal.name.split(" ")[0].toUpperCase()}
             </motion.h1>
 
             {/* Desktop Navigation */}
