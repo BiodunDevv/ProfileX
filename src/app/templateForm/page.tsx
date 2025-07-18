@@ -65,6 +65,10 @@ const TemplateFormContent = () => {
           id: "template5",
           title: "CLI-Verse",
         },
+        template6: {
+          id: "template6",
+          title: "PaperTrail Editorial Resume Portfolio",
+        },
       };
 
       return templateMap[templateParam] || null;

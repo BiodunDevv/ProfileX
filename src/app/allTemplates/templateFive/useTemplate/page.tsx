@@ -1,12 +1,14 @@
-import React from 'react'
+"use client";
+import React from "react";
+import PortfolioFormNotAvailable from "../../../components/UI/PortfolioFormNotAvailable";
 
-const page = () => {
+const UseTemplateFive = () => {
   return (
-    <div>
-        <h1>Template Five</h1>
-        <p>This is the content for Template Five.</p>
-    </div>
-  )
-}
+    <PortfolioFormNotAvailable
+      templateName="Minimalist Design Template"
+      templateNumber="5"
+    />
+  );
+};
 
-export default page
+export default UseTemplateFive;
