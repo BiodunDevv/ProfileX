@@ -1,9 +1,14 @@
-import React from 'react'
+"use client";
+import React from "react";
+import PortfolioFormNotAvailable from "../../../components/UI/PortfolioFormNotAvailable";
 
-const page = () => {
+const UseTemplateFour = () => {
   return (
-    <div>page</div>
-  )
-}
+    <PortfolioFormNotAvailable
+      templateName="Executive Business Template"
+      templateNumber="4"
+    />
+  );
+};
 
-export default page
+export default UseTemplateFour;
