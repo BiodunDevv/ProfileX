@@ -1,14 +1,11 @@
-"use client";
-import React from "react";
-import PortfolioFormNotAvailable from "../../../components/UI/PortfolioFormNotAvailable";
+import React from 'react'
 
-const UseTemplateEight = () => {
+const page = () => {
   return (
-    <PortfolioFormNotAvailable
-      templateName="Artistic Showcase Template"
-      templateNumber="8"
-    />
-  );
-};
+    <div>
+      
+    </div>
+  )
+}
 
-export default UseTemplateEight;
+export default page

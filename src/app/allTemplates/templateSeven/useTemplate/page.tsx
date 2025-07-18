@@ -1,14 +1,11 @@
-"use client";
-import React from "react";
-import PortfolioFormNotAvailable from "../../../components/UI/PortfolioFormNotAvailable";
+import React from 'react'
 
-const UseTemplateSeven = () => {
+const page = () => {
   return (
-    <PortfolioFormNotAvailable
-      templateName="Dynamic Tech Portfolio"
-      templateNumber="7"
-    />
-  );
-};
+    <div>
+      
+    </div>
+  )
+}
 
-export default UseTemplateSeven;
+export default page

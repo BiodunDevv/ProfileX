@@ -23,13 +23,13 @@ const TerminalOutput: React.FC = () => {
           {/* Command display */}
           <div className="flex items-center mb-2">
             <span
-              className="font-mono text-xs sm:text-sm mr-1 sm:mr-2 select-none font-medium"
+              className="font-mono text-sm mr-2 select-none font-medium"
               style={{ color: profile.theme.accentColor }}
             >
               {profile.terminal.prompt}:~$
             </span>
             <span
-              className="font-mono text-xs sm:text-sm select-all"
+              className="font-mono text-sm select-all"
               style={{ color: profile.theme.textColor }}
             >
               {entry.command}

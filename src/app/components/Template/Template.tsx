@@ -89,7 +89,7 @@ const templates = [
   {
     id: "template5",
     imageUrl: "/TemplateFivePreview.png",
-    title: "CLI-Verse",
+    title: "Terminal Pro",
     description: "CLI-Inspired Interface",
     templatePath: "TemplateFive",
     category: "CLI Developer",
@@ -102,22 +102,6 @@ const templates = [
     industry: "Technology, DevOps, Infrastructure, Developer Tools",
     designStyle: "Terminal, Command-line, Minimalist, Interactive",
   },
-  {
-    id: "template6",
-    imageUrl: "/TemplateSixPreview.png",
-    title: "PaperTrail Pro",
-    description: "Editorial Resume Portfolio",
-    templatePath: "TemplateSix",
-    category: "Content Professional",
-    tags: ["Editorial", "Resume", "Professional", "PDF"],
-    featured: true,
-    popular: true,
-    isNew: true,
-    portfolioType:
-      "Content strategists, UX writers, editorial professionals, content designers",
-    industry: "Content Strategy, UX Writing, Editorial, Communications",
-    designStyle: "Editorial, Professional, Paper-like, Typography-focused",
-  },
 ];
 
 // Available categories for filtering
@@ -128,7 +112,6 @@ const categories = [
   { id: "designer", name: "Designer" },
   { id: "developer & designer", name: "Developer & Designer" },
   { id: "creative professional", name: "Creative Professional" },
-  { id: "content professional", name: "Content Professional" },
   { id: "technical professional", name: "Technical Professional" },
   { id: "cli developer", name: "CLI Developer" },
 ];

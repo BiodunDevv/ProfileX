@@ -112,7 +112,7 @@ const TemplateFive = () => {
     website: "#",
 
     social: {
-      github: "https://github.com/biodun42",
+      github: "#",
       linkedin: "#",
       twitter: "#",
       behance: "#",
@@ -186,6 +186,15 @@ const TemplateFive = () => {
         featured: true,
       },
       {
+        name: "Terminal Portfolio",
+        description:
+          "This interactive terminal portfolio showcasing modern CLI interface patterns and keyboard-first navigation.",
+        technologies: ["Next.js", "React", "Framer Motion", "TailwindCSS"],
+        githubUrl: "https://github.com/dante-dev/terminal-portfolio",
+        liveUrl: "https://dante-terminal.vercel.app",
+        featured: true,
+      },
+      {
         name: "Project2",
         description:
           "This is a sample project description showcasing the project details and technologies used.",
@@ -201,25 +210,7 @@ const TemplateFive = () => {
         technologies: ["Tech1", "Tech2", "Tech3"],
         githubUrl: "#",
         liveUrl: "#",
-        featured: false,
-      },
-      {
-        name: "Project4",
-        description:
-          "This is a sample project description showcasing the project details and technologies used.",
-        technologies: ["Tech1", "Tech2", "Tech3"],
-        githubUrl: "#",
-        liveUrl: "#",
-        featured: false,
-      },
-      {
-        name: "Project5",
-        description:
-          "This is a sample project description showcasing the project details and technologies used.",
-        technologies: ["Tech1", "Tech2", "Tech3"],
-        githubUrl: "#",
-        liveUrl: "#",
-        featured: false,
+        featured: true,
       },
     ],
 
@@ -270,7 +261,7 @@ const TemplateFive = () => {
   return (
     <TerminalProvider profile={profileData}>
       <div
-        className="min-h-screen flex items-center justify-center p-2 sm:p-4"
+        className="min-h-screen flex items-center justify-center p-4"
         style={{
           background: `linear-gradient(135deg, ${profileData.theme.backgroundColor}ee, ${profileData.theme.primaryColor}dd, ${profileData.theme.secondaryColor}cc)`,
         }}
