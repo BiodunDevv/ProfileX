@@ -42,7 +42,6 @@ const Navbar = () => {
     });
   }, [user, isAuthenticated]);
 
-  // Handle scroll effect and mobile detection
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
@@ -52,15 +51,11 @@ const Navbar = () => {
       const isMobileDevice = window.innerWidth <= 768;
       setIsMobile(isMobileDevice);
 
-      // Show mobile notice only if:
-      // 1. On mobile device
-      // 2. Haven't been permanently dismissed (localStorage)
-      // 3. Haven't shown this session yet
       if (isMobileDevice && !hasShownNotice) {
         const hasSeenNotice = localStorage.getItem("mobileNotice");
         if (!hasSeenNotice) {
           setShowMobileNotice(true);
-          setHasShownNotice(true); // Mark as shown for this session
+          setHasShownNotice(true);
         }
       }
     };
@@ -111,11 +106,7 @@ const Navbar = () => {
 
   // Animated dashboard button that appears when authenticated
   const DashboardButton = ({ className = "", onClick = () => {} }) => (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
-    >
+    <motion.div>
       <Link
         href="/dashboard"
         onClick={onClick}
@@ -136,9 +127,9 @@ const Navbar = () => {
       <AnimatePresence>
         {showMobileNotice && isMobile && (
           <motion.div
-            initial={{ opacity: 0, y: -100, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -100, scale: 0.95 }}
+            initial={{ y: -100, scale: 0.95 }}
+            animate={{ y: 0, scale: 1 }}
+            exit={{ y: -100, scale: 0.95 }}
             transition={{
               type: "spring",
               stiffness: 200,
@@ -182,16 +173,16 @@ const Navbar = () => {
                 {/* Text content */}
                 <div className="flex-1 min-w-0">
                   <motion.h4
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ x: -10 }}
+                    animate={{ x: 0 }}
                     transition={{ delay: 0.2 }}
                     className="font-bold text-white text-sm leading-tight"
                   >
                     🚀 Best Experience on Desktop
                   </motion.h4>
                   <motion.p
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ x: -10 }}
+                    animate={{ x: 0 }}
                     transition={{ delay: 0.3 }}
                     className="text-white/90 text-xs mt-1 leading-relaxed"
                   >
@@ -246,8 +237,8 @@ const Navbar = () => {
 
       {/* Navbar */}
       <motion.nav
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        initial={{ y: -20 }}
+        animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
         className={`fixed top-0 left-0 right-0 z-20 px-4 sm:px-6 py-4 transition-all duration-300 ${
           scrolled
@@ -325,8 +316,6 @@ const Navbar = () => {
                 {/* User info with dashboard button */}
                 <motion.div
                   className="flex items-center gap-3"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
                   <div className="hidden lg:block">
@@ -386,9 +375,9 @@ const Navbar = () => {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ height: 0 }}
+            animate={{ height: "auto" }}
+            exit={{ height: 0 }}
             transition={{ duration: 0.3 }}
             className="md:hidden fixed z-30 top-16 left-0 w-full bg-gradient-to-b from-[#272932] to-[#1a1b24] shadow-lg backdrop-blur-md"
           >

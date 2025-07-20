@@ -153,7 +153,12 @@ const PortfolioInfoPage = () => {
 
   // Show preloader while loading
   if (isLoading || !authChecked) {
-    return <Preloader loadingText="Loading Portfolio Information" loadingSubtitle="Please wait while we fetch your data..." />;
+    return (
+      <Preloader
+        loadingText="Loading Portfolio Information"
+        loadingSubtitle="Please wait while we fetch your data..."
+      />
+    );
   }
 
   // Do not render if not authenticated
@@ -186,16 +191,16 @@ const PortfolioInfoPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A] pb-5">
       <Navbar />
       <div className="pt-20 pb-5">
-        <div className="max-w-9xl mx-auto px-2 sm:px-6 py-5">
+        <div className="max-w-9xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5">
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="flex flex-wrap justify-between items-center gap-4"
+              className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
                 <Link
                   href="/dashboard"
                   className="p-2 bg-[#1E2132] border border-[#2E313C] rounded-lg hover:bg-[#262A3E] transition-colors"
@@ -203,24 +208,24 @@ const PortfolioInfoPage = () => {
                   <ArrowLeft size={18} className="text-gray-300" />
                 </Link>
                 <div>
-                  <div className="inline-flex items-center px-3 py-1 mb-2 rounded-full bg-purple-900/30 border border-purple-500/30 text-xs sm:text-sm text-purple-400">
+                  <div className="inline-flex items-center px-2 sm:px-3 py-1 mb-2 rounded-full bg-purple-900/30 border border-purple-500/30 text-xs sm:text-sm text-purple-400">
                     <BarChart3
-                      size={14}
-                      className="mr-1.5"
+                      size={12}
+                      className="mr-1 sm:mr-1.5"
                       fill="currentColor"
                     />
                     Portfolio Analytics
                   </div>
-                  <h1 className="text-2xl font-bold text-white mb-1">
+                  <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">
                     {portfolioData.title}
                   </h1>
-                  <p className="text-gray-400 text-sm">
+                  <p className="text-gray-400 text-xs sm:text-sm">
                     Detailed insights and analytics for your portfolio
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <motion.button
                   onClick={handleRefresh}
                   disabled={refreshing}
@@ -229,7 +234,7 @@ const PortfolioInfoPage = () => {
                   whileTap={{ scale: 0.95 }}
                 >
                   <RefreshCw
-                    size={18}
+                    size={16}
                     className={`text-gray-300 ${refreshing ? "animate-spin" : ""}`}
                   />
                 </motion.button>
@@ -240,10 +245,11 @@ const PortfolioInfoPage = () => {
                   }
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-colors font-medium"
+                  className="px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-1.5 sm:gap-2 transition-colors font-medium text-sm sm:text-base"
                 >
-                  <ExternalLink size={16} />
-                  View Live
+                  <ExternalLink size={14} />
+                  <span className="hidden sm:inline">View Live</span>
+                  <span className="sm:hidden">Live</span>
                 </motion.button>
 
                 <motion.button
@@ -252,10 +258,11 @@ const PortfolioInfoPage = () => {
                   }
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2 transition-colors font-medium"
+                  className="px-3 sm:px-4 py-2 sm:py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-1.5 sm:gap-2 transition-colors font-medium text-sm sm:text-base"
                 >
-                  <Edit3 size={16} />
-                  Edit
+                  <Edit3 size={14} />
+                  <span className="hidden sm:inline">Edit</span>
+                  <span className="sm:hidden">Edit</span>
                 </motion.button>
               </div>
             </motion.div>
@@ -263,7 +270,7 @@ const PortfolioInfoPage = () => {
 
           {/* Overview Stats */}
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8"
             initial={{ y: 20 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -318,60 +325,66 @@ const PortfolioInfoPage = () => {
                 animate={{ y: 0 }}
                 transition={{ delay: 0.1 + index * 0.05, duration: 0.3 }}
                 whileHover={{ y: -2, scale: 1.01 }}
-                className={`bg-[#1E2132] border ${stat.border} rounded-xl p-4 sm:p-6 hover:shadow-lg hover:shadow-purple-900/20 transition-all duration-300`}
+                className={`bg-[#1E2132] border ${stat.border} rounded-xl p-3 sm:p-4 md:p-6 hover:shadow-lg hover:shadow-purple-900/20 transition-all duration-300`}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`${stat.bg} p-3 rounded-lg`}>
-                    <stat.icon className={`${stat.color}`} size={20} />
+                <div className="flex items-center justify-between mb-2 sm:mb-4">
+                  <div className={`${stat.bg} p-2 sm:p-3 rounded-lg`}>
+                    <stat.icon className={`${stat.color}`} size={16} />
                   </div>
                 </div>
-                <h3 className="text-gray-400 text-sm mb-1">{stat.title}</h3>
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
+                <h3 className="text-gray-400 text-xs sm:text-sm mb-1">
+                  {stat.title}
+                </h3>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold text-white">
+                  {stat.value}
+                </p>
               </motion.div>
             ))}
           </motion.div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Personal Information */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.3 }}
-              className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-4 sm:p-6"
+              className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-3 sm:p-4 md:p-6"
             >
-              <h2 className="text-xl font-bold text-white flex items-center mb-6">
-                <User size={20} className="text-purple-400 mr-2" />
+              <h2 className="text-lg sm:text-xl font-bold text-white flex items-center mb-4 sm:mb-6">
+                <User size={18} className="text-purple-400 mr-2" />
                 Personal Information
               </h2>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-[#262A3E] rounded-lg">
-                  <User size={16} className="text-purple-400" />
-                  <div>
-                    <p className="text-sm text-gray-400">Full Name</p>
-                    <p className="text-white font-medium">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#262A3E] rounded-lg">
+                  <User size={14} className="text-purple-400 sm:size-8" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-gray-400">
+                      Full Name
+                    </p>
+                    <p className="text-sm sm:text-base text-white font-medium truncate">
                       {portfolioData.personalInfo?.fullName || "Not provided"}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-3 bg-[#262A3E] rounded-lg">
-                  <Mail size={16} className="text-blue-400" />
-                  <div>
-                    <p className="text-sm text-gray-400">Email</p>
-                    <p className="text-white font-medium">
+                <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#262A3E] rounded-lg">
+                  <Mail size={14} className="text-blue-400 sm:size-8" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-gray-400">Email</p>
+                    <p className="text-sm sm:text-base text-white font-medium truncate">
                       {portfolioData.personalInfo?.email || "Not provided"}
                     </p>
                   </div>
                 </div>
 
                 {portfolioData.personalInfo?.phone && (
-                  <div className="flex items-center gap-3 p-3 bg-[#262A3E] rounded-lg">
-                    <Phone size={16} className="text-green-400" />
-                    <div>
-                      <p className="text-sm text-gray-400">Phone</p>
-                      <p className="text-white font-medium">
+                  <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#262A3E] rounded-lg">
+                    <Phone size={14} className="text-green-400 sm:size-8" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm text-gray-400">Phone</p>
+                      <p className="text-sm sm:text-base text-white font-medium">
                         {portfolioData.personalInfo.phone}
                       </p>
                     </div>
@@ -379,11 +392,13 @@ const PortfolioInfoPage = () => {
                 )}
 
                 {portfolioData.personalInfo?.location && (
-                  <div className="flex items-center gap-3 p-3 bg-[#262A3E] rounded-lg">
-                    <MapPin size={16} className="text-red-400" />
-                    <div>
-                      <p className="text-sm text-gray-400">Location</p>
-                      <p className="text-white font-medium">
+                  <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#262A3E] rounded-lg">
+                    <MapPin size={14} className="text-red-400 sm:size-8" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm text-gray-400">
+                        Location
+                      </p>
+                      <p className="text-sm sm:text-base text-white font-medium">
                         {portfolioData.personalInfo.location}
                       </p>
                     </div>
@@ -391,11 +406,16 @@ const PortfolioInfoPage = () => {
                 )}
 
                 {portfolioData.contactInfo?.availability && (
-                  <div className="flex items-center gap-3 p-3 bg-[#262A3E] rounded-lg">
-                    <Activity size={16} className="text-orange-400" />
-                    <div>
-                      <p className="text-sm text-gray-400">Availability</p>
-                      <p className="text-white font-medium">
+                  <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#262A3E] rounded-lg">
+                    <Activity
+                      size={14}
+                      className="text-orange-400 sm:size-8"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm text-gray-400">
+                        Availability
+                      </p>
+                      <p className="text-sm sm:text-base text-white font-medium">
                         {portfolioData.contactInfo.availability}
                       </p>
                     </div>
@@ -409,28 +429,31 @@ const PortfolioInfoPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}
-              className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-4 sm:p-6"
+              className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-3 sm:p-4 md:p-6"
             >
-              <h2 className="text-xl font-bold text-white flex items-center mb-6">
-                <Code size={20} className="text-green-400 mr-2" />
+              <h2 className="text-lg sm:text-xl font-bold text-white flex items-center mb-4 sm:mb-6">
+                <Code size={18} className="text-green-400 mr-2" />
                 Skills ({portfolioData.skills?.length || 0})
               </h2>
 
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {portfolioData.skills?.length > 0 ? (
                   portfolioData.skills.map((skill: any, index: number) => (
-                    <div key={index} className="bg-[#262A3E] rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-white font-medium">
+                    <div
+                      key={index}
+                      className="bg-[#262A3E] rounded-lg p-2 sm:p-3"
+                    >
+                      <div className="flex items-center justify-between mb-1 sm:mb-2">
+                        <span className="text-sm sm:text-base text-white font-medium">
                           {skill.name}
                         </span>
                         <span className="text-xs text-gray-400">
                           {skill.category}
                         </span>
                       </div>
-                      <div className="w-full bg-[#1E2132] rounded-full h-2">
+                      <div className="w-full bg-[#1E2132] rounded-full h-1.5 sm:h-2">
                         <div
-                          className={`h-2 rounded-full ${skill.color || "bg-purple-500"}`}
+                          className={`h-1.5 sm:h-2 rounded-full ${skill.color || "bg-purple-500"}`}
                           style={{ width: `${(skill.level / 5) * 100}%` }}
                         />
                       </div>
@@ -440,7 +463,7 @@ const PortfolioInfoPage = () => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-400 text-center py-4">
+                  <p className="text-gray-400 text-center py-4 text-sm">
                     No skills added yet
                   </p>
                 )}
@@ -675,8 +698,8 @@ const PortfolioInfoPage = () => {
                 onClick={() => {
                   const editUrl =
                     portfolioType === "template1"
-                      ? "/allTemplates/templateOne/useTemplate"
-                      : "/allTemplates/templateTwo/useTemplate";
+                      ? "/templateForm?templateOne"
+                      : "/templateForm?templateTwo";
                   router.push(editUrl);
                 }}
                 className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"

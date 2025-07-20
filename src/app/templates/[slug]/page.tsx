@@ -89,15 +89,15 @@ export default function PortfolioDetailPage() {
   const getCategoryIcon = (category: string) => {
     switch (category.toLowerCase()) {
       case "web developer":
-        return <Code className="h-5 w-5" />;
+        return <Code className="h-4 w-4 sm:h-5 sm:w-5" />;
       case "designer":
-        return <Palette className="h-5 w-5" />;
+        return <Palette className="h-4 w-4 sm:h-5 sm:w-5" />;
       case "creative professional":
-        return <Sparkles className="h-5 w-5" />;
+        return <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />;
       case "technical professional":
-        return <Layers className="h-5 w-5" />;
+        return <Layers className="h-4 w-4 sm:h-5 sm:w-5" />;
       default:
-        return <Monitor className="h-5 w-5" />;
+        return <Monitor className="h-4 w-4 sm:h-5 sm:w-5" />;
     }
   };
 
@@ -112,20 +112,20 @@ export default function PortfolioDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A] py-10 w-full">
-      <div className="w-full px-4 mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A] py-6 sm:py-10 w-full">
+      <div className="max-w-9xl mx-auto px-2 sm:px-4 md:px-6">
         {/* Back Button */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
           <Link
             href="/templates"
-            className="inline-flex items-center px-4 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group"
+            className="inline-flex items-center px-3 sm:px-4 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group text-sm sm:text-base"
           >
-            <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="mr-1.5 sm:mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             Back to Templates
           </Link>
         </motion.div>
@@ -135,55 +135,57 @@ export default function PortfolioDetailPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="mb-12"
+          className="mb-8 sm:mb-12"
         >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 sm:mb-6">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                 {isLoadingPortfolios ? (
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 text-gray-400">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm font-medium">Loading...</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 text-gray-400">
+                    <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                    <span className="text-xs sm:text-sm font-medium">
+                      Loading...
+                    </span>
                   </div>
                 ) : (
                   hasPortfolio && (
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-900/30 border border-green-500/30 text-green-400">
-                      <CheckCircle className="h-4 w-4" />
-                      <span className="text-sm font-medium">
+                    <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-green-900/30 border border-green-500/30 text-green-400">
+                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="text-xs sm:text-sm font-medium">
                         Portfolio Created
                       </span>
                     </div>
                   )
                 )}
-                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-purple-900/30 border border-purple-500/30 text-purple-400">
+                <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-purple-900/30 border border-purple-500/30 text-purple-400">
                   {getCategoryIcon(portfolio.category)}
-                  <span className="text-sm font-medium">
+                  <span className="text-xs sm:text-sm font-medium">
                     {portfolio.category}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 text-gray-300">
+                <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 text-gray-300">
                   {portfolio.type === "mobile" ? (
-                    <Smartphone className="h-4 w-4" />
+                    <Smartphone className="h-3 w-3 sm:h-4 sm:w-4" />
                   ) : (
-                    <Monitor className="h-4 w-4" />
+                    <Monitor className="h-3 w-3 sm:h-4 sm:w-4" />
                   )}
-                  <span className="text-sm">{portfolio.type}</span>
+                  <span className="text-xs sm:text-sm">{portfolio.type}</span>
                 </div>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-white">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-6 text-white leading-tight">
                 {portfolio.title}
               </h1>
-              <p className="text-lg sm:text-xl text-gray-300 max-w-3xl leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-4xl leading-relaxed">
                 {portfolio.description}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-2 sm:gap-4">
             {isLoadingPortfolios ? (
-              <div className="inline-flex items-center px-6 py-3 bg-slate-800/50 border border-slate-700/50 text-gray-400 rounded-lg font-semibold">
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              <div className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-slate-800/50 border border-slate-700/50 text-gray-400 rounded-lg font-semibold text-sm sm:text-base">
+                <Loader2 className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                 Loading Portfolio Status...
               </div>
             ) : hasPortfolio ? (
@@ -191,34 +193,46 @@ export default function PortfolioDetailPage() {
                 <Link
                   href={`${portfolio.liveUrl}?${userPortfolio.slug}`}
                   target="_blank"
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group"
+                  className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group text-sm sm:text-base"
                 >
-                  <ExternalLink className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                  View Live Portfolio
+                  <ExternalLink className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" />
+                  <span className="hidden sm:inline">View Live Portfolio</span>
+                  <span className="sm:hidden">Live Portfolio</span>
+                </Link>
+                <Link
+                  href={`/allTemplates/${portfolio.templatePath}`}
+                  className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group text-sm sm:text-base"
+                >
+                  <Eye className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" />
+                  <span className="hidden sm:inline">View Template</span>
+                  <span className="sm:hidden">Template</span>
                 </Link>
                 <Link
                   href={`/templateForm?${portfolio.id}`}
-                  className="inline-flex items-center px-6 py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group"
+                  className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group text-sm sm:text-base"
                 >
-                  <Edit3 className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-                  Edit Portfolio
+                  <Edit3 className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
+                  <span className="hidden sm:inline">Edit Portfolio</span>
+                  <span className="sm:hidden">Edit</span>
                 </Link>
               </>
             ) : (
               <>
                 <Link
                   href={portfolio.liveUrl}
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group"
+                  className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group text-sm sm:text-base"
                 >
-                  <Eye className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                  Live Preview
+                  <Eye className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" />
+                  <span className="hidden sm:inline">Live Preview</span>
+                  <span className="sm:hidden">Preview</span>
                 </Link>
                 <Link
                   href={`/templateForm?${portfolio.id}`}
-                  className="inline-flex items-center px-6 py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group"
+                  className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group text-sm sm:text-base"
                 >
-                  <Sparkles className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-                  Use Template
+                  <Sparkles className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
+                  <span className="hidden sm:inline">Use Template</span>
+                  <span className="sm:hidden">Use Template</span>
                 </Link>
               </>
             )}
@@ -230,9 +244,9 @@ export default function PortfolioDetailPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="mb-12"
+          className="mb-8 sm:mb-12"
         >
-          <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-700/50">
+          <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-slate-700/50">
             <div
               className={`absolute inset-0 bg-gradient-to-br ${getDesignStyleColor(portfolio.designStyle)} opacity-20`}
             />
@@ -243,26 +257,27 @@ export default function PortfolioDetailPage() {
               height={800}
               className="w-full h-auto"
               priority
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 80vw"
             />
           </div>
         </motion.div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Overview */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="bg-slate-800/30 rounded-2xl p-4 sm:p-6 border border-slate-700/50"
+              className="bg-slate-800/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-slate-700/50"
             >
-              <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white flex items-center gap-3">
-                <Target className="h-8 w-8 text-purple-400" />
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-white flex items-center gap-2 sm:gap-3">
+                <Target className="h-6 w-6 sm:h-8 sm:w-8 text-purple-400" />
                 Overview
               </h2>
               <div className="prose prose-lg prose-invert max-w-none">
-                <p className="text-gray-300 leading-relaxed text-lg">
+                <p className="text-gray-300 leading-relaxed text-sm sm:text-base md:text-lg">
                   {portfolio.longDescription}
                 </p>
               </div>
@@ -273,13 +288,13 @@ export default function PortfolioDetailPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-2xl p-4 sm:p-6 border border-purple-500/20"
+              className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-purple-500/20"
             >
-              <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white flex items-center gap-3">
-                <Star className="h-8 w-8 text-yellow-400" />
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-white flex items-center gap-2 sm:gap-3">
+                <Star className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-400" />
                 Project Goal
               </h2>
-              <p className="text-gray-300 leading-relaxed text-lg">
+              <p className="text-gray-300 leading-relaxed text-sm sm:text-base md:text-lg">
                 {portfolio.goal}
               </p>
             </motion.section>
@@ -289,45 +304,50 @@ export default function PortfolioDetailPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="bg-slate-800/30 rounded-2xl p-4 sm:p-6 border border-slate-700/50"
+              className="bg-slate-800/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-slate-700/50"
             >
-              <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white flex items-center gap-3">
-                <Zap className="h-8 w-8 text-blue-400" />
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-white flex items-center gap-2 sm:gap-3">
+                <Zap className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400" />
                 Key Features
               </h2>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 {portfolio.features.map((feature, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 * index }}
-                    className="flex items-start space-x-3 p-4 rounded-lg bg-slate-700/30 border border-slate-600/30 hover:border-slate-500/50 transition-colors duration-300"
+                    className="flex items-start space-x-2 sm:space-x-3 p-3 sm:p-4 rounded-lg bg-slate-700/30 border border-slate-600/30 hover:border-slate-500/50 transition-colors duration-300"
                   >
-                    <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
-                    <p className="text-gray-300">{feature}</p>
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-400 rounded-full mt-1.5 sm:mt-2 flex-shrink-0" />
+                    <p className="text-gray-300 text-sm sm:text-base">
+                      {feature}
+                    </p>
                   </motion.div>
                 ))}
               </div>
             </motion.section>
 
             {/* Best For / Not Recommended */}
-            <div className="grid md:grid-cols-2 gap-4 sm:p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
-                className="bg-green-900/20 rounded-2xl p-4 sm-p-6 border border-green-500/20"
+                className="bg-green-900/20 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-green-500/20"
               >
-                <h2 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
-                  <CheckCircle className="h-6 w-6 text-green-400" />
+                <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-400" />
                   Perfect For
                 </h2>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {portfolio.bestFor.map((item, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
-                      <p className="text-gray-300 text-sm">{item}</p>
+                    <div
+                      key={index}
+                      className="flex items-start space-x-2 sm:space-x-3"
+                    >
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-400 rounded-full mt-1.5 sm:mt-2 flex-shrink-0" />
+                      <p className="text-gray-300 text-xs sm:text-sm">{item}</p>
                     </div>
                   ))}
                 </div>
@@ -337,17 +357,20 @@ export default function PortfolioDetailPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.7 }}
-                className="bg-red-900/20 rounded-2xl p-4 sm:p-6 border border-red-500/20"
+                className="bg-red-900/20 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-red-500/20"
               >
-                <h2 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
-                  <XCircle className="h-6 w-6 text-red-400" />
+                <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white flex items-center gap-2">
+                  <XCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-400" />
                   Not Recommended For
                 </h2>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {portfolio.notRecommendedFor.map((item, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0" />
-                      <p className="text-gray-300 text-sm">{item}</p>
+                    <div
+                      key={index}
+                      className="flex items-start space-x-2 sm:space-x-3"
+                    >
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-400 rounded-full mt-1.5 sm:mt-2 flex-shrink-0" />
+                      <p className="text-gray-300 text-xs sm:text-sm">{item}</p>
                     </div>
                   ))}
                 </div>
@@ -360,13 +383,13 @@ export default function PortfolioDetailPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.8 }}
-                className="bg-slate-800/30 rounded-2xl p-4 sm:p-6 border border-slate-700/50"
+                className="bg-slate-800/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-slate-700/50"
               >
-                <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white flex items-center gap-3">
-                  <Layout className="h-8 w-8 text-purple-400" />
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-white flex items-center gap-2 sm:gap-3">
+                  <Layout className="h-6 w-6 sm:h-8 sm:w-8 text-purple-400" />
                   Additional Screenshots
                 </h2>
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   {portfolio.images.slice(1).map((image, index) => (
                     <motion.div
                       key={index}
@@ -382,6 +405,7 @@ export default function PortfolioDetailPage() {
                         width={600}
                         height={400}
                         className="w-full h-auto"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     </motion.div>
                   ))}
@@ -391,23 +415,23 @@ export default function PortfolioDetailPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-8">
+          <div className="space-y-4 sm:space-y-6 lg:space-y-8">
             {/* Tech Stack */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="bg-slate-800/30 rounded-2xl p-4 sm:p-6 border border-slate-700/50"
+              className="bg-slate-800/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-slate-700/50"
             >
-              <h3 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
-                <Code className="h-6 w-6 text-blue-400" />
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white flex items-center gap-2">
+                <Code className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400" />
                 Tech Stack
               </h3>
               <div className="flex flex-wrap gap-2">
                 {portfolio.technologies.map((tech) => (
                   <span
                     key={tech}
-                    className="px-3 py-1 bg-slate-700/50 text-gray-300 rounded-full text-sm font-medium border border-slate-600/30"
+                    className="px-2 sm:px-3 py-1 bg-slate-700/50 text-gray-300 rounded-full text-xs sm:text-sm font-medium border border-slate-600/30"
                   >
                     {tech}
                   </span>
@@ -420,56 +444,62 @@ export default function PortfolioDetailPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="bg-slate-800/30 rounded-2xl p-4 sm:p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300"
+              className="bg-slate-800/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300"
             >
-              <h3 className="text-xl sm:text-2xl font-bold mb-6 text-white flex items-center gap-2">
-                <Palette className="h-6 w-6 text-purple-400" />
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-6 text-white flex items-center gap-2">
+                <Palette className="h-5 w-5 sm:h-6 sm:w-6 text-purple-400" />
                 Design Details
               </h3>
-              <div className="space-y-4">
-                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400 font-medium">Style:</span>
-                    <span className="text-gray-300 font-semibold text-right">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="bg-slate-700/20 rounded-lg p-3 sm:p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                    <span className="text-gray-400 font-medium text-sm sm:text-base">
+                      Style:
+                    </span>
+                    <span className="text-gray-300 font-semibold text-sm sm:text-base text-left sm:text-right">
                       {portfolio.designStyle}
                     </span>
                   </div>
                 </div>
-                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400 font-medium">Theme:</span>
-                    <span className="text-gray-300 font-semibold text-right">
+                <div className="bg-slate-700/20 rounded-lg p-3 sm:p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                    <span className="text-gray-400 font-medium text-sm sm:text-base">
+                      Theme:
+                    </span>
+                    <span className="text-gray-300 font-semibold text-sm sm:text-base text-left sm:text-right">
                       {portfolio.colorScheme}
                     </span>
                   </div>
                 </div>
-                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400 font-medium">Layout:</span>
-                    <span className="text-gray-300 font-semibold text-right">
+                <div className="bg-slate-700/20 rounded-lg p-3 sm:p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                    <span className="text-gray-400 font-medium text-sm sm:text-base">
+                      Layout:
+                    </span>
+                    <span className="text-gray-300 font-semibold text-sm sm:text-base text-left sm:text-right">
                       {portfolio.layout}
                     </span>
                   </div>
                 </div>
-                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400 font-medium">
+                <div className="bg-slate-700/20 rounded-lg p-3 sm:p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                    <span className="text-gray-400 font-medium text-sm sm:text-base">
                       Responsive:
                     </span>
                     <span
-                      className={`font-semibold ${portfolio.responsive ? "text-green-400" : "text-red-400"}`}
+                      className={`font-semibold text-sm sm:text-base ${portfolio.responsive ? "text-green-400" : "text-red-400"}`}
                     >
                       {portfolio.responsive ? "Yes" : "No"}
                     </span>
                   </div>
                 </div>
-                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400 font-medium">
+                <div className="bg-slate-700/20 rounded-lg p-3 sm:p-4 border border-slate-600/20 hover:border-slate-500/30 transition-colors duration-300">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                    <span className="text-gray-400 font-medium text-sm sm:text-base">
                       Animations:
                     </span>
                     <span
-                      className={`font-semibold ${portfolio.animations ? "text-green-400" : "text-red-400"}`}
+                      className={`font-semibold text-sm sm:text-base ${portfolio.animations ? "text-green-400" : "text-red-400"}`}
                     >
                       {portfolio.animations ? "Yes" : "No"}
                     </span>
@@ -483,17 +513,17 @@ export default function PortfolioDetailPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="bg-slate-800/30 rounded-2xl p-4 sm:p-6 border border-slate-700/50"
+              className="bg-slate-800/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-slate-700/50"
             >
-              <h3 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
-                <Users className="h-6 w-6 text-green-400" />
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white flex items-center gap-2">
+                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-green-400" />
                 Target Audience
               </h3>
-              <p className="text-gray-300 text-sm leading-relaxed">
+              <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
                 {portfolio.targetAudience}
               </p>
-              <div className="mt-4 pt-4 border-t border-slate-700/50">
-                <p className="text-gray-400 text-sm">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-700/50">
+                <p className="text-gray-400 text-xs sm:text-sm">
                   <span className="font-medium">Industry:</span>{" "}
                   {portfolio.industry}
                 </p>
@@ -505,15 +535,15 @@ export default function PortfolioDetailPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.7 }}
-              className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-2xl p-4 sm:p-6 border border-purple-500/20"
+              className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-purple-500/20"
             >
-              <h3 className="text-xl font-bold mb-4 text-white">
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">
                 Quick Actions
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {isLoadingPortfolios ? (
-                  <div className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-800/50 border border-slate-700/50 text-gray-400 rounded-lg font-semibold">
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                  <div className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-slate-800/50 border border-slate-700/50 text-gray-400 rounded-lg font-semibold text-sm sm:text-base">
+                    <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                     Loading...
                   </div>
                 ) : hasPortfolio ? (
@@ -521,43 +551,49 @@ export default function PortfolioDetailPage() {
                     <Link
                       href={userPortfolio.publicUrl}
                       target="_blank"
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group"
+                      className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group text-sm sm:text-base"
                     >
-                      <ExternalLink className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                      View Live Portfolio
+                      <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" />
+                      <span className="hidden sm:inline">
+                        View Live Portfolio
+                      </span>
+                      <span className="sm:hidden">Live Portfolio</span>
                     </Link>
                     <Link
                       href={`/allTemplates/${portfolio.templatePath}/${userPortfolio.slug}`}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group"
+                      className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group text-sm sm:text-base"
                     >
-                      <Edit3 className="h-5 w-5 group-hover:rotate-12 transition-transform" />
-                      Edit Portfolio
+                      <Edit3 className="h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
+                      <span className="hidden sm:inline">Edit Portfolio</span>
+                      <span className="sm:hidden">Edit</span>
                     </Link>
                   </>
                 ) : (
                   <>
                     <Link
                       href={portfolio.liveUrl}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group"
+                      className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group text-sm sm:text-base"
                     >
-                      <Eye className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                      Live Preview
+                      <Eye className="h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" />
+                      <span className="hidden sm:inline">Live Preview</span>
+                      <span className="sm:hidden">Preview</span>
                     </Link>
                     <Link
                       href={`/templateForm?${portfolio.id}`}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group"
+                      className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group text-sm sm:text-base"
                     >
-                      <Sparkles className="h-5 w-5 group-hover:rotate-12 transition-transform" />
-                      Use Template
+                      <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
+                      <span className="hidden sm:inline">Use Template</span>
+                      <span className="sm:hidden">Use Template</span>
                     </Link>
                   </>
                 )}
               </div>
 
               {isLoadingPortfolios ? (
-                <div className="mt-4 p-3 bg-slate-900/20 border border-slate-500/30 rounded-lg">
-                  <div className="flex items-center gap-2 text-slate-400 text-sm">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-slate-900/20 border border-slate-500/30 rounded-lg">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-slate-400 text-xs sm:text-sm">
+                    <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                     <span className="font-medium">
                       Checking Portfolio Status...
                     </span>
@@ -568,9 +604,9 @@ export default function PortfolioDetailPage() {
                   </p>
                 </div>
               ) : hasPortfolio ? (
-                <div className="mt-4 p-3 bg-green-900/20 border border-green-500/30 rounded-lg">
-                  <div className="flex items-center gap-2 text-green-400 text-sm">
-                    <CheckCircle className="h-4 w-4" />
+                <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-green-900/20 border border-green-500/30 rounded-lg">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-green-400 text-xs sm:text-sm">
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="font-medium">Portfolio Created</span>
                   </div>
                   <p className="text-green-300/80 text-xs mt-1">

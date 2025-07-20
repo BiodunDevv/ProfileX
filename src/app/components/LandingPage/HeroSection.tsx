@@ -19,9 +19,7 @@ const HeroSection = () => {
   const [isTemplatesHovered, setIsTemplatesHovered] = useState(false);
 
   const containerVariants = {
-    hidden: { opacity: 0 },
     visible: {
-      opacity: 1,
       transition: {
         delayChildren: 0.3,
         staggerChildren: 0.2,
@@ -30,10 +28,9 @@ const HeroSection = () => {
   };
 
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { y: 20 },
     visible: {
       y: 0,
-      opacity: 1,
       transition: {
         type: "spring" as const,
         damping: 12,
@@ -223,7 +220,7 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               transition={{ type: "spring", stiffness: 100 }}
-              className="mt-6 text-sm text-purple-400/80"
+              className="mt-6 text-sm text-purple-400/80 sm:mb-16"
             >
               You&apos;re signed in! Continue building your professional
               presence.

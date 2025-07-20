@@ -215,7 +215,12 @@ const DashboardPage = () => {
 
   // Show preloader while loading or checking auth
   if (isLoading || !authChecked) {
-    return <Preloader loadingText="Loading Dashboard" loadingSubtitle="Preparing your workspace..." />;
+    return (
+      <Preloader
+        loadingText="Loading Dashboard"
+        loadingSubtitle="Preparing your workspace..."
+      />
+    );
   }
 
   // Do not render page content if not authenticated
@@ -259,9 +264,9 @@ const DashboardPage = () => {
   // Function to handle portfolio actions
   const handleEditPortfolio = (portfolio: Portfolio) => {
     if (portfolio.type === "template1") {
-      router.push(`/allTemplates/templateOne/useTemplate`);
+      router.push(`/templateForm?templateOne`);
     } else if (portfolio.type === "template2") {
-      router.push(`/allTemplates/templateTwo/useTemplate`);
+      router.push(`/templateForm?templateTwo`);
     }
   };
 
@@ -274,7 +279,7 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A] pb-2">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#17181E] via-[#1F2029] to-[#2A2D3A] pb-2">
       <Navbar />
 
       <motion.div
@@ -284,45 +289,6 @@ const DashboardPage = () => {
         className="pt-24 px-2 sm:px-6 flex-1 relative z-10 overflow-hidden "
       >
         <div className="max-w-9xl mx-auto">
-          {/* Dashboard Header with Welcome Message and Search */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.3 }}
-              className="flex-grow"
-            >
-              <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#711381] to-purple-500">
-                {welcomeMessage}
-              </h1>
-              <p className="mt-2 text-gray-400">
-                Here&apos;s what&apos;s happening with your portfolio today
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.3 }}
-              className="flex gap-3"
-            >
-              <button
-                onClick={handleCreateProject}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#711381] to-purple-600 text-white rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 shadow-lg shadow-purple-900/20 transition-all group"
-              >
-                <PlusCircle size={18} />
-                <span className="font-medium">New Portfolio</span>
-                <motion.div
-                  initial={{ x: 0 }}
-                  whileHover={{ x: 3 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <ChevronRight size={16} />
-                </motion.div>
-              </button>
-            </motion.div>
-          </div>
-
           {/* Hero Banner - Onboarding or Featured Content */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

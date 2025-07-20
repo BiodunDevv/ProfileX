@@ -36,7 +36,7 @@ export const portfolioTypes: PortfolioType[] = [
       "A sleek, dark-themed portfolio perfect for full-stack developers and software engineers",
     longDescription:
       "This modern developer portfolio showcases your technical skills with a professional dark theme. Built with performance in mind, it features smooth animations, interactive elements, and a clean code structure that reflects your attention to detail. Perfect for developers who want to make a strong impression with potential employers or clients.",
-    templatePath: "TemplateOne",
+    templatePath: "templateOne",
     goal: "Create a professional online presence that showcases technical expertise, projects, and experience in a visually appealing and user-friendly manner.",
     features: [
       "Responsive dark theme design",
@@ -109,7 +109,7 @@ export const portfolioTypes: PortfolioType[] = [
       "A clean, light-themed portfolio designed for UX/UI designers and creative professionals",
     longDescription:
       "This elegant minimalist portfolio puts your design work front and center. With a focus on typography, whitespace, and visual hierarchy, it's perfect for designers who want to showcase their aesthetic sensibility and attention to detail. The clean design ensures your work is the star of the show.",
-    templatePath: "TemplateTwo",
+    templatePath: "templateTwo",
     goal: "Create a sophisticated platform that highlights design skills, creative projects, and professional experience while maintaining visual elegance.",
     features: [
       "Clean minimalist design",
@@ -182,7 +182,7 @@ export const portfolioTypes: PortfolioType[] = [
       "A bold, innovative portfolio with dark theme perfect for creative designers and artists",
     longDescription:
       "This creative portfolio template breaks conventional boundaries with its bold design and innovative features. Perfect for creative professionals who want to make a statement, it combines stunning visuals with smooth animations and interactive elements. The dark theme creates a sophisticated backdrop that makes your work pop.",
-    templatePath: "TemplateThree",
+    templatePath: "templateThree",
     goal: "Provide a cutting-edge platform for creative professionals to showcase their work with maximum visual impact and artistic flair.",
     features: [
       "Bold creative design",
@@ -254,7 +254,7 @@ export const portfolioTypes: PortfolioType[] = [
       "A premium dual-persona portfolio perfect for professionals who excel in both design and development",
     longDescription:
       "This cutting-edge dual-persona portfolio template allows you to showcase two professional identities seamlessly. Perfect for full-stack developers who also design, UX engineers, or any professional with dual expertise. Features an elegant toggle mechanism, premium animations, and enterprise-grade design that's impressive enough for companies like Apple, Google, and Microsoft.",
-    templatePath: "TemplateFour",
+    templatePath: "templateFour",
     goal: "Create a sophisticated platform that showcases dual professional expertise with seamless persona switching, premium animations, and enterprise-grade design quality.",
     features: [
       "Dual-persona toggle mechanism",
@@ -340,7 +340,7 @@ export const portfolioTypes: PortfolioType[] = [
       "A terminal-inspired portfolio that showcases your command-line expertise and developer workflow",
     longDescription:
       "Stand out with this unique terminal-style portfolio that demonstrates your familiarity with command-line interfaces. Interactive commands, autocomplete functionality, and keyboard navigation create an immersive experience that appeals to technical recruiters and fellow developers. Perfect for backend developers, DevOps engineers, and CLI tool creators.",
-    templatePath: "TemplateFive",
+    templatePath: "templateFive",
     goal: "Create an interactive terminal experience that showcases technical skills while demonstrating proficiency with command-line interfaces and developer tools.",
     features: [
       "Interactive terminal interface",
@@ -432,7 +432,7 @@ export const portfolioTypes: PortfolioType[] = [
       "An editorial-style resume portfolio with paper-like aesthetic perfect for content strategists and UX writers",
     longDescription:
       "PaperTrail is a sophisticated editorial resume portfolio designed specifically for content professionals, UX writers, and editorial strategists. With its paper-like aesthetic, editorial typography, and print-ready design, it creates a professional impression that's perfect for content-focused roles. The template features comprehensive sections for showcasing writing samples, content strategy work, and professional experience in an elegant, readable format.",
-    templatePath: "TemplateSix",
+    templatePath: "templateSix",
     goal: "Create a professional editorial resume portfolio that showcases content expertise, writing skills, and strategic thinking in a sophisticated paper-like format optimized for both digital viewing and PDF sharing.",
     features: [
       "Editorial paper-like design aesthetic",
