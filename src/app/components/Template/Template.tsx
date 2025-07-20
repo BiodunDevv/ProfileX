@@ -15,7 +15,10 @@ import {
   Sparkles,
   SlidersHorizontal,
   LayoutTemplate,
+  ExternalLink,
+  CheckCircle,
 } from "lucide-react";
+import { useAuthStore } from "../../../../store/useAuthStore";
 
 // Import necessary template previews
 import TemplateOnePreview from "../../../../public/TemplateOnePreveiw.png";
@@ -25,11 +28,11 @@ import TemplateFourPreview from "../../../../public/TemplateFourPreview.png";
 
 const templates = [
   {
-    id: "template1",
+    id: "templateOne",
     imageUrl: TemplateOnePreview,
     title: "Modern Pro",
     description: "Clean & Professional",
-    templatePath: "TemplateOne",
+    templatePath: "templateOne",
     category: "Web Developer",
     tags: ["Minimal", "Dark", "Corporate"],
     featured: true,
@@ -41,43 +44,45 @@ const templates = [
     designStyle: "Modern, Minimalist, Professional",
   },
   {
-    id: "template2",
+    id: "templateTwo",
     imageUrl: TemplateTwoPreview,
     title: "Minimalist",
     description: "Simple & Elegant",
-    templatePath: "TemplateTwo",
+    templatePath: "templateTwo",
     category: "Designer",
     tags: ["Clean", "Dark", "Simple"],
     featured: false,
     popular: true,
     isNew: false,
-    portfolioType: "UX/UI designers, graphic designers, creative professionals",
+    portfolioType:
+      "UX/UI designers, graphic designers, creative professionals for showcasing their work",
     industry: "Design, Creative Services, Digital Agencies",
     designStyle: "Minimalist, Elegant, Typography-focused",
   },
   {
-    id: "template3",
+    id: "templateThree",
     imageUrl: TemplateThreePreview,
     title: "Creative Portfolio",
     description: "Bold & Innovative",
-    templatePath: "TemplateThree",
+    templatePath: "templateThree",
     category: "Creative Professional",
     tags: ["Bold", "Light", "Modern"],
     featured: true,
     popular: false,
     isNew: true,
-    portfolioType: "Creative designers, artists, brand specialists",
+    portfolioType:
+      "Creative designers, artists, brand specialists that want to showcase their work in a unique way",
     industry: "Creative Industries, Design Agencies, Art",
     designStyle: "Bold, Innovative, Artistic",
   },
   {
-    id: "template4",
+    id: "templateFour",
     imageUrl: TemplateFourPreview,
     title: "Dual Persona Pro",
     description: "Premium Enterprise Design",
-    templatePath: "TemplateFour",
+    templatePath: "templateFour",
     category: "Developer & Designer",
-    tags: ["Premium", "Dual-Persona", "Enterprise", "Glassmorphism"],
+    tags: ["Premium", "Dual-Persona", "Glassmorphism"],
     featured: true,
     popular: true,
     isNew: true,
@@ -87,13 +92,13 @@ const templates = [
     designStyle: "Premium, Modern, Glassmorphism, Enterprise-grade",
   },
   {
-    id: "template5",
+    id: "templateFive",
     imageUrl: "/TemplateFivePreview.png",
     title: "CLI-Verse",
     description: "CLI-Inspired Interface",
-    templatePath: "TemplateFive",
+    templatePath: "templateFive",
     category: "CLI Developer",
-    tags: ["Terminal", "Interactive", "Developer", "CLI"],
+    tags: ["Terminal", "Interactive", "CLI"],
     featured: true,
     popular: false,
     isNew: true,
@@ -103,13 +108,13 @@ const templates = [
     designStyle: "Terminal, Command-line, Minimalist, Interactive",
   },
   {
-    id: "template6",
+    id: "templateSix",
     imageUrl: "/TemplateSixPreview.png",
     title: "PaperTrail Pro",
     description: "Editorial Resume Portfolio",
-    templatePath: "TemplateSix",
+    templatePath: "templateSix",
     category: "Content Professional",
-    tags: ["Editorial", "Resume", "Professional", "PDF"],
+    tags: ["Editorial", "Resume", "Professional"],
     featured: true,
     popular: true,
     isNew: true,
@@ -143,13 +148,56 @@ const Templates = () => {
   const [isTemplateHovered, setIsTemplateHovered] = useState<string | null>(
     null
   );
+  const [userPortfolios, setUserPortfolios] = useState<any[]>([]);
+  const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(false);
+  const { getAllUserPortfolios, isAuthenticated } = useAuthStore();
 
-  // Simulate loading state
+  // Fetch user portfolios and simulate loading state
   useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-  }, []);
+    const fetchData = async () => {
+      setIsLoading(true);
+
+      if (isAuthenticated) {
+        setIsLoadingPortfolios(true);
+        try {
+          const response = await getAllUserPortfolios();
+          console.log("Fetched portfolios:", response);
+          if (response?.success && response?.data?.portfolios) {
+            setUserPortfolios(response.data.portfolios);
+          }
+        } catch (error) {
+          console.error("Error fetching portfolios:", error);
+        } finally {
+          setIsLoadingPortfolios(false);
+        }
+      }
+
+      // Simulate loading state
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 800);
+    };
+
+    fetchData();
+  }, [isAuthenticated, getAllUserPortfolios]); // Helper function to check if user has a portfolio for a specific template
+  const getUserPortfolioForTemplate = (templateId: string) => {
+    if (!isAuthenticated || !userPortfolios.length) return null;
+
+    // Map template IDs to portfolio type patterns from API response
+    const templateToTypeMap: Record<string, string> = {
+      templateOne: "template1",
+      templateTwo: "template2",
+      templateThree: "template3",
+      templateFour: "template4",
+      templateFive: "template5",
+      templateSix: "template6",
+      templateSeven: "template7",
+      templateEight: "template8",
+    };
+
+    const expectedType = templateToTypeMap[templateId];
+    return userPortfolios.find((portfolio) => portfolio.type === expectedType);
+  };
 
   // Get all unique tags across templates
   const allTags = Array.from(
@@ -194,20 +242,6 @@ const Templates = () => {
 
     return true;
   });
-
-  const handlePreviewTemplate = (template: any, e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
-    router.push(`/templatePreview?${template.id}`);
-  };
-
-  // Handle template usage
-  const handleUseTemplate = (template: any) => {
-    router.push(`/templateForm?${template.id}`);
-  };
 
   // Handle tag selection
   const toggleTag = (tag: string) => {
@@ -436,251 +470,244 @@ const Templates = () => {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 auto-rows-fr"
             key="templates-grid"
           >
-            {filteredTemplates.map((template) => (
-              <motion.div
-                key={template.id}
-                onMouseEnter={() => setIsTemplateHovered(template.id)}
-                onMouseLeave={() => setIsTemplateHovered(null)}
-                className="group relative bg-[#1E2132] rounded-2xl overflow-hidden border border-[#2E313C] 
+            {filteredTemplates.map((template) => {
+              const userPortfolio = getUserPortfolioForTemplate(template.id);
+              const hasPortfolio = !!userPortfolio;
+
+              return (
+                <motion.div
+                  key={template.id}
+                  onMouseEnter={() => setIsTemplateHovered(template.id)}
+                  onMouseLeave={() => setIsTemplateHovered(null)}
+                  className="group relative bg-[#1E2132] rounded-2xl overflow-hidden border border-[#2E313C] 
                          hover:border-[#3E4154] hover:shadow-xl hover:shadow-purple-900/20 
                          transition-all duration-300 transform
                          backdrop-blur-sm"
-              >
-                {/* Template card - grid view */}
-                <div className="h-full flex flex-col relative overflow-hidden">
-                  {/* Template image */}
-                  <div className="relative h-50 overflow-hidden cursor-pointer group/image">
-                    <Image
-                      src={template.imageUrl}
-                      alt={template.title}
-                      className="w-full h-full object-cover"
-                      width={400}
-                      height={300}
-                      onClick={() => handlePreviewTemplate(template)}
-                    />
+                >
+                  {/* Template card - grid view */}
+                  <div className="h-full flex flex-col relative overflow-hidden">
+                    {/* Template image */}
+                    <div className="relative h-50 overflow-hidden cursor-pointer group/image">
+                      <Image
+                        src={template.imageUrl}
+                        alt={template.title}
+                        className="w-full h-full object-cover"
+                        width={400}
+                        height={300}
+                      />
 
-                    {/* Image overlay on hover */}
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={
-                        isTemplateHovered === template.id
-                          ? { opacity: 1 }
-                          : { opacity: 0 }
-                      }
-                      transition={{ duration: 0.3 }}
-                      className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
-                    />
+                      {/* Image overlay on hover */}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={
+                          isTemplateHovered === template.id
+                            ? { opacity: 1 }
+                            : { opacity: 0 }
+                        }
+                        transition={{ duration: 0.3 }}
+                        className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+                      />
 
-                    {/* Template badges */}
-                    <div className="absolute top-3 left-3 flex gap-1.5 z-10">
-                      {template.isNew && (
-                        <motion.span
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{
-                            delay: 0.4,
-                            type: "spring",
-                            stiffness: 150,
-                            damping: 15,
-                          }}
-                          className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold flex items-center shadow-lg"
-                        >
-                          <Sparkles size={10} className="mr-1" />
-                          New
-                        </motion.span>
-                      )}
-                      {template.popular && (
-                        <motion.span
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{
-                            delay: 0.5,
-                            type: "spring",
-                            stiffness: 150,
-                            damping: 15,
-                          }}
-                          className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold flex items-center shadow-lg"
-                        >
-                          <Star
-                            size={10}
-                            className="mr-1"
-                            fill="currentColor"
-                          />
-                          Popular
-                        </motion.span>
-                      )}
-                    </div>
-
-                    {/* Quick preview icon overlay */}
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={
-                        isTemplateHovered === template.id
-                          ? { opacity: 1, scale: 1 }
-                          : { opacity: 0, scale: 0.8 }
-                      }
-                      transition={{ duration: 0.2 }}
-                      className="absolute bottom-3 right-3 bg-white/10 backdrop-blur-md border border-white/20 
-                               rounded-full p-2 text-white/80 hover:text-white hover:bg-white/20 transition-all"
-                      onClick={(e) => handlePreviewTemplate(template, e)}
-                    >
-                      <Eye size={14} />
-                    </motion.div>
-                  </div>
-
-                  {/* Template info */}
-                  <div className="p-5 flex-grow flex flex-col">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-gray-100 text-lg leading-tight">
-                        {template.title}
-                      </h3>
-                      {template.featured && (
-                        <motion.div
-                          initial={{ rotate: 0 }}
-                          animate={{
-                            rotate: isTemplateHovered === template.id ? 360 : 0,
-                          }}
-                          transition={{ duration: 0.5 }}
-                          className="text-purple-400"
-                        >
-                          <Star size={16} fill="currentColor" />
-                        </motion.div>
-                      )}
-                    </div>
-
-                    <p className="text-gray-400 text-sm mb-3 leading-relaxed">
-                      {template.description}
-                    </p>
-
-                    {/* Portfolio Type */}
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs font-medium text-purple-400">
-                          Perfect for:
-                        </span>
+                      {/* Template badges */}
+                      <div className="absolute top-3 left-3 flex gap-1.5 z-10">
+                        {hasPortfolio && (
+                          <motion.span
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{
+                              delay: 0.3,
+                              type: "spring",
+                              stiffness: 150,
+                              damping: 15,
+                            }}
+                            className="bg-gradient-to-r from-green-600 to-emerald-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold flex items-center shadow-lg"
+                          >
+                            <CheckCircle size={10} className="mr-1" />
+                            Created
+                          </motion.span>
+                        )}
+                        {template.isNew && (
+                          <motion.span
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{
+                              delay: 0.4,
+                              type: "spring",
+                              stiffness: 150,
+                              damping: 15,
+                            }}
+                            className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold flex items-center shadow-lg"
+                          >
+                            <Sparkles size={10} className="mr-1" />
+                            New
+                          </motion.span>
+                        )}
+                        {template.popular && (
+                          <motion.span
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{
+                              delay: 0.5,
+                              type: "spring",
+                              stiffness: 150,
+                              damping: 15,
+                            }}
+                            className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold flex items-center shadow-lg"
+                          >
+                            <Star
+                              size={10}
+                              className="mr-1"
+                              fill="currentColor"
+                            />
+                            Popular
+                          </motion.span>
+                        )}
                       </div>
-                      <p className="text-gray-300 text-xs leading-relaxed">
-                        {template.portfolioType}
-                      </p>
+
+                      {/* Quick preview icon overlay */}
+                      <Link
+                        href={
+                          hasPortfolio
+                            ? `/allTemplates/${template.templatePath}/${userPortfolio.slug}`
+                            : `/allTemplates/${template.templatePath}`
+                        }
+                        className="absolute bottom-3 right-3 bg-white/10 backdrop-blur-md border border-white/20 
+                               rounded-full p-2 text-white/80 hover:text-white hover:bg-white/20 transition-all"
+                      >
+                        {hasPortfolio ? (
+                          <ExternalLink size={14} />
+                        ) : (
+                          <Eye size={14} />
+                        )}
+                      </Link>
                     </div>
 
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1.5 mt-auto">
-                      {template.tags.slice(0, 3).map((tag, index) => (
-                        <motion.span
-                          key={tag}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="bg-gradient-to-r from-[#262A3E] to-[#2A2E42] text-gray-300 
+                    {/* Template info */}
+                    <div className="p-3 flex-grow flex flex-col">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-gray-100 text-lg leading-tight">
+                          {template.title}
+                        </h3>
+                        {template.featured && (
+                          <motion.div
+                            initial={{ rotate: 0 }}
+                            animate={{
+                              rotate:
+                                isTemplateHovered === template.id ? 360 : 0,
+                            }}
+                            transition={{ duration: 0.5 }}
+                            className="text-purple-400"
+                          >
+                            <Star size={16} fill="currentColor" />
+                          </motion.div>
+                        )}
+                      </div>
+
+                      <p className="text-gray-400 text-sm mb-3 leading-relaxed">
+                        {template.description}
+                      </p>
+
+                      {/* Portfolio Type */}
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs font-medium text-purple-400">
+                            Perfect for:
+                          </span>
+                        </div>
+                        <p className="text-gray-300 text-xs leading-relaxed">
+                          {template.portfolioType}
+                        </p>
+                      </div>
+
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {template.tags.slice(0, 3).map((tag, index) => (
+                          <motion.span
+                            key={tag}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="bg-gradient-to-r from-[#262A3E] to-[#2A2E42] text-gray-300 
                                    px-2.5 py-1 rounded-lg text-xs font-medium
                                    border border-gray-600/20 hover:border-purple-500/30
                                    transition-colors duration-200"
-                        >
-                          {tag}
-                        </motion.span>
-                      ))}
-                      {template.tags.length > 3 && (
-                        <span className="text-gray-500 text-xs px-2 py-1">
-                          +{template.tags.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Template footer */}
-                  <div className="p-4 pt-0">
-                    {/* Hover overlay with actions */}
-                    <div className="relative">
-                      {/* Main action button - Use Template */}
-                      <motion.button
-                        onClick={() => handleUseTemplate(template)}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full relative overflow-hidden bg-gradient-to-r from-[#711381] via-purple-600 to-[#8B5CF6] text-white px-6 py-3 rounded-xl transition-all duration-300 
-                                 flex items-center justify-center gap-3 font-semibold text-sm
-                                 shadow-lg shadow-purple-900/25 hover:shadow-purple-900/40
-                                 group mb-3"
-                      >
-                        {/* Animated background shimmer */}
-                        <motion.div
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
-                          initial={{ x: "-100%" }}
-                          animate={
-                            isTemplateHovered === template.id
-                              ? { x: "200%" }
-                              : { x: "-100%" }
-                          }
-                          transition={{ duration: 0.8, ease: "easeInOut" }}
-                        />
-
-                        <span className="relative z-10">Use Template</span>
-                        <motion.div
-                          className="relative z-10"
-                          animate={
-                            isTemplateHovered === template.id
-                              ? { x: 4, scale: 1.1 }
-                              : { x: 0, scale: 1 }
-                          }
-                          transition={{
-                            type: "spring",
-                            stiffness: 400,
-                            damping: 20,
-                          }}
-                        >
-                          <ArrowRight size={16} className="drop-shadow-sm" />
-                        </motion.div>
-                      </motion.button>
-
-                      {/* Secondary Actions */}
-                      <div className="flex gap-2">
-                        <motion.button
-                          onClick={(e) => handlePreviewTemplate(template, e)}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="flex-1 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium border border-slate-700/50 hover:border-slate-600"
-                        >
-                          <Eye size={14} />
-                          Preview
-                        </motion.button>
-                        <Link
-                          href={`/templates/${template.id}`}
-                          className="flex-1 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium border border-slate-700/50 hover:border-slate-600 group"
-                        >
-                          <LayoutTemplate
-                            size={14}
-                            className="group-hover:rotate-12 transition-transform"
-                          />
-                          Details
-                        </Link>
+                          >
+                            {tag}
+                          </motion.span>
+                        ))}
+                        {template.tags.length > 3 && (
+                          <span className="text-gray-500 text-xs px-2 py-1">
+                            +{template.tags.length - 3} more
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    {/* Quick stats bar */}
-                    <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                        <span>Ready to use</span>
+                    {/* Template footer */}
+                    <div className="p-3 pt-0">
+                      {/* Hover overlay with actions */}
+                      <div className="relative">
+                        {/* Secondary Actions */}
+                        <div className="flex gap-2">
+                          <Link
+                            href={
+                              hasPortfolio
+                                ? `/allTemplates/${template.templatePath}/${userPortfolio.slug}`
+                                : `/allTemplates/${template.templatePath}`
+                            }
+                            className="flex-1 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium border border-slate-700/50 hover:border-slate-600 group"
+                          >
+                            {hasPortfolio ? (
+                              <>
+                                <ExternalLink size={14} />
+                                View Live
+                              </>
+                            ) : (
+                              <>
+                                <Eye size={14} />
+                                Preview
+                              </>
+                            )}
+                          </Link>
+                          <Link
+                            href={`/templates/${template.id}`}
+                            className="flex-1 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium border border-slate-700/50 hover:border-slate-600 group"
+                          >
+                            <LayoutTemplate
+                              size={14}
+                              className="group-hover:rotate-12 transition-transform"
+                            />
+                            Details
+                          </Link>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span>{template.category}</span>
+
+                      {/* Quick stats bar */}
+                      <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                              hasPortfolio ? "bg-green-500" : "bg-blue-500"
+                            }`}
+                          ></div>
+                          <span>
+                            {hasPortfolio
+                              ? "Portfolio created"
+                              : "Ready to use"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span>{template.category}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </motion.div>
         )}
       </div>
-
-      {/* Background decorative elements */}
-      <div className="fixed inset-0 pointer-events-none -z-10">
-        <div className="absolute right-0 top-1/4 w-96 h-96 bg-purple-900/20 rounded-full blur-3xl"></div>
-        <div className="absolute left-1/4 bottom-0 w-64 h-64 bg-purple-800/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/3 left-10 w-72 h-72 bg-pink-900/10 rounded-full blur-3xl"></div>
-      </div>
-
       {/* Quick tip toast - for featured templates */}
       <AnimatePresence>
         {activeCategory === "featured" && filteredTemplates.length > 0 && (

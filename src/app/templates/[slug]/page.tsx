@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   ExternalLink,
@@ -23,17 +24,67 @@ import {
   Code,
   Layers,
   Sparkles,
+  Edit3,
+  Loader2,
 } from "lucide-react";
 import { getPortfolioBySlug } from "@/lib/portfolio-data";
+import { useAuthStore } from "../../../../store/useAuthStore";
 
 export default function PortfolioDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
   const portfolio = getPortfolioBySlug(slug);
+  const [userPortfolios, setUserPortfolios] = useState<any[]>([]);
+  const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(false);
+  const { getAllUserPortfolios, isAuthenticated } = useAuthStore();
 
   if (!portfolio) {
     notFound();
   }
+
+  // Fetch user portfolios
+  useEffect(() => {
+    const fetchUserPortfolios = async () => {
+      if (isAuthenticated) {
+        setIsLoadingPortfolios(true);
+        try {
+          const response = await getAllUserPortfolios();
+          if (response?.success && response?.data?.portfolios) {
+            setUserPortfolios(response.data.portfolios);
+          }
+        } catch (error) {
+          console.error("Error fetching portfolios:", error);
+        } finally {
+          setIsLoadingPortfolios(false);
+        }
+      }
+    };
+
+    fetchUserPortfolios();
+  }, [isAuthenticated, getAllUserPortfolios]);
+
+  // Helper function to get user portfolio for this template
+  const getUserPortfolioForTemplate = () => {
+    if (!isAuthenticated || !userPortfolios.length) return null;
+
+    // Map template IDs to portfolio type patterns from API response
+    const templateToTypeMap: Record<string, string> = {
+      templateOne: "template1",
+      templateTwo: "template2",
+      templateThree: "template3",
+      templateFour: "template4",
+      templateFive: "template5",
+      templateSix: "template6",
+      templateSeven: "template7",
+      templateEight: "template8",
+    };
+
+    const expectedType = templateToTypeMap[portfolio.id];
+    return userPortfolios.find((p) => p.type === expectedType);
+  };
+
+  const userPortfolio = getUserPortfolioForTemplate();
+  const hasPortfolio = !!userPortfolio;
 
   const getCategoryIcon = (category: string) => {
     switch (category.toLowerCase()) {
@@ -89,6 +140,21 @@ export default function PortfolioDetailPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-4">
+                {isLoadingPortfolios ? (
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 text-gray-400">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm font-medium">Loading...</span>
+                  </div>
+                ) : (
+                  hasPortfolio && (
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-900/30 border border-green-500/30 text-green-400">
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-sm font-medium">
+                        Portfolio Created
+                      </span>
+                    </div>
+                  )
+                )}
                 <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-purple-900/30 border border-purple-500/30 text-purple-400">
                   {getCategoryIcon(portfolio.category)}
                   <span className="text-sm font-medium">
@@ -115,20 +181,47 @@ export default function PortfolioDetailPage() {
           </div>
 
           <div className="flex flex-wrap gap-4">
-            <Link
-              href={portfolio.liveUrl}
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group"
-            >
-              <Eye className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-              Live Preview
-            </Link>
-            <Link
-              href={`/templateForm?${portfolio.id}`}
-              className="inline-flex items-center px-6 py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group"
-            >
-              <ExternalLink className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-              Use Template
-            </Link>
+            {isLoadingPortfolios ? (
+              <div className="inline-flex items-center px-6 py-3 bg-slate-800/50 border border-slate-700/50 text-gray-400 rounded-lg font-semibold">
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Loading Portfolio Status...
+              </div>
+            ) : hasPortfolio ? (
+              <>
+                <Link
+                  href={`${portfolio.liveUrl}?${userPortfolio.slug}`}
+                  target="_blank"
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group"
+                >
+                  <ExternalLink className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                  View Live Portfolio
+                </Link>
+                <Link
+                  href={`/templateForm?${portfolio.id}`}
+                  className="inline-flex items-center px-6 py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group"
+                >
+                  <Edit3 className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                  Edit Portfolio
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href={portfolio.liveUrl}
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group"
+                >
+                  <Eye className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                  Live Preview
+                </Link>
+                <Link
+                  href={`/templateForm?${portfolio.id}`}
+                  className="inline-flex items-center px-6 py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group"
+                >
+                  <Sparkles className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                  Use Template
+                </Link>
+              </>
+            )}
           </div>
         </motion.div>
 
@@ -418,21 +511,73 @@ export default function PortfolioDetailPage() {
                 Quick Actions
               </h3>
               <div className="space-y-3">
-                <Link
-                  href={portfolio.liveUrl}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group"
-                >
-                  <Eye className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                  Live Preview
-                </Link>
-                <Link
-                  href={`/templateForm?${portfolio.id}`}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group"
-                >
-                  <Sparkles className="h-5 w-5 group-hover:rotate-12 transition-transform" />
-                  Use Template
-                </Link>
+                {isLoadingPortfolios ? (
+                  <div className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-800/50 border border-slate-700/50 text-gray-400 rounded-lg font-semibold">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Loading...
+                  </div>
+                ) : hasPortfolio ? (
+                  <>
+                    <Link
+                      href={userPortfolio.publicUrl}
+                      target="_blank"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group"
+                    >
+                      <ExternalLink className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                      View Live Portfolio
+                    </Link>
+                    <Link
+                      href={`/allTemplates/${portfolio.templatePath}/${userPortfolio.slug}`}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group"
+                    >
+                      <Edit3 className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                      Edit Portfolio
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href={portfolio.liveUrl}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group"
+                    >
+                      <Eye className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                      Live Preview
+                    </Link>
+                    <Link
+                      href={`/templateForm?${portfolio.id}`}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group"
+                    >
+                      <Sparkles className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                      Use Template
+                    </Link>
+                  </>
+                )}
               </div>
+
+              {isLoadingPortfolios ? (
+                <div className="mt-4 p-3 bg-slate-900/20 border border-slate-500/30 rounded-lg">
+                  <div className="flex items-center gap-2 text-slate-400 text-sm">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="font-medium">
+                      Checking Portfolio Status...
+                    </span>
+                  </div>
+                  <p className="text-slate-300/80 text-xs mt-1">
+                    Please wait while we check if you have created a portfolio
+                    with this template.
+                  </p>
+                </div>
+              ) : hasPortfolio ? (
+                <div className="mt-4 p-3 bg-green-900/20 border border-green-500/30 rounded-lg">
+                  <div className="flex items-center gap-2 text-green-400 text-sm">
+                    <CheckCircle className="h-4 w-4" />
+                    <span className="font-medium">Portfolio Created</span>
+                  </div>
+                  <p className="text-green-300/80 text-xs mt-1">
+                    You have already created a portfolio using this template.
+                  </p>
+                </div>
+              ) : null}
             </motion.div>
           </div>
         </div>

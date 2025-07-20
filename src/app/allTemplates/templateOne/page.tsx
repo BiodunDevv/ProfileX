@@ -17,6 +17,7 @@ import { LayoutGrid, Loader2 } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { PencilIcon, Home, ChevronLeft, Eye, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Preloader from "@/app/components/UI/Preloader";
 
 const defaultHeroDetails = {
   DevName: "WorkName",
@@ -162,25 +163,13 @@ const TemplateOne = () => {
     isLoading: isPortfolioLoading,
   } = usePortfolioOneStore();
 
-  // Updated URL detection logic to properly handle template preview URLs
-  const isPublicTemplatePreview =
-    pathname === "/template" || searchParams.has("template1");
-
   useEffect(() => {
-    // If this is a public template preview (templatePreview?template1), always use default data
-    if (isPublicTemplatePreview) {
-      console.log("Public template preview detected, using default data");
-      setLoading(false);
-      setIsPreviewMode(true);
-      return;
-    }
-
     const fetchPortfolio = async () => {
       try {
         setLoading(true);
 
-        // For allTemplates/templateOne URL, always try to fetch portfolio using getMyPortfolio
-        if (pathname.startsWith("/allTemplates/templateOne")) {
+        // Always try to fetch portfolio data if user is authenticated
+        if (isAuthenticated) {
           console.log("Fetching user's portfolio from store...");
 
           try {
@@ -276,7 +265,7 @@ const TemplateOne = () => {
     };
 
     fetchPortfolio();
-  }, [pathname, searchParams, isPublicTemplatePreview, getMyPortfolio]);
+  }, [getMyPortfolio, isAuthenticated]);
 
   // Fallback timeout to prevent infinite loading
   useEffect(() => {
@@ -289,41 +278,13 @@ const TemplateOne = () => {
 
     return () => clearTimeout(timeout);
   }, [loading]);
-
-  const handlePreviewPortfolio = () => {
-    router.push("/allTemplates/templateOne");
-  };
-
-  const handleEditPortfolio = () => {
-    router.push("/templates/templateOne/edit");
-  };
-
-  const handleBackToPortfolios = () => {
-    router.push("/portfolios");
-  };
-
+  
   if (loading) {
     return (
-      <div className="h-screen flex flex-col gap-2.5 items-center justify-center bg-gradient-to-br from-[#171826] to-[#0D0F1A]">
-        <div className="relative w-16 h-16">
-          <div className="absolute inset-0 border-t-2 border-r-2 border-purple-600 rounded-full animate-spin"></div>
-          <div className="absolute inset-0 border-2 border-[#2E313C] rounded-full"></div>
-          <LayoutGrid
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-purple-500"
-            size={24}
-          />
-        </div>
-        <div className="text-center mt-4">
-          <h3 className="text-white font-medium text-lg mb-2">
-            Loading Portfolio
-          </h3>
-          <p className="text-gray-400 text-sm">
-            {isPortfolioLoading
-              ? "Fetching your portfolio data..."
-              : "Please wait..."}
-          </p>
-        </div>
-      </div>
+      <Preloader
+        loadingText="Loading your portfolio..."
+        loadingSubtitle="Please wait while we fetch your data."
+      />
     );
   }
 
@@ -334,64 +295,8 @@ const TemplateOne = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Modern top navigation - only show if not in public template preview */}
-      {!isPublicTemplatePreview && isAuthenticated && (
-        <div className="w-full bg-gradient-to-r from-gray-900 to-gray-800 py-3 px-6 shadow-lg z-40">
-          <div className="max-w-9xl mx-auto flex justify-between items-center">
-            <div className="flex items-center">
-              <motion.h3
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-white font-medium text-lg mr-6"
-              >
-                My Portfolio
-              </motion.h3>
-            </div>
-
-            <div className="flex gap-3">
-              <motion.button
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                onClick={handleBackToPortfolios}
-                className="group flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-gray-100 px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md"
-              >
-                <ChevronLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                <span>All Portfolios</span>
-              </motion.button>
-
-              <motion.button
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                onClick={handleEditPortfolio}
-                className="group flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md"
-              >
-                <PencilIcon className="h-4 w-4 group-hover:rotate-12 transition-transform" />
-                <span>Edit Portfolio</span>
-              </motion.button>
-
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <Link
-                  href="/dashboard"
-                  className="group flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md"
-                >
-                  <Home className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                  <span>Dashboard</span>
-                </Link>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Preview mode banner */}
-      {isPublicTemplatePreview && (
+      {/* Show preview banner only when explicitly on templatePreview page */}
+      {pathname.includes("/templatePreview") && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

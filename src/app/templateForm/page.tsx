@@ -37,7 +37,7 @@ const TemplateFormContent = () => {
   useEffect(() => {
     // Get template type from URL parameters
     const getTemplateFromParams = () => {
-      // Check for template parameter in URL
+      // Check for template parameter in URL or use the first parameter key
       const templateParam =
         searchParams.get("template") || Array.from(searchParams.keys())[0];
 
@@ -45,28 +45,28 @@ const TemplateFormContent = () => {
 
       // Map template parameters to template data
       const templateMap: Record<string, { id: string; title: string }> = {
-        template1: {
-          id: "template1",
+        templateOne: {
+          id: "templateOne",
           title: "Modern Pro",
         },
-        template2: {
-          id: "template2",
+        templateTwo: {
+          id: "templateTwo",
           title: "Minimalist",
         },
-        template3: {
-          id: "template3",
+        templateThree: {
+          id: "templateThree",
           title: "Creative Portfolio",
         },
-        template4: {
-          id: "template4",
+        templateFour: {
+          id: "templateFour",
           title: "Dual Persona Pro",
         },
-        template5: {
-          id: "template5",
+        templateFive: {
+          id: "templateFive",
           title: "CLI-Verse",
         },
-        template6: {
-          id: "template6",
+        templateSix: {
+          id: "templateSix",
           title: "PaperTrail Editorial Resume Portfolio",
         },
       };
@@ -87,73 +87,49 @@ const TemplateFormContent = () => {
         setTemplateData(template);
 
         // Load the appropriate template editor component based on template ID
-        if (
-          template.id.includes("template1") ||
-          template.id.includes("templateOne")
-        ) {
+        if (template.id === "templateOne") {
           const Template = dynamic(
             () => import("../allTemplates/templateOne/useTemplate/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (
-          template.id.includes("template2") ||
-          template.id.includes("templateTwo")
-        ) {
+        } else if (template.id === "templateTwo") {
           const Template = dynamic(
             () => import("../allTemplates/templateTwo/useTemplate/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (
-          template.id.includes("template3") ||
-          template.id.includes("templateThree")
-        ) {
+        } else if (template.id === "templateThree") {
           const Template = dynamic(
             () => import("../allTemplates/templateThree/useTemplate/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (
-          template.id.includes("template4") ||
-          template.id.includes("templateFour")
-        ) {
+        } else if (template.id === "templateFour") {
           const Template = dynamic(
             () => import("../allTemplates/templateFour/useTemplate/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (
-          template.id.includes("template5") ||
-          template.id.includes("templateFive")
-        ) {
+        } else if (template.id === "templateFive") {
           const Template = dynamic(
             () => import("../allTemplates/templateFive/useTemplate/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (
-          template.id.includes("template6") ||
-          template.id.includes("templateSix")
-        ) {
+        } else if (template.id === "templateSix") {
           const Template = dynamic(
             () => import("../allTemplates/templateSix/useTemplate/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (
-          template.id.includes("template7") ||
-          template.id.includes("templateSeven")
-        ) {
+        } else if (template.id === "templateSeven") {
           const Template = dynamic(
             () => import("../allTemplates/templateSeven/useTemplate/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (
-          template.id.includes("template8") ||
-          template.id.includes("templateEight")
-        ) {
+        } else if (template.id === "templateEight") {
           const Template = dynamic(
             () => import("../allTemplates/templateEight/useTemplate/page"),
             { ssr: false }

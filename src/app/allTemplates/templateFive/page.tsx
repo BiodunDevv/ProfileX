@@ -112,7 +112,7 @@ const TemplateFive = () => {
     website: "#",
 
     social: {
-      github: "#",
+      github: "https://github.com/biodun42",
       linkedin: "#",
       twitter: "#",
       behance: "#",

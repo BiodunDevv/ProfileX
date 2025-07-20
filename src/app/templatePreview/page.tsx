@@ -33,22 +33,6 @@ const TemplatePreview = () => {
 
       // Map template parameters to template data
       const templateMap: Record<string, { id: string; title: string }> = {
-        template1: {
-          id: "template1",
-          title: "Modern Pro",
-        },
-        template2: {
-          id: "template2",
-          title: "Minimalist",
-        },
-        template3: {
-          id: "template3",
-          title: "Creative Portfolio",
-        },
-        template4: {
-          id: "template4",
-          title: "Tech Resume",
-        },
         templateOne: {
           id: "templateOne",
           title: "Modern Pro",
@@ -63,7 +47,15 @@ const TemplatePreview = () => {
         },
         templateFour: {
           id: "templateFour",
-          title: "Tech Resume",
+          title: "Dual Persona Pro",
+        },
+        templateFive: {
+          id: "templateFive",
+          title: "CLI-Verse",
+        },
+        templateSix: {
+          id: "templateSix",
+          title: "PaperTrail Editorial Resume Portfolio",
         },
       };
 
@@ -83,27 +75,51 @@ const TemplatePreview = () => {
         setTemplateData(template);
 
         // Load the appropriate template preview component based on template ID
-        if (template.id.includes("template1")) {
+        if (template.id === "templateOne") {
           const Template = dynamic(
             () => import("../allTemplates/templateOne/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (template.id.includes("template2")) {
+        } else if (template.id === "templateTwo") {
           const Template = dynamic(
             () => import("../allTemplates/templateTwo/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (template.id.includes("template3")) {
+        } else if (template.id === "templateThree") {
           const Template = dynamic(
             () => import("../allTemplates/templateThree/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);
-        } else if (template.id.includes("template4")) {
+        } else if (template.id === "templateFour") {
           const Template = dynamic(
             () => import("../allTemplates/templateFour/page"),
+            { ssr: false }
+          );
+          setTemplateComponent(() => Template);
+        } else if (template.id === "templateFive") {
+          const Template = dynamic(
+            () => import("../allTemplates/templateFive/page"),
+            { ssr: false }
+          );
+          setTemplateComponent(() => Template);
+        } else if (template.id === "templateSix") {
+          const Template = dynamic(
+            () => import("../allTemplates/templateSix/page"),
+            { ssr: false }
+          );
+          setTemplateComponent(() => Template);
+        } else if (template.id === "templateSeven") {
+          const Template = dynamic(
+            () => import("../allTemplates/templateSeven/page"),
+            { ssr: false }
+          );
+          setTemplateComponent(() => Template);
+        } else if (template.id === "templateEight") {
+          const Template = dynamic(
+            () => import("../allTemplates/templateEight/page"),
             { ssr: false }
           );
           setTemplateComponent(() => Template);

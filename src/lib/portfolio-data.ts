@@ -29,7 +29,7 @@ export interface PortfolioType {
 
 export const portfolioTypes: PortfolioType[] = [
   {
-    id: "template1",
+    id: "templateOne",
     title: "Modern Pro Developer Portfolio",
     category: "Web Developer",
     description:
@@ -102,7 +102,7 @@ export const portfolioTypes: PortfolioType[] = [
     ],
   },
   {
-    id: "template2",
+    id: "templateTwo",
     title: "Elegant Minimalist Portfolio",
     category: "Designer",
     description:
@@ -175,7 +175,7 @@ export const portfolioTypes: PortfolioType[] = [
     ],
   },
   {
-    id: "template3",
+    id: "templateThree",
     title: "Creative Portfolio Showcase",
     category: "Creative Professional",
     description:
@@ -247,7 +247,7 @@ export const portfolioTypes: PortfolioType[] = [
     ],
   },
   {
-    id: "template4",
+    id: "templateFour",
     title: "Dual Persona Professional Portfolio",
     category: "Developer & Designer",
     description:
@@ -333,7 +333,7 @@ export const portfolioTypes: PortfolioType[] = [
     ],
   },
   {
-    id: "template5",
+    id: "templateFive",
     title: "CLI-Verse Portfolio",
     category: "CLI Developer",
     description:
@@ -425,7 +425,7 @@ export const portfolioTypes: PortfolioType[] = [
     ],
   },
   {
-    id: "template6",
+    id: "templateSix",
     title: "PaperTrail Editorial Resume Portfolio",
     category: "Content Professional",
     description:
