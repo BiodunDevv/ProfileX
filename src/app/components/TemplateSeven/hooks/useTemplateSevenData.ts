@@ -57,9 +57,7 @@ export const useTemplateSevenData = (initialData: any) => {
 
         const enhancedData: TemplateSevenData = {
           ...initialData,
-          projects: await fetchGitHubProjects(
-            initialData.platformHandles?.github
-          ),
+
           behanceProjects: await fetchBehanceProjects(
             initialData.platformHandles?.behance
           ),
@@ -74,7 +72,6 @@ export const useTemplateSevenData = (initialData: any) => {
         // Fallback to mock data if real APIs fail
         const fallbackData: TemplateSevenData = {
           ...initialData,
-          projects: await getMockGitHubProjects(),
           behanceProjects: await getMockBehanceProjects(),
           articles: await getMockDevToArticles(),
         };
@@ -88,40 +85,6 @@ export const useTemplateSevenData = (initialData: any) => {
   }, [initialData]);
 
   return { data, loading };
-};
-
-// Real GitHub API integration
-const fetchGitHubProjects = async (username: string) => {
-  if (!username) return getMockGitHubProjects();
-
-  try {
-    const response = await fetch(
-      `https://api.github.com/users/${username}/repos?sort=updated&per_page=10`
-    );
-
-    if (!response.ok) {
-      throw new Error("GitHub API request failed");
-    }
-
-    const repos = await response.json();
-
-    return repos.map((repo: any) => ({
-      id: repo.id,
-      name: repo.name,
-      description: repo.description || "No description available",
-      technologies: repo.topics || [],
-      stars: repo.stargazers_count,
-      forks: repo.forks_count,
-      language: repo.language || "Unknown",
-      url: repo.html_url,
-      isPrivate: repo.private,
-      isPinned: false, // GitHub API doesn't provide pinned status in this endpoint
-      lastUpdated: repo.updated_at,
-    }));
-  } catch (error) {
-    console.error("Error fetching GitHub repos:", error);
-    return getMockGitHubProjects();
-  }
 };
 
 // Real Dev.to API integration
@@ -163,90 +126,6 @@ const fetchBehanceProjects = async (username: string) => {
   // For now, return mock data or implement a custom scraping solution
   console.log(`Behance integration for ${username} - using mock data`);
   return getMockBehanceProjects();
-};
-
-// Mock data as fallbacks
-const getMockGitHubProjects = async () => {
-  return [
-    {
-      id: 1,
-      name: "neural-canvas",
-      description:
-        "An AI-powered digital art generation platform that transforms text prompts into stunning visual compositions using advanced neural networks.",
-      technologies: ["Next.js", "TensorFlow.js", "PostgreSQL", "Redis"],
-      stars: 247,
-      forks: 43,
-      language: "TypeScript",
-      url: "https://github.com/alextheron/neural-canvas",
-      isPrivate: false,
-      isPinned: true,
-    },
-    {
-      id: 2,
-      name: "typographic-systems",
-      description:
-        "A comprehensive design system built for modern web applications, featuring adaptive typography, color palettes, and component libraries.",
-      technologies: ["React", "Storybook", "Figma API", "Design Tokens"],
-      stars: 189,
-      forks: 32,
-      language: "JavaScript",
-      url: "https://github.com/alextheron/typographic-systems",
-      isPrivate: false,
-      isPinned: true,
-    },
-    {
-      id: 3,
-      name: "distributed-cache",
-      description:
-        "High-performance distributed caching solution with automatic failover and real-time monitoring capabilities.",
-      technologies: ["Go", "Redis", "Docker", "Kubernetes"],
-      stars: 156,
-      forks: 28,
-      language: "Go",
-      url: "https://github.com/alextheron/distributed-cache",
-      isPrivate: false,
-      isPinned: false,
-    },
-    {
-      id: 4,
-      name: "api-orchestrator",
-      description:
-        "Microservices orchestration framework that simplifies complex API integrations with built-in rate limiting and error handling.",
-      technologies: ["Node.js", "GraphQL", "MongoDB", "Docker"],
-      stars: 134,
-      forks: 21,
-      language: "TypeScript",
-      url: "https://github.com/alextheron/api-orchestrator",
-      isPrivate: false,
-      isPinned: true,
-    },
-    {
-      id: 5,
-      name: "motion-ui-kit",
-      description:
-        "Beautiful, accessible UI components with fluid animations and interactions built with Framer Motion and React.",
-      technologies: ["React", "Framer Motion", "TailwindCSS", "TypeScript"],
-      stars: 298,
-      forks: 67,
-      language: "TypeScript",
-      url: "https://github.com/alextheron/motion-ui-kit",
-      isPrivate: false,
-      isPinned: true,
-    },
-    {
-      id: 6,
-      name: "data-visualization-engine",
-      description:
-        "Interactive data visualization library supporting real-time charts, graphs, and complex data relationships.",
-      technologies: ["D3.js", "WebGL", "Python", "FastAPI"],
-      stars: 203,
-      forks: 45,
-      language: "JavaScript",
-      url: "https://github.com/alextheron/data-visualization-engine",
-      isPrivate: false,
-      isPinned: false,
-    },
-  ];
 };
 
 const getMockBehanceProjects = async () => {

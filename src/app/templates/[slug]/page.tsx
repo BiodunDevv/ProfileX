@@ -30,6 +30,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Maximize2,
+  AlertTriangle,
 } from "lucide-react";
 import { getPortfolioBySlug } from "@/lib/portfolio-data";
 import { useAuthStore } from "../../../../store/useAuthStore";
@@ -42,6 +43,8 @@ export default function PortfolioDetailPage() {
   const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageIndex, setImageIndex] = useState<number>(0);
+  const [touchStart, setTouchStart] = useState<number>(0);
+  const [touchEnd, setTouchEnd] = useState<number>(0);
   const { getAllUserPortfolios, isAuthenticated } = useAuthStore();
 
   if (!portfolio) {
@@ -113,6 +116,31 @@ export default function PortfolioDetailPage() {
       const prevIndex = (imageIndex - 1 + totalImages) % totalImages;
       setImageIndex(prevIndex);
       setSelectedImage(portfolio.images[prevIndex]);
+    }
+  };
+
+  // Handle touch gestures for mobile swipe navigation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(0); // Reset touchEnd
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && portfolio.images.length > 1) {
+      navigateImage("next");
+    }
+    if (isRightSwipe && portfolio.images.length > 1) {
+      navigateImage("prev");
     }
   };
 
@@ -291,14 +319,20 @@ export default function PortfolioDetailPage() {
                   <span className="hidden sm:inline">Live Preview</span>
                   <span className="sm:hidden">Preview</span>
                 </Link>
-                <Link
-                  href={`/templateForm?${portfolio.id}`}
-                  className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group text-sm sm:text-base"
-                >
-                  <Sparkles className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
-                  <span className="hidden sm:inline">Use Template</span>
-                  <span className="sm:hidden">Use Template</span>
-                </Link>
+                {portfolio.available ? (
+                  <Link
+                    href={`/templateForm?${portfolio.id}`}
+                    className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group text-sm sm:text-base"
+                  >
+                    <Sparkles className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
+                    <span className="inline">Use Template</span>
+                  </Link>
+                ) : (
+                  <div className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg font-semibold text-sm sm:text-base opacity-80 cursor-not-allowed">
+                    <AlertTriangle className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="inline">Form Not Available</span>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -370,6 +404,63 @@ export default function PortfolioDetailPage() {
               <p className="text-gray-300 leading-relaxed text-sm sm:text-base md:text-lg">
                 {portfolio.goal}
               </p>
+            </motion.section>
+
+            {/* Availability Status & Actions */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.35 }}
+              className="bg-gradient-to-r from-slate-800/40 to-slate-700/40 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-slate-600/50"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+                <div className="space-y-2">
+                  <h3 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                    {portfolio.available ? (
+                      <>
+                        <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-400" />
+                        Template Available
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400" />
+                        Preview Only
+                      </>
+                    )}
+                  </h3>
+                  <p className="text-gray-300 text-sm sm:text-base">
+                    {portfolio.available
+                      ? "This template is fully functional with form integration ready to use."
+                      : "This template is currently preview-only. The interactive form is not yet available."}
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:min-w-fit">
+                  <Link
+                    href={portfolio.liveUrl}
+                    className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 text-sm sm:text-base"
+                  >
+                    <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="hidden sm:inline">Live Preview</span>
+                    <span className="sm:hidden">Preview</span>
+                  </Link>
+
+                  {portfolio.available ? (
+                    <Link
+                      href="/templateForm"
+                      className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 text-sm sm:text-base"
+                    >
+                      <Edit3 className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <span className="inline">Use Template</span>\{" "}
+                    </Link>
+                  ) : (
+                    <div className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg font-semibold text-sm sm:text-base opacity-80 cursor-not-allowed">
+                      <Loader2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <span className="inline">Coming Soon</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </motion.section>
 
             {/* Key Features */}
@@ -657,14 +748,21 @@ export default function PortfolioDetailPage() {
                       <span className="hidden sm:inline">Live Preview</span>
                       <span className="sm:hidden">Preview</span>
                     </Link>
-                    <Link
-                      href={`/templateForm?${portfolio.id}`}
-                      className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-slate-800/50 hover:bg-slate-800/70 text-gray-300 hover:text-white rounded-lg font-semibold transition-all duration-300 border border-slate-700/50 hover:border-slate-600 group text-sm sm:text-base"
-                    >
-                      <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
-                      <span className="hidden sm:inline">Use Template</span>
-                      <span className="sm:hidden">Use Template</span>
-                    </Link>
+                    {portfolio.available ? (
+                      <Link
+                        href={`/templateForm?${portfolio.id}`}
+                        className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group text-sm sm:text-base"
+                      >
+                        <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
+                        <span className="hidden sm:inline">Use Template</span>
+                        <span className="sm:hidden">Use Template</span>
+                      </Link>
+                    ) : (
+                      <div className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg font-semibold text-sm sm:text-base opacity-80 cursor-not-allowed">
+                        <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
+                        <span className="inline">Form Not Available</span>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -713,49 +811,101 @@ export default function PortfolioDetailPage() {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="relative max-w-7xl max-h-full w-full"
               onClick={(e) => e.stopPropagation()}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
               {/* Close Button */}
               <motion.button
                 onClick={closeImageModal}
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
-                className="absolute -top-12 right-0 z-10 w-10 h-10 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 group"
+                whileHover={{
+                  scale: 1.05,
+                  rotate: 90,
+                  backgroundColor: "rgba(239, 68, 68, 0.25)",
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="absolute -top-11 sm:-top-13 md:-top-15 right-0 z-10 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-black/40 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-red-500/20 hover:border-red-400/50 transition-all duration-300 group shadow-lg hover:shadow-xl"
+                aria-label="Close modal"
               >
-                <X className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                <X className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 group-hover:scale-110 transition-transform" />
+
+                {/* Button glow effect */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-red-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </motion.button>
 
               {/* Navigation Buttons */}
               {portfolio.images.length > 1 && (
                 <>
+                  {/* Previous Button */}
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation();
                       navigateImage("prev");
                     }}
-                    whileHover={{ scale: 1.1, x: -5 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 group"
+                    whileHover={{
+                      scale: 1.05,
+                      x: -3,
+                      backgroundColor: "rgba(255, 255, 255, 0.25)",
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                    className="absolute left-2 sm:left-4 md:left-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-black/40 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 group shadow-lg hover:shadow-xl"
+                    aria-label="Previous image"
                   >
-                    <ChevronLeft className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                    <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 group-hover:scale-110 transition-transform" />
+
+                    {/* Button glow effect */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </motion.button>
 
+                  {/* Next Button */}
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation();
                       navigateImage("next");
                     }}
-                    whileHover={{ scale: 1.1, x: 5 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 group"
+                    whileHover={{
+                      scale: 1.05,
+                      x: 3,
+                      backgroundColor: "rgba(255, 255, 255, 0.25)",
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                    className="absolute right-2 sm:right-4 md:right-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-black/40 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 group shadow-lg hover:shadow-xl"
+                    aria-label="Next image"
                   >
-                    <ChevronRight className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                    <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 group-hover:scale-110 transition-transform" />
+
+                    {/* Button glow effect */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </motion.button>
+
+                  {/* Mobile Touch Areas (invisible but larger touch targets) */}
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-20 sm:w-24 md:hidden z-5 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigateImage("prev");
+                    }}
+                    aria-label="Previous image (touch area)"
+                  />
+                  <div
+                    className="absolute right-0 top-0 bottom-0 w-20 sm:w-24 md:hidden z-5 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigateImage("next");
+                    }}
+                    aria-label="Next image (touch area)"
+                  />
                 </>
               )}
 
               {/* Image Counter */}
-              <div className="absolute -top-12 left-0 text-white/80 text-sm font-medium bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20">
-                {imageIndex + 1} of {portfolio.images.length}
+              <div className="absolute -top-8 sm:-top-10 md:-top-12 left-0 text-white/90 text-xs sm:text-sm md:text-base font-medium bg-black/40 backdrop-blur-md rounded-full px-3 py-1 sm:px-4 sm:py-1.5 md:px-5 md:py-2 border border-white/30 shadow-lg">
+                <span className="hidden sm:inline">
+                  {imageIndex + 1} of {portfolio.images.length}
+                </span>
+                <span className="sm:hidden">
+                  {imageIndex + 1}/{portfolio.images.length}
+                </span>
               </div>
 
               {/* Main Image */}
@@ -772,16 +922,34 @@ export default function PortfolioDetailPage() {
               </div>
 
               {/* Image Info */}
-              <div className="absolute -bottom-16 left-0 right-0 text-center">
-                <p className="text-white/80 text-sm bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20 inline-block">
-                  {portfolio.title} - Preview {imageIndex + 1}
+              <div className="absolute -bottom-12 sm:-bottom-14 md:-bottom-16 left-0 right-0 text-center">
+                <p className="text-white/90 text-xs sm:text-sm md:text-base bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 border border-white/30 inline-block shadow-lg">
+                  <span className="hidden sm:inline">
+                    {portfolio.title} - Preview {imageIndex + 1}
+                  </span>
+                  <span className="sm:hidden">Preview {imageIndex + 1}</span>
                 </p>
               </div>
 
               {/* Keyboard Hints */}
-              <div className="absolute -bottom-8 right-0 text-white/60 text-xs flex items-center gap-4">
-                <span className="hidden sm:inline">← → Navigate</span>
-                <span>ESC Close</span>
+              <div className="absolute -bottom-6 sm:-bottom-7 md:-bottom-8 right-0 text-white/70 text-xs sm:text-sm sm:flex items-center gap-2 sm:gap-3 md:gap-4 bg-black/30 backdrop-blur-sm rounded-full px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 border border-white/20 hidden">
+                {portfolio.images.length > 1 && (
+                  <span className="flex items-center gap-1">
+                    <kbd className="px-1.5 py-0.5 bg-white/20 rounded text-xs">
+                      ←
+                    </kbd>
+                    <kbd className="px-1.5 py-0.5 bg-white/20 rounded text-xs">
+                      →
+                    </kbd>
+                    <span className="text-xs">Navigate</span>
+                  </span>
+                )}
+                <span className="flex items-center gap-1">
+                  <kbd className="px-1.5 py-0.5 bg-white/20 rounded text-xs">
+                    ESC
+                  </kbd>
+                  <span className="text-xs">Close</span>
+                </span>
               </div>
             </motion.div>
           </motion.div>

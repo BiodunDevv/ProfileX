@@ -36,8 +36,8 @@ const templates = [
     categories: ["Web Developer"],
     tags: ["Minimal", "Corporate", "Dark"],
     featured: true,
-    popular: true,
-    isNew: false,
+    available: true, // Form available
+    isPreviewOnly: false,
     portfolioType:
       "Full-stack developers, software engineers, tech professionals",
     industry: "Technology, Software Development",
@@ -52,8 +52,8 @@ const templates = [
     categories: ["Designer", "Web Developer"],
     tags: ["Clean", "Simple", "Dark"],
     featured: false,
-    popular: true,
-    isNew: false,
+    available: false,
+    isPreviewOnly: true,
     portfolioType:
       "UX/UI designers, graphic designers, creative professionals for showcasing their work",
     industry: "Design, Creative Services, Digital Agencies",
@@ -68,8 +68,8 @@ const templates = [
     categories: ["Creative Professional"],
     tags: ["Bold", "Modern", "Artistic"],
     featured: true,
-    popular: false,
-    isNew: true,
+    available: false,
+    isPreviewOnly: true,
     portfolioType:
       "Creative designers, artists, brand specialists that want to showcase their work in a unique way",
     industry: "Creative Industries, Design Agencies, Art",
@@ -84,8 +84,8 @@ const templates = [
     categories: ["Developer & Designer"],
     tags: ["Glassmorphism", "Dual-Persona", "Premium"],
     featured: true,
-    popular: true,
-    isNew: true,
+    available: false,
+    isPreviewOnly: true,
     portfolioType:
       "Full-stack developers with design skills, UX engineers, design-dev hybrids, senior professionals",
     industry: "Technology, Design, Creative Tech, Enterprise Software",
@@ -100,8 +100,8 @@ const templates = [
     categories: ["CLI Developer", "Web Developer"],
     tags: ["Terminal", "Interactive", "CLI"],
     featured: true,
-    popular: false,
-    isNew: true,
+    available: false,
+    isPreviewOnly: true,
     portfolioType:
       "Backend developers, DevOps engineers, CLI tool creators, system administrators",
     industry: "Technology, DevOps, Infrastructure, Developer Tools",
@@ -116,8 +116,8 @@ const templates = [
     categories: ["Content Professional", "Designer", "Creative Professional"],
     tags: ["Editorial", "Resume", "Professional"],
     featured: true,
-    popular: true,
-    isNew: true,
+    available: false,
+    isPreviewOnly: true,
     portfolioType:
       "Content strategists, UX writers, editorial professionals, content designers",
     industry: "Content Strategy, UX Writing, Editorial, Communications",
@@ -132,8 +132,8 @@ const templates = [
     categories: ["Designer", "Creative Professional"],
     tags: ["Academic", "Literary", "Gothic"],
     featured: true,
-    popular: false,
-    isNew: true,
+    available: false,
+    isPreviewOnly: true,
     portfolioType:
       "Fullstack developers, creative technologists, academic professionals, writer-developers",
     industry: "Technology, Design, Academia, Creative Technology",
@@ -477,7 +477,7 @@ const Templates = () => {
 
           {/* Templates grid display */}
           {isLoading ? (
-            <div className="flex justify-center items-center py-12 sm:py-20">
+            <div className="flex flex-col justify-center items-center py-12 sm:py-20">
               <div className="relative w-12 h-12 sm:w-16 sm:h-16">
                 <div className="absolute inset-0 border-t-2 border-r-2 border-purple-600 rounded-full animate-spin"></div>
                 <div className="absolute inset-0 border-2 border-[#2E313C] rounded-full"></div>
@@ -486,6 +486,7 @@ const Templates = () => {
                   size={20}
                 />
               </div>
+              <p className="text-gray-400 mt-4">Loading templates...</p>
             </div>
           ) : filteredTemplates.length === 0 ? (
             <motion.div
@@ -578,7 +579,7 @@ const Templates = () => {
                               <span className="sm:hidden">✓</span>
                             </motion.span>
                           )}
-                          {template.isNew && (
+                          {template.available ? (
                             <motion.span
                               initial={{ scale: 0, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
@@ -588,31 +589,31 @@ const Templates = () => {
                                 stiffness: 150,
                                 damping: 15,
                               }}
-                              className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-semibold flex items-center shadow-lg"
+                              className="bg-gradient-to-r from-green-600 to-green-500 text-white px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-semibold flex items-center shadow-lg"
                             >
-                              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
-                              <span className="hidden sm:inline">New</span>
-                              <span className="sm:hidden">✨</span>
+                              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
+                              <span className="hidden sm:inline">
+                                Available
+                              </span>
+                              <span className="sm:hidden">✓</span>
                             </motion.span>
-                          )}
-                          {template.popular && (
+                          ) : (
                             <motion.span
                               initial={{ scale: 0, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
                               transition={{
-                                delay: 0.5,
+                                delay: 0.4,
                                 type: "spring",
                                 stiffness: 150,
                                 damping: 15,
                               }}
-                              className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-semibold flex items-center shadow-lg"
+                              className="bg-gradient-to-r from-amber-600 to-orange-500 text-white px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-semibold flex items-center shadow-lg"
                             >
-                              <Star
-                                className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1"
-                                fill="currentColor"
-                              />
-                              <span className="hidden sm:inline">Popular</span>
-                              <span className="sm:hidden">⭐</span>
+                              <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
+                              <span className="hidden sm:inline">
+                                Preview Only
+                              </span>
+                              <span className="sm:hidden">Preview</span>
                             </motion.span>
                           )}
                         </div>
@@ -750,8 +751,12 @@ const Templates = () => {
                             ></div>
                             <span className="text-xs">
                               {hasPortfolio
-                                ? "Portfolio created"
-                                : "Ready to use"}
+                                ? "Portfolio Created"
+                                : template.available && !template.isPreviewOnly
+                                ? "Ready to Use"
+                                : template.isPreviewOnly
+                                ? "Preview Only"
+                                : ""}
                             </span>
                           </div>
                           <div className="flex items-center gap-1 truncate">

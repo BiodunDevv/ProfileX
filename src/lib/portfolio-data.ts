@@ -25,6 +25,8 @@ export interface PortfolioType {
   sections: string[];
   bestFor: string[];
   notRecommendedFor: string[];
+  available?: boolean;
+  isPreviewOnly?: boolean;
 }
 
 export const portfolioTypes: PortfolioType[] = [
@@ -100,6 +102,8 @@ export const portfolioTypes: PortfolioType[] = [
       "Non-tech professionals",
       "Traditional business roles",
     ],
+    available: true, // Form is available
+    isPreviewOnly: false,
   },
   {
     id: "templateTwo",
@@ -173,6 +177,8 @@ export const portfolioTypes: PortfolioType[] = [
       "Business analysts",
       "Traditional corporate roles",
     ],
+    available: false, // Form not available yet
+    isPreviewOnly: true,
   },
   {
     id: "templateThree",
@@ -245,6 +251,8 @@ export const portfolioTypes: PortfolioType[] = [
       "Conservative industries",
       "Technical documentation",
     ],
+    available: false, // Form not available yet
+    isPreviewOnly: true,
   },
   {
     id: "templateFour",
@@ -331,6 +339,8 @@ export const portfolioTypes: PortfolioType[] = [
       "Non-technical industries",
       "Conservative corporate environments",
     ],
+    available: false, // Form not available yet
+    isPreviewOnly: true,
   },
   {
     id: "templateFive",
@@ -423,6 +433,8 @@ export const portfolioTypes: PortfolioType[] = [
       "Client-facing roles",
       "Non-developer positions",
     ],
+    available: false, // Form not available yet
+    isPreviewOnly: true,
   },
   {
     id: "templateSix",
@@ -522,6 +534,8 @@ export const portfolioTypes: PortfolioType[] = [
       "Technical engineers",
       "Non-content focused roles",
     ],
+    available: false, // Form not available yet
+    isPreviewOnly: true,
   },
   {
     id: "templateSeven",
@@ -619,6 +633,8 @@ export const portfolioTypes: PortfolioType[] = [
       "Simple, single-focus portfolios",
       "Those requiring fast loading on very slow connections",
     ],
+    available: false, // Form not available yet
+    isPreviewOnly: true,
   },
 ];
 

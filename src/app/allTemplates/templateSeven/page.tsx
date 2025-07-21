@@ -214,19 +214,9 @@ const sectionsByRole = {
   ],
 };
 
-interface TemplateSevenProps {
-  portfolioData?: any;
-  isPreview?: boolean;
-}
-
-const TemplateSeven: React.FC<TemplateSevenProps> = ({
-  portfolioData,
-  isPreview = true,
-}) => {
+export default function TemplateSevenPage() {
   const [activeSection, setActiveSection] = useState(0);
-  const { data, loading } = useTemplateSevenData(
-    portfolioData || defaultMockData
-  );
+  const { data, loading } = useTemplateSevenData(defaultMockData);
 
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -493,6 +483,4 @@ const TemplateSeven: React.FC<TemplateSevenProps> = ({
       </main>
     </div>
   );
-};
-
-export default TemplateSeven;
+}
