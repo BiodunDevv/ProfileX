@@ -5,7 +5,7 @@ import PortfolioFormNotAvailable from "../../../components/UI/PortfolioFormNotAv
 const UseTemplateSeven = () => {
   return (
     <PortfolioFormNotAvailable
-      templateName="Dynamic Tech Portfolio"
+      templateName="Dark Academia Gothic Portfolio"
       templateNumber="7"
     />
   );

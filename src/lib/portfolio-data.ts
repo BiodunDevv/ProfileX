@@ -523,6 +523,103 @@ export const portfolioTypes: PortfolioType[] = [
       "Non-content focused roles",
     ],
   },
+  {
+    id: "templateSeven",
+    title: "Dark Academia Gothic",
+    category: "Creative Professionals",
+    description:
+      "A sophisticated, dark-themed adaptive portfolio with library-inspired design and real-time platform integration",
+    longDescription:
+      "This Dark Academia Gothic portfolio template combines the elegance of classical manuscripts with modern web technologies. Featuring adaptive sections based on user roles, real-time data fetching from GitHub, Behance, Dribbble, and Dev.to, it creates a unique intellectual aesthetic. Perfect for developers, designers, and creative professionals who appreciate thoughtful design and sophisticated typography.",
+    templatePath: "templateSeven",
+    goal: "Create a visually striking, intellectually sophisticated portfolio that adapts to different creative profiles while maintaining a cohesive Dark Academia aesthetic.",
+    features: [
+      "Dark Academia Gothic theme with deep burgundy and gold accents",
+      "Role-based adaptive UI (designer, frontend, backend, fullstack)",
+      "Real-time GitHub repository integration",
+      "Behance/Dribbble creative project showcase",
+      "Dev.to blog article integration",
+      "EB Garamond typography with drop caps and manuscript styling",
+      "Parchment textures and vintage border effects",
+      "Framer Motion page-turns and ink-fade animations",
+      "Responsive library-inspired scroll layout",
+      "Performance optimized with API caching",
+    ],
+    challenges: [
+      "Creating authentic manuscript-style UI components",
+      "Implementing smooth page-turn animations",
+      "Integrating multiple external APIs efficiently",
+      "Balancing vintage aesthetics with modern usability",
+      "Managing role-based conditional rendering",
+      "Optimizing custom font loading performance",
+    ],
+    learned: [
+      "Advanced Framer Motion animation techniques",
+      "Multi-platform API integration patterns",
+      "Custom typography and font optimization",
+      "Responsive design with complex layouts",
+      "Performance optimization for rich animations",
+      "Accessible design with decorative elements",
+    ],
+    technologies: [
+      "Next.js 14+",
+      "TypeScript",
+      "TailwindCSS",
+      "Framer Motion",
+      "EB Garamond Font",
+      "Dev.to RSS API",
+      "Lucide React Icons",
+      "Custom CSS Animations",
+    ],
+    images: [
+      "/TemplateSevenPreview.png",
+      "/templateSeven-2.png",
+      "/templateSeven-3.png",
+      "/templateSeven-4.png",
+      "/templateSeven-5.png",
+    ],
+    liveUrl: "/allTemplates/templateSeven",
+    githubUrl: "https://github.com/example/template-seven",
+    type: "web",
+    targetAudience:
+      "Designer-developers, creative technologists, academics, writers, and intellectual professionals",
+    industry:
+      "Technology, Design, Academia, Publishing, Creative Technology, Research",
+    designStyle:
+      "Dark Academia Gothic, Manuscript-inspired, Vintage Academic, Literary",
+    colorScheme:
+      "Deep burgundy (#722F37), forest green (#355E3B), parchment (#F4ECD8), gold (#D4AF37), dark backgrounds (#1A1A1A, #0F0F0F)",
+    layout:
+      "Single-page library scroll with adaptive sections based on user role",
+    responsive: true,
+    animations: true,
+    darkMode: true,
+    sections: [
+      "Hero with Drop Cap Typography",
+      "About with Manuscript Styling",
+      "GitHub Projects (Role-based)",
+      "Behance Creative Portfolio (Role-based)",
+      "Dev.to Blog Articles (Role-based)",
+      "Contact with Ornate Form",
+    ],
+    bestFor: [
+      "Creative technologists and digital artists",
+      "Academic professionals and researchers",
+      "Writer-developers and technical authors",
+      "Design-oriented software engineers",
+      "Professionals who value intellectual aesthetics",
+      "Multi-disciplinary creatives",
+      "Those seeking sophisticated, unique presentation",
+    ],
+    notRecommendedFor: [
+      "Corporate enterprise presentations",
+      "Minimalist design preferences",
+      "Traditional business portfolios",
+      "Users who prefer bright, modern themes",
+      "Simple, single-focus portfolios",
+      "Those requiring fast loading on very slow connections",
+    ],
+  },
 ];
 
 export function getPortfolioBySlug(slug: string): PortfolioType | undefined {

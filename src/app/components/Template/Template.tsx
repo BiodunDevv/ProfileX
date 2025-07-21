@@ -123,18 +123,35 @@ const templates = [
     industry: "Content Strategy, UX Writing, Editorial, Communications",
     designStyle: "Editorial, Professional, Paper-like, Typography-focused",
   },
+  {
+    id: "templateSeven",
+    imageUrl: "/TemplateSevenPreview.png",
+    title: "Dark Academia Gothic",
+    description: "Sophisticated Literary Portfolio",
+    templatePath: "templateSeven",
+    categories: ["Designer", "Creative Professional"],
+    tags: ["Academic", "Literary", "Gothic"],
+    featured: true,
+    popular: false,
+    isNew: true,
+    portfolioType:
+      "Fullstack developers, creative technologists, academic professionals, writer-developers",
+    industry: "Technology, Design, Academia, Creative Technology",
+    designStyle: "Dark Academia Gothic, Manuscript-inspired, Vintage Academic",
+  },
 ];
 
 // Available categories for filtering
 const categories = [
-  { id: "all", name: "All", icon: "🌟", count: 6 },
-  { id: "featured", name: "Featured", icon: "⭐", count: 5 },
+  { id: "all", name: "All", icon: "🌟", count: 7 },
+  { id: "featured", name: "Featured", icon: "⭐", count: 6 },
   { id: "web developer", name: "Developer", icon: "💻", count: 3 },
-  { id: "designer", name: "Designer", icon: "🎨", count: 2 },
+  { id: "designer", name: "Designer", icon: "🎨", count: 3 },
   { id: "developer & designer", name: "Hybrid", icon: "🚀", count: 1 },
-  { id: "creative professional", name: "Creative", icon: "✨", count: 2 },
+  { id: "creative professional", name: "Creative", icon: "✨", count: 3 },
   { id: "content professional", name: "Content", icon: "📝", count: 1 },
   { id: "cli developer", name: "CLI", icon: "⌨️", count: 1 },
+  { id: "fullstack developer", name: "Fullstack", icon: "🔧", count: 1 },
 ];
 
 const Templates = () => {

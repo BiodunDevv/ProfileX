@@ -26,6 +26,10 @@ import {
   Sparkles,
   Edit3,
   Loader2,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
 } from "lucide-react";
 import { getPortfolioBySlug } from "@/lib/portfolio-data";
 import { useAuthStore } from "../../../../store/useAuthStore";
@@ -36,6 +40,8 @@ export default function PortfolioDetailPage() {
   const portfolio = getPortfolioBySlug(slug);
   const [userPortfolios, setUserPortfolios] = useState<any[]>([]);
   const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imageIndex, setImageIndex] = useState<number>(0);
   const { getAllUserPortfolios, isAuthenticated } = useAuthStore();
 
   if (!portfolio) {
@@ -85,6 +91,65 @@ export default function PortfolioDetailPage() {
 
   const userPortfolio = getUserPortfolioForTemplate();
   const hasPortfolio = !!userPortfolio;
+
+  // Modal handlers
+  const openImageModal = (imageSrc: string, index: number) => {
+    setSelectedImage(imageSrc);
+    setImageIndex(index);
+  };
+
+  const closeImageModal = () => {
+    setSelectedImage(null);
+    setImageIndex(0);
+  };
+
+  const navigateImage = (direction: "next" | "prev") => {
+    const totalImages = portfolio.images.length;
+    if (direction === "next") {
+      const nextIndex = (imageIndex + 1) % totalImages;
+      setImageIndex(nextIndex);
+      setSelectedImage(portfolio.images[nextIndex]);
+    } else {
+      const prevIndex = (imageIndex - 1 + totalImages) % totalImages;
+      setImageIndex(prevIndex);
+      setSelectedImage(portfolio.images[prevIndex]);
+    }
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!selectedImage) return;
+
+      switch (e.key) {
+        case "Escape":
+          closeImageModal();
+          break;
+        case "ArrowLeft":
+          navigateImage("prev");
+          break;
+        case "ArrowRight":
+          navigateImage("next");
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [selectedImage, imageIndex]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (selectedImage) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [selectedImage]);
 
   const getCategoryIcon = (category: string) => {
     switch (category.toLowerCase()) {
@@ -246,16 +311,24 @@ export default function PortfolioDetailPage() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mb-8 sm:mb-12"
         >
-          <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-slate-700/50">
+          <div
+            className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-slate-700/50 cursor-pointer group"
+            onClick={() => openImageModal(portfolio.images[0], 0)}
+          >
             <div
-              className={`absolute inset-0 bg-gradient-to-br ${getDesignStyleColor(portfolio.designStyle)} opacity-20`}
+              className={`absolute inset-0 bg-gradient-to-br ${getDesignStyleColor(portfolio.designStyle)} opacity-20 group-hover:opacity-30 transition-opacity duration-300`}
             />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <div className="bg-white/10 backdrop-blur-sm rounded-full p-3 border border-white/20">
+                <Maximize2 className="h-6 w-6 text-white" />
+              </div>
+            </div>
             <Image
               src={portfolio.images[0]}
               alt={portfolio.title}
               width={1200}
               height={800}
-              className="w-full h-auto"
+              className="w-full h-auto transition-transform duration-300 group-hover:scale-105"
               priority
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 80vw"
             />
@@ -397,14 +470,20 @@ export default function PortfolioDetailPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.5, delay: 0.1 * index }}
                       whileHover={{ scale: 1.05 }}
-                      className="rounded-lg overflow-hidden shadow-lg border border-slate-700/50"
+                      className="rounded-lg overflow-hidden shadow-lg border border-slate-700/50 cursor-pointer group relative"
+                      onClick={() => openImageModal(image, index + 1)}
                     >
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 z-10">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-full p-2 border border-white/20">
+                          <Maximize2 className="h-5 w-5 text-white" />
+                        </div>
+                      </div>
                       <Image
                         src={image}
-                        alt={`${portfolio.title} preview ${index + 1}`}
+                        alt={`${portfolio.title} preview ${index + 2}`}
                         width={600}
                         height={400}
-                        className="w-full h-auto"
+                        className="w-full h-auto transition-transform duration-300 group-hover:scale-110"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     </motion.div>
@@ -617,6 +696,96 @@ export default function PortfolioDetailPage() {
             </motion.div>
           </div>
         </div>
+
+        {/* Advanced Image Modal */}
+        {selectedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm"
+            onClick={closeImageModal}
+          >
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative max-w-7xl max-h-full w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <motion.button
+                onClick={closeImageModal}
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                className="absolute -top-12 right-0 z-10 w-10 h-10 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 group"
+              >
+                <X className="h-5 w-5 group-hover:scale-110 transition-transform" />
+              </motion.button>
+
+              {/* Navigation Buttons */}
+              {portfolio.images.length > 1 && (
+                <>
+                  <motion.button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigateImage("prev");
+                    }}
+                    whileHover={{ scale: 1.1, x: -5 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 group"
+                  >
+                    <ChevronLeft className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                  </motion.button>
+
+                  <motion.button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigateImage("next");
+                    }}
+                    whileHover={{ scale: 1.1, x: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 group"
+                  >
+                    <ChevronRight className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                  </motion.button>
+                </>
+              )}
+
+              {/* Image Counter */}
+              <div className="absolute -top-12 left-0 text-white/80 text-sm font-medium bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20">
+                {imageIndex + 1} of {portfolio.images.length}
+              </div>
+
+              {/* Main Image */}
+              <div className="relative rounded-lg overflow-hidden shadow-2xl border border-white/20">
+                <Image
+                  src={selectedImage}
+                  alt={`${portfolio.title} preview ${imageIndex + 1}`}
+                  width={1400}
+                  height={900}
+                  className="w-full h-full object-contain max-h-[80vh]"
+                  sizes="100vw"
+                  priority
+                />
+              </div>
+
+              {/* Image Info */}
+              <div className="absolute -bottom-16 left-0 right-0 text-center">
+                <p className="text-white/80 text-sm bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20 inline-block">
+                  {portfolio.title} - Preview {imageIndex + 1}
+                </p>
+              </div>
+
+              {/* Keyboard Hints */}
+              <div className="absolute -bottom-8 right-0 text-white/60 text-xs flex items-center gap-4">
+                <span className="hidden sm:inline">← → Navigate</span>
+                <span>ESC Close</span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
