@@ -78,6 +78,7 @@ export default function AuthProvider({
     "/forgotpassword",
     "/reset-password",
   ];
+  const templateInfoRoutes = ["/templates"]; // Allow template info pages for unauthenticated users
   const verificationRoutes = ["/verification"];
 
   // Initialize auth check
@@ -118,15 +119,6 @@ export default function AuthProvider({
 
     // Small delay to prevent race conditions
     const timeoutId = setTimeout(() => {
-      console.log("🔄 AuthProvider: Handling redirects...", {
-        pathname,
-        isAuthenticated,
-        hasToken: !!token,
-        hasUser: !!user,
-        isAuthRoute: authRoutes.includes(pathname),
-        isPublicRoute: publicRoutes.includes(pathname),
-      });
-
       // Check if user is truly authenticated (has all required data)
       const isFullyAuthenticated = isAuthenticated && token && user;
 
@@ -146,6 +138,16 @@ export default function AuthProvider({
           if (storedEmail) {
             return;
           }
+        }
+
+        // Allow unauthenticated users to view template info pages
+        if (pathname.startsWith("/templates/")) {
+          return;
+        }
+
+        // Allow unauthenticated users to preview actual templates
+        if (pathname.startsWith("/allTemplates/")) {
+          return;
         }
 
         if (!publicRoutes.includes(pathname)) {

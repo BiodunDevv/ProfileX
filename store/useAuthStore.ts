@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 const API_BASE_URL =
-  process.env.API_BASE_URL || "https://profilexbackend.onrender.com/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
 interface AuthState {
   user: User | null;

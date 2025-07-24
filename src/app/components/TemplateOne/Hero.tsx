@@ -96,6 +96,9 @@ const Hero = ({
                   boxShadow: "0px 12px 30px 0px rgba(63,142,0,0.65)",
                 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  window.location.href = "#getintouch";
+                }}
               >
                 Get in Touch
               </motion.button>

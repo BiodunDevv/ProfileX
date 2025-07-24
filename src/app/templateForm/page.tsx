@@ -69,6 +69,14 @@ const TemplateFormContent = () => {
           id: "templateSix",
           title: "PaperTrail Editorial Resume Portfolio",
         },
+        templateSeven: {
+          id: "templateSeven",
+          title: "Dark Academia Gothic Portfolio",
+        },
+        templateEight: {
+          id: "templateEight",
+          title: "Cyber Sentinel Portfolio",
+        },
       };
 
       return templateMap[templateParam] || null;

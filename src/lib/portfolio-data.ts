@@ -636,6 +636,110 @@ export const portfolioTypes: PortfolioType[] = [
     available: false, // Form not available yet
     isPreviewOnly: true,
   },
+  {
+    id: "templateEight",
+    title: "CyberSentinel Security Portfolio",
+    category: "Cybersecurity Professional",
+    description:
+      "A sophisticated cybersecurity portfolio with hacker aesthetic and advanced interactive elements for security professionals",
+    longDescription:
+      "CyberSentinel is a cutting-edge cybersecurity portfolio template designed specifically for security researchers, penetration testers, and cyber defense professionals. Featuring an immersive terminal-inspired interface with matrix animations, interactive security visualizations, and comprehensive sections for CTF competitions and vulnerability writeups. The premium dark theme with vibrant green and gold accents creates a professional yet authentic hacker aesthetic perfect for showcasing security credentials to top-tier employers.",
+    templatePath: "templateEight",
+    goal: "Create a specialized portfolio platform for cybersecurity professionals that demonstrates technical expertise, security research, and practical defensive capabilities while maintaining an authentic hacker aesthetic.",
+    features: [
+      "Matrix code animation background effects",
+      "Interactive security statistics dashboard",
+      "CTF competition tracker with detailed breakdowns",
+      "Vulnerability writeup showcase with severity ratings",
+      "Security project portfolio with categorization",
+      "PGP key integration for secure communications",
+      "Advanced terminal-style typography and design",
+      "Animated security skill visualizations",
+      "Responsive design with mobile optimization",
+      "Achievement and certification showcase",
+      "Elegant dark theme with security-focused color scheme",
+      "Comprehensive security experience timeline",
+    ],
+    challenges: [
+      "Creating authentic terminal-inspired interface without compromising usability",
+      "Implementing efficient matrix animation effects for background",
+      "Designing information architecture for complex security projects and writeups",
+      "Balancing professional presentation with hacker aesthetic",
+      "Optimizing performance with multiple animation effects",
+      "Creating responsive design that maintains terminal feel across devices",
+    ],
+    learned: [
+      "Advanced CSS animation techniques for matrix effects",
+      "Interactive data visualization for security statistics",
+      "Optimal information architecture for security portfolios",
+      "Performance optimization for animation-heavy interfaces",
+      "Specialized typography for terminal-inspired designs",
+      "Accessibility considerations for dark-themed interfaces",
+    ],
+    technologies: [
+      "Next.js 14+",
+      "React 18",
+      "TypeScript",
+      "Framer Motion",
+      "Tailwind CSS",
+      "Lucide Icons",
+      "Context API for state management",
+      "Custom animations",
+      "CSS Grid and Flexbox",
+      "Responsive design patterns",
+    ],
+    images: [
+      "/TemplateEightPreview.png",
+      "/templateEight-2.png",
+      "/templateEight-3.png",
+      "/templateEight-4.png",
+      "/templateEight-5.png",
+      "/templateEight-6.png"
+    ],
+    liveUrl: "/allTemplates/templateEight",
+    githubUrl: "https://github.com/example/template-eight",
+    type: "web",
+    targetAudience:
+      "Cybersecurity professionals, penetration testers, security researchers, red team operators, bug bounty hunters, security engineers",
+    industry:
+      "Cybersecurity, Information Security, Digital Forensics, Vulnerability Research",
+    designStyle:
+      "Terminal-inspired, Hacker Aesthetic, Professional Dark Theme, Matrix-style",
+    colorScheme:
+      "Dark backgrounds (#0F1115, #1C1E26) with cyber green (#355E3B) and gold (#D4AF37) accents and light text (#F4ECD8)",
+    layout:
+      "Single-page application with specialized sections for security projects and CTFs",
+    responsive: true,
+    animations: true,
+    darkMode: true,
+    sections: [
+      "Hero with Matrix Background",
+      "About with Security Experience",
+      "Projects with Security Categories",
+      "CTF Competition Showcase",
+      "Security Writeups with Severity Ratings",
+      "Contact with PGP Key Integration",
+    ],
+    bestFor: [
+      "Penetration testers",
+      "Security researchers",
+      "Bug bounty hunters",
+      "Red team operators",
+      "Security engineers",
+      "CTF competitors",
+      "Cyber defense professionals",
+      "Digital forensics experts",
+    ],
+    notRecommendedFor: [
+      "Non-technical professionals",
+      "Traditional business roles",
+      "Design-focused portfolios",
+      "Bright, colorful presentation needs",
+      "Corporate executive profiles",
+    ],
+    available: true,
+    isPreviewOnly: false,
+  },
 ];
 
 export function getPortfolioBySlug(slug: string): PortfolioType | undefined {

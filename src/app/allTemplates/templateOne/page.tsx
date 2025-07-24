@@ -168,6 +168,15 @@ const TemplateOne = () => {
       try {
         setLoading(true);
 
+        // If user is not authenticated, skip API fetching and use default data
+        if (!isAuthenticated) {
+          console.log("User not authenticated, using default data for preview");
+          setHasExistingPortfolio(false);
+          setIsPreviewMode(true);
+          setLoading(false);
+          return;
+        }
+
         // Always try to fetch portfolio data if user is authenticated
         if (isAuthenticated) {
           console.log("Fetching user's portfolio from store...");
@@ -250,10 +259,12 @@ const TemplateOne = () => {
               console.log("Portfolio data set successfully");
             } else {
               console.log("No portfolio found, using default data");
+              setHasExistingPortfolio(false);
             }
           } catch (storeError) {
             console.error("Error fetching from store:", storeError);
             console.log("Store error, using default data");
+            setHasExistingPortfolio(false);
           }
         }
       } catch (error) {
@@ -278,7 +289,7 @@ const TemplateOne = () => {
 
     return () => clearTimeout(timeout);
   }, [loading]);
-  
+
   if (loading) {
     return (
       <Preloader
@@ -295,18 +306,38 @@ const TemplateOne = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Show preview banner only when explicitly on templatePreview page */}
-      {pathname.includes("/templatePreview") && (
+      {/* Show preview banner for unauthenticated users or when explicitly on templatePreview page */}
+      {(!isAuthenticated || pathname.includes("/templatePreview")) && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full bg-gradient-to-r from-amber-500 to-orange-400 py-2 flex justify-center items-center"
+          className="w-full bg-gradient-to-r from-amber-500 to-orange-400 py-3 flex justify-center items-center"
         >
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 px-4">
             <div className="flex items-center gap-2 text-amber-900 font-medium">
               <Eye className="h-4 w-4" />
-              <span>Template Preview Mode</span>
+              <span>
+                {!isAuthenticated
+                  ? "Template Preview - Sign in to create your own portfolio"
+                  : "Template Preview Mode"}
+              </span>
             </div>
+            {!isAuthenticated && (
+              <div className="flex gap-2">
+                <Link
+                  href="/signin"
+                  className="px-4 py-2 bg-amber-900 text-amber-50 rounded-lg hover:bg-amber-800 transition-colors font-medium text-sm"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/signup"
+                  className="px-4 py-2 bg-white text-amber-900 rounded-lg hover:bg-amber-50 transition-colors font-medium text-sm"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
         </motion.div>
       )}

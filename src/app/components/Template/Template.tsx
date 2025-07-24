@@ -25,6 +25,7 @@ import TemplateOnePreview from "../../../../public/TemplateOnePreveiw.png";
 import TemplateTwoPreview from "../../../../public/TemplateTwoPreview.png";
 import TemplateThreePreview from "../../../../public/TemplateThreePreview.png";
 import TemplateFourPreview from "../../../../public/TemplateFourPreview.png";
+import TemplateEightPreview from "../../../../public/TemplateEightPreview.png";
 
 const templates = [
   {
@@ -139,19 +140,35 @@ const templates = [
     industry: "Technology, Design, Academia, Creative Technology",
     designStyle: "Dark Academia Gothic, Manuscript-inspired, Vintage Academic",
   },
+  {
+    id: "templateEight",
+    imageUrl: TemplateEightPreview,
+    title: "CyberSentinel",
+    description: "Security Professional",
+    templatePath: "templateEight",
+    categories: ["Cybersecurity Professional"],
+    tags: ["Terminal", "Matrix", "Security"],
+    featured: true,
+    available: false,
+    isPreviewOnly: true,
+    portfolioType:
+      "Cybersecurity professionals, penetration testers, security researchers, red team operators",
+    industry: "Cybersecurity, Information Security, Digital Forensics",
+    designStyle: "Terminal-inspired, Hacker Aesthetic, Matrix-style",
+  },
 ];
 
 // Available categories for filtering
 const categories = [
-  { id: "all", name: "All", icon: "🌟", count: 7 },
-  { id: "featured", name: "Featured", icon: "⭐", count: 6 },
+  { id: "all", name: "All", icon: "🌟", count: 8 },
+  { id: "featured", name: "Featured", icon: "⭐", count: 7 },
   { id: "web developer", name: "Developer", icon: "💻", count: 3 },
   { id: "designer", name: "Designer", icon: "🎨", count: 3 },
   { id: "developer & designer", name: "Hybrid", icon: "🚀", count: 1 },
   { id: "creative professional", name: "Creative", icon: "✨", count: 3 },
   { id: "content professional", name: "Content", icon: "📝", count: 1 },
   { id: "cli developer", name: "CLI", icon: "⌨️", count: 1 },
-  { id: "fullstack developer", name: "Fullstack", icon: "🔧", count: 1 },
+  { id: "cybersecurity professional", name: "Security", icon: "🔒", count: 1 },
 ];
 
 const Templates = () => {
@@ -434,7 +451,7 @@ const Templates = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <div className="flex flex-wrap gap-1.5 sm:gap-2 items-center justify-center sm:justify-start">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 items-center justify-center">
                 {categories.map((category) => (
                   <motion.button
                     key={category.id}
@@ -753,10 +770,10 @@ const Templates = () => {
                               {hasPortfolio
                                 ? "Portfolio Created"
                                 : template.available && !template.isPreviewOnly
-                                ? "Ready to Use"
-                                : template.isPreviewOnly
-                                ? "Preview Only"
-                                : ""}
+                                  ? "Ready to Use"
+                                  : template.isPreviewOnly
+                                    ? "Preview Only"
+                                    : ""}
                             </span>
                           </div>
                           <div className="flex items-center gap-1 truncate">

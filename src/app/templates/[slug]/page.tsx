@@ -319,7 +319,15 @@ export default function PortfolioDetailPage() {
                   <span className="hidden sm:inline">Live Preview</span>
                   <span className="sm:hidden">Preview</span>
                 </Link>
-                {portfolio.available ? (
+                {!isAuthenticated ? (
+                  <Link
+                    href="/signin"
+                    className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group text-sm sm:text-base"
+                  >
+                    <Sparkles className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
+                    <span className="inline">Sign In to Use Template</span>
+                  </Link>
+                ) : portfolio.available ? (
                   <Link
                     href={`/templateForm?${portfolio.id}`}
                     className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group text-sm sm:text-base"
@@ -445,13 +453,21 @@ export default function PortfolioDetailPage() {
                     <span className="sm:hidden">Preview</span>
                   </Link>
 
-                  {portfolio.available ? (
+                  {!isAuthenticated ? (
                     <Link
-                      href="/templateForm"
+                      href="/signin"
+                      className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 text-sm sm:text-base"
+                    >
+                      <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <span className="inline">Sign In to Use</span>
+                    </Link>
+                  ) : portfolio.available ? (
+                    <Link
+                      href={`/templateForm?${portfolio.id}`}
                       className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 text-sm sm:text-base"
                     >
                       <Edit3 className="h-4 w-4 sm:h-5 sm:w-5" />
-                      <span className="inline">Use Template</span>\{" "}
+                      <span className="inline">Use Template</span>
                     </Link>
                   ) : (
                     <div className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg font-semibold text-sm sm:text-base opacity-80 cursor-not-allowed">
@@ -711,7 +727,28 @@ export default function PortfolioDetailPage() {
                 Quick Actions
               </h3>
               <div className="space-y-2 sm:space-y-3">
-                {isLoadingPortfolios ? (
+                {!isAuthenticated ? (
+                  <>
+                    <Link
+                      href={portfolio.liveUrl}
+                      className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group text-sm sm:text-base"
+                    >
+                      <Eye className="h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" />
+                      <span className="hidden sm:inline">Live Preview</span>
+                      <span className="sm:hidden">Preview</span>
+                    </Link>
+                    <Link
+                      href="/signin"
+                      className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group text-sm sm:text-base"
+                    >
+                      <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
+                      <span className="hidden sm:inline">
+                        Sign In to Use Template
+                      </span>
+                      <span className="sm:hidden">Sign In to Use</span>
+                    </Link>
+                  </>
+                ) : isLoadingPortfolios ? (
                   <div className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-slate-800/50 border border-slate-700/50 text-gray-400 rounded-lg font-semibold text-sm sm:text-base">
                     <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                     Loading...
@@ -767,7 +804,18 @@ export default function PortfolioDetailPage() {
                 )}
               </div>
 
-              {isLoadingPortfolios ? (
+              {!isAuthenticated ? (
+                <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-500/30 rounded-lg">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-blue-400 text-xs sm:text-sm">
+                    <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="font-medium">Ready to Get Started?</span>
+                  </div>
+                  <p className="text-blue-300/80 text-xs mt-1">
+                    Sign in to create your own portfolio using this template and
+                    unlock all features.
+                  </p>
+                </div>
+              ) : isLoadingPortfolios ? (
                 <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-slate-900/20 border border-slate-500/30 rounded-lg">
                   <div className="flex items-center gap-1.5 sm:gap-2 text-slate-400 text-xs sm:text-sm">
                     <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />

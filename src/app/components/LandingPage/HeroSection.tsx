@@ -185,7 +185,7 @@ const HeroSection = () => {
             />
 
             <Link
-              href={isAuthenticated ? "/dashboard/templates" : "/templates"}
+              href={isAuthenticated ? "/templates" : "#templates"}
               className="relative w-full sm:w-auto border border-[#711381] text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-lg font-medium hover:bg-[#711381]/10 transition-all flex items-center justify-center text-sm sm:text-base group"
             >
               <Eye

@@ -52,11 +52,17 @@ const Developers = () => {
         "Accessibility",
         "JavaScript",
         "NextJs",
+        "TypeScript",
+        "React Native",
+        "Zustand",
+        "Framer Motion",
+        "Firebase",
+        "REST APIs",
       ],
       links: {
-        github: "https://github.com",
-        twitter: "https://twitter.com",
-        website: "https://example.com",
+        github: "https://github.com/BiodunDevv",
+        twitter: "https://twitter.com/BiodunDev",
+        website: "https://biodundev.vercel.app",
       },
     },
     {
@@ -65,39 +71,26 @@ const Developers = () => {
       role: "Backend Engineer",
       bio: "Specialized in building robust, scalable backend systems. Expert in database optimization, API design, and server architecture with a focus on performance and security.",
       image: Dev,
-      skills: ["Python", "Node.js", "MongoDB", "AWS", "Docker"],
-      links: {
-        github: "https://github.com",
-        linkedin: "https://linkedin.com",
-        twitter: "https://twitter.com",
-      },
-    },
-    {
-      id: 3,
-      name: "Solomon",
-      role: "Artificial Intelligence Engineer",
-      bio: "AI enthusiast with a strong background in machine learning and data analysis. Passionate about leveraging AI to solve real-world problems and improve user experiences.",
-      image: Dev,
       skills: [
-        "Machine Learning",
         "Python",
-        "TensorFlow",
-        "Data Analysis",
-        "Natural Language Processing",
+        "Node.js",
+        "MongoDB",
+        "Docker",
+        "GraphQL",
+        "PostgreSQL",
+        "Express.js",
+        "REST APIs",
       ],
       links: {
-        github: "https://github.com",
+        github: "https://github.com/Goldexcool",
         linkedin: "https://linkedin.com",
-        website: "https://example.com",
-        email: "email@example.com",
+        twitter: "https://twitter.com",
       },
     },
   ];
 
   const containerVariants = {
-    hidden: { opacity: 0 },
     visible: {
-      opacity: 1,
       transition: {
         staggerChildren: 0.15,
       },
@@ -105,10 +98,9 @@ const Developers = () => {
   } as const;
 
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { y: 20 },
     visible: {
       y: 0,
-      opacity: 1,
       transition: {
         type: "spring" as const,
         stiffness: 100,
