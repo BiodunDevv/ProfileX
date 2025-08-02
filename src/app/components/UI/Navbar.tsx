@@ -15,12 +15,11 @@ import {
   Palette,
   Home,
   AlertTriangle,
-  Monitor,
-  Smartphone,
   ArrowRight,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "../../../../store/useAuthStore";
+import PWAInstallNotice from "../PWA/PWAInstallNotice";
 
 // Public routes that don't require authentication
 const PUBLIC_ROUTES = ["/", "/signin", "/signup", "/reset-password"];
@@ -30,9 +29,6 @@ const Navbar = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showAuthWarning, setShowAuthWarning] = useState(false);
-  const [showMobileNotice, setShowMobileNotice] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [hasShownNotice, setHasShownNotice] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -98,30 +94,6 @@ const Navbar = () => {
       setScrolled(window.scrollY > 10);
     };
 
-    const checkMobile = () => {
-      const isMobileDevice = window.innerWidth <= 1024; // Changed to include tablets
-      setIsMobile(isMobileDevice);
-
-      if (isMobileDevice && !hasShownNotice) {
-        const hasSeenNotice = localStorage.getItem("mobileNotice");
-        if (!hasSeenNotice) {
-          setShowMobileNotice(true);
-          setHasShownNotice(true);
-        }
-      }
-    };
-
-    // Only check mobile on initial load
-    if (!hasShownNotice) {
-      checkMobile();
-    }
-
-    const handleResize = () => {
-      // Only update isMobile state on resize, don't trigger notice
-      const isMobileDevice = window.innerWidth <= 1024; // Changed to include tablets
-      setIsMobile(isMobileDevice);
-    };
-
     // Click outside handler for profile menu
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
@@ -135,32 +107,13 @@ const Navbar = () => {
     };
 
     window.addEventListener("scroll", handleScroll);
-    window.addEventListener("resize", handleResize);
     document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleResize);
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [hasShownNotice, isProfileMenuOpen, isMobileMenuOpen]);
-
-  // Auto-hide mobile notice after progress bar completes
-  useEffect(() => {
-    if (showMobileNotice) {
-      const timer = setTimeout(() => {
-        setShowMobileNotice(false);
-      }, 8000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [showMobileNotice]);
-
-  // Dismiss mobile notice
-  const dismissMobileNotice = () => {
-    setShowMobileNotice(false);
-    localStorage.setItem("mobileNotice", "true");
-  };
+  }, [isProfileMenuOpen, isMobileMenuOpen]);
 
   // Format user name for avatar
   const getInitials = (name?: string) => {
@@ -172,23 +125,6 @@ const Navbar = () => {
       .toUpperCase()
       .substring(0, 2);
   };
-
-  // Animated dashboard button component
-  const DashboardButton = ({ className = "", onClick = () => {} }) => (
-    <motion.div>
-      <Link
-        href="/dashboard"
-        onClick={onClick}
-        className={`flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-[#711381] to-purple-600 px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 transition-all shadow-lg group ${className}`}
-      >
-        <span>Dashboard</span>
-        <ArrowRight
-          size={16}
-          className="transition-transform group-hover:translate-x-1"
-        />
-      </Link>
-    </motion.div>
-  );
 
   // Handle logout
   const handleLogout = async () => {
@@ -257,115 +193,8 @@ const Navbar = () => {
         )}
       </AnimatePresence>
 
-      {/* Advanced Mobile Notice - Only shows on mobile and tablet devices */}
-      <AnimatePresence>
-        {showMobileNotice && isMobile && (
-          <motion.div
-            initial={{ y: -100, scale: 0.95 }}
-            animate={{ y: 0, scale: 1 }}
-            exit={{ y: -100, scale: 0.95 }}
-            transition={{
-              type: "spring",
-              stiffness: 200,
-              damping: 20,
-              duration: 0.6,
-            }}
-            className="fixed top-0 left-0 right-0 z-50 mx-2 mt-2 sm:mx-4 sm:mt-4"
-          >
-            <div className="relative overflow-hidden bg-gradient-to-r from-[#711381] to-purple-600 backdrop-blur-md border border-[#711381]/30 rounded-xl sm:rounded-2xl shadow-2xl shadow-[#711381]/30">
-              {/* Animated background pattern */}
-              <div className="absolute inset-0 opacity-20">
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-12"
-                  animate={{ x: ["-100%", "200%"] }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                />
-              </div>
-
-              {/* Content */}
-              <div className="relative p-3 sm:p-4 flex items-start gap-3">
-                {/* Icon with animation */}
-                <motion.div
-                  animate={{
-                    rotate: [0, 10, -10, 0],
-                    scale: [1, 1.1, 1],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatType: "reverse",
-                  }}
-                  className="flex-shrink-0 p-1.5 sm:p-2 bg-white/20 rounded-lg sm:rounded-xl backdrop-blur-sm"
-                >
-                  <Monitor className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </motion.div>
-
-                {/* Text content */}
-                <div className="flex-1 min-w-0">
-                  <motion.h4
-                    initial={{ x: -10 }}
-                    animate={{ x: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="font-bold text-white text-xs sm:text-sm leading-tight"
-                  >
-                    🚀 Best Experience on Desktop
-                  </motion.h4>
-                  <motion.p
-                    initial={{ x: -10 }}
-                    animate={{ x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-white/90 text-xs leading-relaxed mt-1"
-                  >
-                    For the ultimate ProfileX experience with all features, we
-                    recommend using a desktop browser.
-                  </motion.p>
-
-                  {/* Action buttons */}
-                  <div className="flex items-center gap-2 mt-2 sm:mt-3">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs font-medium rounded-md sm:rounded-lg transition-all border border-white/20"
-                      onClick={dismissMobileNotice}
-                    >
-                      <Smartphone className="w-3 h-3" />
-                      <span className="hidden sm:inline">Continue on</span>{" "}
-                      Mobile
-                    </motion.button>
-                  </div>
-                </div>
-
-                {/* Dismiss button */}
-                <motion.button
-                  onClick={dismissMobileNotice}
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="flex-shrink-0 p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-all group"
-                  aria-label="Dismiss notice"
-                >
-                  <X className="w-3 h-3 sm:w-4 sm:h-4 text-white/80 group-hover:text-white" />
-                </motion.button>
-              </div>
-
-              {/* Progress bar animation */}
-              <motion.div
-                className="absolute bottom-0 left-0 right-0 h-0.5 sm:h-1 bg-gradient-to-r from-white/20 via-white/40 to-white/60"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{
-                  duration: 8,
-                  ease: "linear",
-                }}
-                style={{ transformOrigin: "left" }}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* PWA Install Notice */}
+      <PWAInstallNotice />
 
       <motion.nav
         initial={{ y: -20 }}

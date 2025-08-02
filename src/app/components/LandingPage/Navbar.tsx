@@ -2,24 +2,14 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Menu,
-  Rocket,
-  X,
-  LogOut,
-  ArrowRight,
-  Monitor,
-  Smartphone,
-} from "lucide-react";
+import { Menu, Rocket, X, LogOut, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../../../../store/useAuthStore";
+import PWAInstallNotice from "../PWA/PWAInstallNotice";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [showMobileNotice, setShowMobileNotice] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [hasShownNotice, setHasShownNotice] = useState(false); // Track if notice was shown this session
   const router = useRouter();
 
   // Get auth status from store instead of path-based detection
@@ -47,62 +37,18 @@ const Navbar = () => {
       setScrolled(window.scrollY > 10);
     };
 
-    const checkMobile = () => {
-      const isMobileDevice = window.innerWidth <= 768;
-      setIsMobile(isMobileDevice);
-
-      if (isMobileDevice && !hasShownNotice) {
-        const hasSeenNotice = localStorage.getItem("mobileNotice");
-        if (!hasSeenNotice) {
-          setShowMobileNotice(true);
-          setHasShownNotice(true);
-        }
-      }
-    };
-
-    // Only check mobile on initial load
-    if (!hasShownNotice) {
-      checkMobile();
-    }
-
-    const handleResize = () => {
-      // Only update isMobile state on resize, don't trigger notice
-      const isMobileDevice = window.innerWidth <= 768;
-      setIsMobile(isMobileDevice);
-    };
-
     window.addEventListener("scroll", handleScroll);
-    window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleResize);
     };
-  }, [hasShownNotice]); // Add hasShownNotice to dependency array
+  }, []);
 
   const handleSignOut = async () => {
     console.log("Signing out...");
     await signOut();
     router.push("/");
   };
-
-  // Dismiss mobile notice
-  const dismissMobileNotice = () => {
-    setShowMobileNotice(false);
-    localStorage.setItem("mobileNotice", "true");
-  };
-
-  // Auto-hide after progress bar completes
-  useEffect(() => {
-    if (showMobileNotice) {
-      const timer = setTimeout(() => {
-        setShowMobileNotice(false);
-        // Don't reset hasShownNotice here so it stays hidden for this session
-      }, 8000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [showMobileNotice]);
 
   // Animated dashboard button that appears when authenticated
   const DashboardButton = ({ className = "", onClick = () => {} }) => (
@@ -123,114 +69,8 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Advanced Mobile Notice - Only shows on mobile devices */}
-      <AnimatePresence>
-        {showMobileNotice && isMobile && (
-          <motion.div
-            initial={{ y: -100, scale: 0.95 }}
-            animate={{ y: 0, scale: 1 }}
-            exit={{ y: -100, scale: 0.95 }}
-            transition={{
-              type: "spring",
-              stiffness: 200,
-              damping: 20,
-              duration: 0.6,
-            }}
-            className="fixed top-0 left-0 right-0 z-50 mx-2 mt-2"
-          >
-            <div className="relative overflow-hidden bg-gradient-to-r from-[#711381] to-purple-600 backdrop-blur-md border border-[#711381]/30 rounded-2xl shadow-2xl shadow-[#711381]/30">
-              {/* Animated background pattern */}
-              <div className="absolute inset-0 opacity-20">
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-12"
-                  animate={{ x: ["-100%", "200%"] }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                />
-              </div>
-
-              {/* Content */}
-              <div className="relative p-4 flex items-start gap-3">
-                {/* Icon with animation */}
-                <motion.div
-                  animate={{
-                    rotate: [0, 10, -10, 0],
-                    scale: [1, 1.1, 1],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatType: "reverse",
-                  }}
-                  className="flex-shrink-0 p-2 bg-white/20 rounded-xl backdrop-blur-sm"
-                >
-                  <Monitor className="w-5 h-5 text-white" />
-                </motion.div>
-
-                {/* Text content */}
-                <div className="flex-1 min-w-0">
-                  <motion.h4
-                    initial={{ x: -10 }}
-                    animate={{ x: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="font-bold text-white text-sm leading-tight"
-                  >
-                    🚀 Best Experience on Desktop
-                  </motion.h4>
-                  <motion.p
-                    initial={{ x: -10 }}
-                    animate={{ x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-white/90 text-xs mt-1 leading-relaxed"
-                  >
-                    For the ultimate ProfileX experience with all features, we
-                    recommend using a desktop browser.
-                  </motion.p>
-
-                  {/* Action buttons */}
-                  <div className="flex items-center gap-2 mt-3">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs font-medium rounded-lg transition-all border border-white/20"
-                      onClick={dismissMobileNotice}
-                    >
-                      <Smartphone className="w-3 h-3" />
-                      Continue on Mobile
-                    </motion.button>
-                  </div>
-                </div>
-
-                {/* Dismiss button */}
-                <motion.button
-                  onClick={dismissMobileNotice}
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="flex-shrink-0 p-2 hover:bg-white/20 rounded-lg transition-all group"
-                  aria-label="Dismiss notice"
-                >
-                  <X className="w-4 h-4 text-white/80 group-hover:text-white" />
-                </motion.button>
-              </div>
-
-              {/* Progress bar animation */}
-              <motion.div
-                className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-white/20 via-white/40 to-white/60"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{
-                  duration: 8,
-                  ease: "linear",
-                }}
-                style={{ transformOrigin: "left" }}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* PWA Install Notice */}
+      <PWAInstallNotice />
 
       {/* Spacer for navbar */}
       <div className="h-20"></div>
