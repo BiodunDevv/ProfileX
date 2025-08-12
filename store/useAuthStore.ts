@@ -184,7 +184,6 @@ export const useAuthStore = create<AuthState>()(
 
               console.log("🔄 Response status for", endpoint, ":", response.status);
               
-              // If we get anything other than 404, this is probably the right endpoint
               if (response.status !== 404) {
                 console.log("✅ Found working resend endpoint:", endpoint);
                 return response;
@@ -210,7 +209,6 @@ export const useAuthStore = create<AuthState>()(
           return undefined;
         }
       },
-
       signIn: async (credentials: SignInCredentials) => {
         try {
           set({ isLoading: true });
@@ -246,7 +244,6 @@ export const useAuthStore = create<AuthState>()(
           if (response.ok && userData && token) {
             console.log("✅ SignIn successful - updating auth state");
             
-            // Update auth state
             set({
               user: {
                 id: userData.id || userData._id,
@@ -315,7 +312,6 @@ export const useAuthStore = create<AuthState>()(
             tokenPreview: token ? token.substring(0, 20) + "..." : "none"
           });
 
-          // If no token, user is definitely not authenticated
           if (!token) {
             console.log("❌ No token found - user not authenticated");
             set({
@@ -325,7 +321,6 @@ export const useAuthStore = create<AuthState>()(
             return false;
           }
 
-          // Verify token with the backend using the /auth/check endpoint
           console.log("🔑 Token found, verifying with server...");
           
           try {
@@ -429,12 +424,10 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Simplified sign out - just clear local state, no API call
       signOut: () => {
         try {
           console.log("🔓 Signing out user...");
           
-          // Clear any stored email from localStorage
           if (isClient) {
             localStorage.removeItem("userEmail");
           }
