@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "../components/UI/Navbar";
 import { useAuthStore } from "../../../store/useAuthStore";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Eye,
   Star,
@@ -25,8 +25,57 @@ import {
   ArrowUpRight,
   LayoutTemplate,
   Sparkles,
+  Globe,
+  Lock,
+  Plus,
+  TrendingUp,
+  ExternalLink,
+  Calendar,
+  Activity,
+  Users,
 } from "lucide-react";
 import Preloader from "../components/UI/Preloader";
+
+// Portfolio interface to match API response
+interface Portfolio {
+  id: string;
+  type: string;
+  templateType: string;
+  title: string;
+  brandName?: string;
+  name?: string;
+  devName?: string;
+  slug: string;
+  isPublic: boolean;
+  views: number;
+  createdAt: string;
+  updatedAt: string;
+  lastViewedAt?: string;
+  apiEndpoint: string;
+  editEndpoint: string;
+  publicUrl: string;
+}
+
+interface PortfolioStats {
+  totalPortfolios: number;
+  totalViews: number;
+  publicPortfolios: number;
+  privatePortfolios: number;
+  mostRecentUpdate: string;
+  oldestPortfolio: string;
+  portfolio1Stats?: {
+    views: number;
+    isPublic: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  portfolio2Stats?: {
+    views: number;
+    isPublic: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
 
 // Mock data for recent projects (can be replaced with actual API calls)
 interface Project {
@@ -38,34 +87,29 @@ interface Project {
   image: string;
 }
 
-const mockProjects: Project[] = [
-  {
-    id: "1",
-    name: "Personal Portfolio",
-    updatedAt: "2 days ago",
-    progress: 70,
-    template: "Modern Dark",
-    image: "/project-thumb-1.jpg",
-  },
-  {
-    id: "2",
-    name: "Freelance Showcase",
-    updatedAt: "5 days ago",
-    progress: 40,
-    template: "Creative",
-    image: "/project-thumb-2.jpg",
-  },
-];
+// This is no longer used since we have real portfolio data
+const mockProjects: Project[] = [];
 
 const DashboardPage = () => {
   const router = useRouter();
-  const { user, isAuthenticated, token, checkAuthState } = useAuthStore();
+  const {
+    user,
+    isAuthenticated,
+    token,
+    checkAuthState,
+    getPortfolioStats,
+    getAllUserPortfolios,
+  } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [authChecked, setAuthChecked] = useState(false);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [hasProjects, setHasProjects] = useState(false);
   const [animateStats, setAnimateStats] = useState(false);
+  const [portfolioStats, setPortfolioStats] = useState<PortfolioStats | null>(
+    null
+  );
+  const [recentActivity, setRecentActivity] = useState<any>(null);
 
   // Check auth state on mount
   useEffect(() => {
@@ -103,32 +147,80 @@ const DashboardPage = () => {
     }
 
     setWelcomeMessage(`${greeting}, ${user?.name?.split(" ")[0] || "there"}!`);
-    // Set mock projects
-    setHasProjects(mockProjects.length > 0);
-    setProjects(mockProjects);
   }, [user]);
 
   // Handle loading state
   useEffect(() => {
     // Only finish loading if auth check is complete
     if (authChecked) {
-      // Simulate data loading with a minimum display time for the preloader
+      // Reduced loading time for better performance
       const timer = setTimeout(() => {
         setIsLoading(false);
-
-        // Trigger stats animation after a brief delay
-        setTimeout(() => {
-          setAnimateStats(true);
-        }, 300);
-      }, 1500); // Show preloader for at least 1.5 seconds for a smooth experience
+        // Trigger stats animation immediately
+        setAnimateStats(true);
+      }, 300); // Reduced from 1.5s to 300ms
 
       return () => clearTimeout(timer);
     }
   }, [authChecked]);
 
+  // Fetch portfolio stats and portfolios
+  useEffect(() => {
+    const fetchData = async () => {
+      if (isAuthenticated && authChecked) {
+        try {
+          const [stats, portfoliosData] = await Promise.all([
+            getPortfolioStats(),
+            getAllUserPortfolios(),
+          ]);
+
+          if (stats?.success) {
+            setPortfolioStats(stats.data);
+          }
+
+          if (portfoliosData?.success && portfoliosData.data?.portfolios) {
+            setPortfolios(portfoliosData.data.portfolios);
+            setHasProjects(portfoliosData.data.portfolios.length > 0);
+
+            // Determine recent activity based on mostRecentUpdate
+            if (stats?.success && portfoliosData.data.portfolios.length > 0) {
+              const mostRecentDate = new Date(stats.data.mostRecentUpdate);
+              const recentPortfolio = portfoliosData.data.portfolios.find(
+                (p) => {
+                  const updatedDate = new Date(p.updatedAt);
+                  return (
+                    Math.abs(updatedDate.getTime() - mostRecentDate.getTime()) <
+                    1000
+                  ); // Within 1 second
+                }
+              );
+
+              if (recentPortfolio) {
+                setRecentActivity({
+                  type: "portfolio_updated",
+                  portfolio: recentPortfolio,
+                  timestamp: stats.data.mostRecentUpdate,
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching dashboard data:", error);
+        }
+      }
+    };
+
+    fetchData();
+  }, [isAuthenticated, authChecked, getPortfolioStats, getAllUserPortfolios]);
+
   // Show preloader while loading or checking auth
   if (isLoading || !authChecked) {
-    return <Preloader />;
+    return (
+      <Preloader
+        loadingText="Loading Dashboard"
+        loadingSubtitle="Preparing your workspace..."
+      />
+    );
   }
 
   // Do not render page content if not authenticated
@@ -141,61 +233,67 @@ const DashboardPage = () => {
     router.push("/templates");
   };
 
+  // Function to get template image
+  const getTemplateImage = (type: string) => {
+    switch (type) {
+      case "template1":
+        return "/TemplateOnePreveiw.png";
+      case "template2":
+        return "/TemplateTwoPreview.png";
+      default:
+        return "/TemplateOnePreveiw.png";
+    }
+  };
+
+  // Function to format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays <= 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Function to handle portfolio actions
+  const handleEditPortfolio = (portfolio: Portfolio) => {
+    if (portfolio.type === "template1") {
+      router.push(`/templateForm?templateOne`);
+    } else if (portfolio.type === "template2") {
+      router.push(`/templateForm?templateTwo`);
+    }
+  };
+
+  const handleViewPortfolio = (portfolio: Portfolio) => {
+    window.open(portfolio.publicUrl, "_blank");
+  };
+
+  const handlePortfolioInfo = (portfolio: Portfolio) => {
+    router.push(`/portfolio-info/${portfolio.id}?type=${portfolio.type}`);
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#171826] to-[#0D0F1A] pb-2">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#17181E] via-[#1F2029] to-[#2A2D3A] pb-2">
       <Navbar />
 
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.3 }}
         className="pt-24 px-2 sm:px-6 flex-1 relative z-10 overflow-hidden "
       >
         <div className="max-w-9xl mx-auto">
-          {/* Dashboard Header with Welcome Message and Search */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="flex-grow"
-            >
-              <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#711381] to-purple-500">
-                {welcomeMessage}
-              </h1>
-              <p className="mt-2 text-gray-400">
-                Here&apos;s what&apos;s happening with your portfolio today
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              className="flex gap-3"
-            >
-              <button
-                onClick={handleCreateProject}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#711381] to-purple-600 text-white rounded-lg hover:from-[#5C0F6B] hover:to-purple-700 shadow-lg shadow-purple-900/20 transition-all group"
-              >
-                <PlusCircle size={18} />
-                <span className="font-medium">New Portfolio</span>
-                <motion.div
-                  initial={{ x: 0 }}
-                  whileHover={{ x: 3 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <ChevronRight size={16} />
-                </motion.div>
-              </button>
-            </motion.div>
-          </div>
-
           {/* Hero Banner - Onboarding or Featured Content */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6 }}
+            transition={{ delay: 0.05, duration: 0.4 }}
             className="mb-4 bg-gradient-to-r from-[#1A1E30] to-[#292B3D] border border-[#2E313C] p-3 md:p-6 rounded-2xl overflow-hidden relative"
           >
             <div className="relative z-10 flex flex-col md:flex-row gap-5 md:gap-8 items-center justify-between">
@@ -232,33 +330,40 @@ const DashboardPage = () => {
               </div>
 
               <div className="hidden lg:block relative w-80 h-56">
-                {/* Abstract decoration element */}
+                {/* Portfolio maker showcase */}
                 <div className="absolute right-0 inset-y-0 w-full h-full">
                   <div className="absolute right-5 top-1/2 transform -translate-y-1/2 h-40 w-40 bg-purple-500/30 rounded-full blur-2xl"></div>
                   <div className="absolute right-20 top-10 h-20 w-20 bg-pink-500/20 rounded-full blur-xl"></div>
                   <div className="absolute w-full h-full flex items-center justify-center">
                     <motion.div
-                      className="relative h-44 w-44 bg-gradient-to-br from-[#711381] to-purple-700 rounded-xl rotate-6 shadow-xl"
+                      className="relative h-60 w-60 bg-gradient-to-br from-[#711381] to-purple-700 rounded-xl rotate-4 shadow-xl overflow-hidden"
                       animate={{
-                        rotate: [6, -3, 6],
-                        y: [0, -5, 0],
+                        rotate: [6, -2, 6],
+                        y: [0, -3, 0],
                       }}
                       transition={{
-                        duration: 5,
+                        duration: 4,
                         repeat: Infinity,
                         ease: "easeInOut",
                       }}
                     >
+                      {/* Portfolio preview image */}
+                      <img
+                        src="https://images.unsplash.com/photo-1618477247222-acbdb0e159b3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2128&q=80"
+                        alt="Portfolio maker preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-purple-900/60 to-purple-500/20"></div>
                       <motion.div
                         className="absolute right-0 bottom-0 p-3 bg-white/10 backdrop-blur-md rounded-lg m-2"
                         animate={{
-                          rotate: [-6, 3, -6],
+                          rotate: [-6, 2, -6],
                         }}
                         transition={{
-                          duration: 5,
+                          duration: 4,
                           repeat: Infinity,
                           ease: "easeInOut",
-                          delay: 0.3,
+                          delay: 0.2,
                         }}
                       >
                         <CheckCircle size={24} className="text-white" />
@@ -276,53 +381,65 @@ const DashboardPage = () => {
             </div>
           </motion.div>
 
-          {/* Main Dashboard Content - Layout Changes Based on Projects */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Main Dashboard Content - Improved Grid Management */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Main Content Area */}
             <div className="lg:col-span-8 space-y-6">
               {/* Quick Stats Row */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
+                transition={{ delay: 0.2, duration: 0.3 }}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
               >
                 {[
                   {
-                    title: "Portfolio Views",
-                    value: 0,
+                    title: "Total Views",
+                    value: portfolioStats?.totalViews || 0,
                     prevValue: 0,
-                    change: 0,
+                    change:
+                      (portfolioStats?.totalViews ?? 0) > 0
+                        ? `+${portfolioStats?.totalViews}`
+                        : "0",
                     icon: Eye,
                     color: "text-blue-500",
                     bg: "bg-blue-500/10",
                     border: "border-blue-500/10",
                   },
                   {
-                    title: "Active Portfolios",
-                    value: hasProjects ? projects.length : 0,
+                    title: "Total Portfolios",
+                    value: portfolioStats?.totalPortfolios || 0,
                     prevValue: 0,
-                    change: hasProjects ? "+100%" : "0%",
+                    change:
+                      (portfolioStats?.totalPortfolios ?? 0) > 0
+                        ? `+${portfolioStats?.totalPortfolios}`
+                        : "0",
                     icon: Layout,
                     color: "text-purple-500",
                     bg: "bg-purple-500/10",
                     border: "border-purple-500/10",
                   },
                   {
-                    title: "Templates Used",
-                    value: hasProjects ? projects.length : 0,
+                    title: "Public Portfolios",
+                    value: portfolioStats?.publicPortfolios || 0,
                     prevValue: 0,
-                    change: hasProjects ? "+1" : "0",
+                    change:
+                      (portfolioStats?.publicPortfolios ?? 0) > 0
+                        ? `+${portfolioStats?.publicPortfolios}`
+                        : "0",
                     icon: Grid,
                     color: "text-green-500",
                     bg: "bg-green-500/10",
                     border: "border-green-500/10",
                   },
                   {
-                    title: "Completion Rate",
-                    value: hasProjects ? "42%" : "0%",
-                    prevValue: "0%",
-                    change: hasProjects ? "+42%" : "0%",
+                    title: "Private Portfolios",
+                    value: portfolioStats?.privatePortfolios || 0,
+                    prevValue: 0,
+                    change:
+                      (portfolioStats?.privatePortfolios ?? 0) > 0
+                        ? `+${portfolioStats?.privatePortfolios}`
+                        : "0",
                     icon: PieChart,
                     color: "text-amber-500",
                     bg: "bg-amber-500/10",
@@ -337,17 +454,17 @@ const DashboardPage = () => {
                       y: animateStats ? 0 : 20,
                     }}
                     transition={{
-                      delay: 0.2 + index * 0.1,
-                      duration: 0.5,
+                      delay: 0.1 + index * 0.05,
+                      duration: 0.3,
                       type: "spring",
-                      stiffness: 100,
+                      stiffness: 200,
                     }}
                     whileHover={{
-                      y: -5,
-                      scale: 1.02,
-                      transition: { type: "spring", stiffness: 300 },
+                      y: -3,
+                      scale: 1.01,
+                      transition: { type: "spring", stiffness: 400 },
                     }}
-                    className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-4 flex flex-col"
+                    className="bg-[#1E2132] border border-[#2E313C] rounded-xl p-4 flex flex-col h-[120px] justify-between"
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div
@@ -371,27 +488,18 @@ const DashboardPage = () => {
                       )}
                     </div>
                     <p className="text-sm text-gray-400 mb-1.5">{stat.title}</p>
-                    <AnimatePresence>
-                      <motion.div
-                        key={stat.value}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        transition={{ duration: 0.3 }}
-                        className="text-xl font-bold text-white"
-                      >
-                        {stat.value}
-                      </motion.div>
-                    </AnimatePresence>
+                    <div className="text-xl font-bold text-white">
+                      {stat.value}
+                    </div>
                   </motion.div>
                 ))}
               </motion.div>
 
-              {/* Projects Section */}
+              {/* Portfolios Section */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
+                transition={{ delay: 0.25, duration: 0.3 }}
                 className="bg-[#1E2132] border border-[#2E313C] rounded-xl overflow-hidden"
               >
                 <div className="flex justify-between items-center p-5 border-b border-[#2E313C]">
@@ -399,94 +507,152 @@ const DashboardPage = () => {
                     <FileText className="text-purple-400 mr-2" size={18} />
                     Your Portfolios
                   </h2>
-                  <Link
-                    href="/projects"
-                    className="text-sm font-medium text-purple-400 hover:text-purple-300 flex items-center"
-                  >
-                    View All
-                    <ChevronRight size={16} className="ml-1" />
-                  </Link>
+                  <div className="flex gap-2">
+                    <Link
+                      href="/portfolios"
+                      className="text-sm font-medium text-purple-400 hover:text-purple-300 flex items-center"
+                    >
+                      View All
+                      <ChevronRight size={16} className="ml-1" />
+                    </Link>
+                    <Link
+                      href="/analytics"
+                      className="text-sm font-medium text-blue-400 hover:text-blue-300 flex items-center px-2 py-1 bg-blue-500/10 rounded-lg"
+                    >
+                      <TrendingUp size={14} className="mr-1" />
+                      Analytics
+                    </Link>
+                  </div>
                 </div>
 
-                {hasProjects ? (
+                {hasProjects && portfolios.length > 0 ? (
                   <div className="p-5">
-                    {projects.map((project, idx) => (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 auto-rows-fr">
+                      {portfolios.slice(0, 4).map((portfolio, idx) => (
+                        <motion.div
+                          key={portfolio.id}
+                          initial={{ y: 20 }}
+                          animate={{ y: 0 }}
+                          transition={{ delay: 0.05, duration: 0.3 }}
+                          className="group relative bg-[#262A3E] hover:bg-[#2A2F45] border border-[#3E4154] rounded-xl p-4 transition-all duration-300 hover:shadow-lg hover:shadow-purple-900/20 min-h-[200px] flex flex-col justify-between"
+                        >
+                          <div className="flex-1">
+                            {/* Portfolio Header */}
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <div className="relative h-12 w-16 bg-[#1E2132] rounded-lg overflow-hidden flex-shrink-0">
+                                  <img
+                                    src={getTemplateImage(portfolio.type)}
+                                    alt={portfolio.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-semibold text-white text-sm mb-1 truncate">
+                                    {portfolio.title}
+                                  </h3>
+                                  <p className="text-xs text-purple-400 mb-1">
+                                    {portfolio.templateType}
+                                  </p>
+                                  {(portfolio.brandName ||
+                                    portfolio.name ||
+                                    portfolio.devName) && (
+                                    <p className="text-xs text-gray-500 truncate">
+                                      {portfolio.brandName ||
+                                        portfolio.name ||
+                                        portfolio.devName}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Status Badge */}
+                              <div className="flex-shrink-0">
+                                <span
+                                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                    portfolio.isPublic
+                                      ? "bg-green-900/50 text-green-300 border border-green-500/30"
+                                      : "bg-gray-900/50 text-gray-300 border border-gray-500/30"
+                                  }`}
+                                >
+                                  {portfolio.isPublic ? (
+                                    <>
+                                      <Globe size={8} className="mr-1" />
+                                      Public
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Lock size={8} className="mr-1" />
+                                      Private
+                                    </>
+                                  )}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Portfolio Stats */}
+                            <div className="flex items-center justify-between text-xs text-gray-400 mb-4">
+                              <div className="flex items-center gap-4">
+                                <span className="flex items-center">
+                                  <Eye size={10} className="mr-1" />
+                                  {portfolio.views} views
+                                </span>
+                                <span className="flex items-center">
+                                  <Clock size={10} className="mr-1" />
+                                  {formatDate(portfolio.updatedAt)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex gap-2 mt-auto">
+                            <button
+                              onClick={() => handleEditPortfolio(portfolio)}
+                              className="flex-1 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 py-2 px-3 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1"
+                            >
+                              <Edit3 size={12} />
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleViewPortfolio(portfolio)}
+                              className="flex-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 py-2 px-3 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1"
+                            >
+                              <ExternalLink size={12} />
+                              View
+                            </button>
+                            <button
+                              onClick={() => handlePortfolioInfo(portfolio)}
+                              className="bg-gray-600/20 hover:bg-gray-600/30 text-gray-300 py-2 px-3 rounded-lg text-xs font-medium transition-colors flex items-center justify-center"
+                            >
+                              <BarChart3 size={12} />
+                            </button>
+                          </div>
+
+                          {/* Hover Overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-purple-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none" />
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* Show more portfolios indicator */}
+                    {portfolios.length > 4 && (
                       <motion.div
-                        key={project.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 * idx, duration: 0.5 }}
-                        className="flex flex-col md:flex-row items-start md:items-center gap-4 bg-[#262A3E] hover:bg-[#2A2F45] border border-[#3E4154] rounded-lg p-4 mb-3 last:mb-0 transition-colors cursor-pointer"
-                        onClick={() => router.push(`/projects/${project.id}`)}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4 }}
+                        className="mt-4 text-center"
                       >
-                        {/* Project thumbnail - can be replaced with real images */}
-                        <div className="h-16 w-20 bg-[#1E2132] rounded-md flex-shrink-0 overflow-hidden relative">
-                          {project.image ? (
-                            <div className="relative h-full w-full">
-                              {/* Would need to replace with your Image implementation */}
-                              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/30 mix-blend-overlay"></div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-center h-full">
-                              <Layout size={24} className="text-gray-600" />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Project details */}
-                        <div className="flex-grow">
-                          <h3 className="text-base font-medium text-white mb-1">
-                            {project.name}
-                          </h3>
-                          <div className="flex flex-wrap gap-3 mb-2">
-                            <span className="text-xs text-gray-400 flex items-center">
-                              <Clock size={12} className="mr-1" />
-                              Updated {project.updatedAt}
-                            </span>
-                            <span className="text-xs text-gray-400 flex items-center">
-                              <LayoutTemplate size={12} className="mr-1" />
-                              {project.template}
-                            </span>
-                          </div>
-
-                          {/* Progress bar */}
-                          <div className="w-full bg-[#1E2132] rounded-full h-1.5 mb-1">
-                            <motion.div
-                              className={`h-1.5 rounded-full ${
-                                project.progress >= 70
-                                  ? "bg-green-500"
-                                  : project.progress >= 30
-                                    ? "bg-amber-500"
-                                    : "bg-purple-500"
-                              }`}
-                              initial={{ width: 0 }}
-                              animate={{ width: `${project.progress}%` }}
-                              transition={{
-                                delay: 0.3,
-                                duration: 0.8,
-                                ease: "easeOut",
-                              }}
-                            />
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-xs text-gray-400">
-                              Completion
-                            </span>
-                            <span className="text-xs font-medium text-gray-300">
-                              {project.progress}%
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Action button */}
-                        <div className="flex-shrink-0 mt-3 md:mt-0">
-                          <button className="text-sm text-purple-400 hover:text-purple-300 flex items-center">
-                            <Edit3 size={14} className="mr-1" />
-                            Edit
-                          </button>
-                        </div>
+                        <Link
+                          href="/portfolios"
+                          className="text-sm text-purple-400 hover:text-purple-300 flex items-center justify-center gap-1"
+                        >
+                          View {portfolios.length - 4} more portfolios
+                          <ChevronRight size={14} />
+                        </Link>
                       </motion.div>
-                    ))}
+                    )}
                   </div>
                 ) : (
                   <div className="py-10 text-center bg-[#1E2132]/50 rounded-lg mx-4 my-5 border border-dashed border-[#3E4154]">
@@ -518,21 +684,70 @@ const DashboardPage = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
+                transition={{ delay: 0.3, duration: 0.3 }}
                 className="bg-[#1E2132] border border-[#2E313C] rounded-xl overflow-hidden"
               >
                 <div className="flex justify-between items-center p-5 border-b border-[#2E313C]">
                   <h2 className="text-lg font-bold text-white flex items-center">
-                    <Zap className="text-purple-400 mr-2" size={18} />
-                    Activity Feed
+                    <Activity className="text-purple-400 mr-2" size={18} />
+                    Recent Activity
                   </h2>
                 </div>
 
                 <div className="p-5 space-y-4">
+                  {/* Recent Portfolio Activity */}
+                  {recentActivity && (
+                    <div className="flex">
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                          <Edit3 size={16} className="text-green-400" />
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-gray-200">
+                          <span className="font-medium">
+                            Portfolio "{recentActivity.portfolio.title}" updated
+                          </span>
+                        </p>
+                        <p className="text-sm text-gray-400 mt-0.5">
+                          {recentActivity.portfolio.templateType} was recently
+                          modified
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatDate(recentActivity.timestamp)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Portfolio Stats Summary */}
+                  {portfolioStats && (
+                    <div className="flex">
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                          <TrendingUp size={16} className="text-blue-400" />
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-gray-200">
+                          <span className="font-medium">
+                            Portfolio views: {portfolioStats.totalViews}
+                          </span>
+                        </p>
+                        <p className="text-sm text-gray-400 mt-0.5">
+                          {portfolioStats.publicPortfolios} public,{" "}
+                          {portfolioStats.privatePortfolios} private portfolios
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">Today</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Welcome Message */}
                   <div className="flex">
                     <div className="flex-shrink-0 mt-1">
-                      <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                        <Rocket size={16} className="text-blue-400" />
+                      <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                        <Rocket size={16} className="text-purple-400" />
                       </div>
                     </div>
                     <div className="ml-4">
@@ -542,30 +757,29 @@ const DashboardPage = () => {
                         </span>
                       </p>
                       <p className="text-sm text-gray-400 mt-0.5">
-                        We&apos;re excited to have you on board. Start by
-                        creating your first portfolio.
+                        Build amazing portfolios with our professional templates
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">Just now</p>
+                      <p className="text-xs text-gray-500 mt-1">Welcome</p>
                     </div>
                   </div>
 
+                  {/* Account Setup */}
                   <div className="flex">
                     <div className="flex-shrink-0 mt-1">
-                      <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
-                        <Star size={16} className="text-purple-400" />
+                      <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                        <CheckCircle size={16} className="text-green-400" />
                       </div>
                     </div>
                     <div className="ml-4">
                       <p className="text-gray-200">
                         <span className="font-medium">
-                          Account created successfully
+                          Account setup complete
                         </span>
                       </p>
                       <p className="text-sm text-gray-400 mt-0.5">
-                        Your ProfileX account has been set up and is ready to
-                        use.
+                        Your ProfileX account is ready to use
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">Today</p>
+                      <p className="text-xs text-gray-500 mt-1">Account</p>
                     </div>
                   </div>
                 </div>
@@ -573,12 +787,12 @@ const DashboardPage = () => {
             </div>
 
             {/* Sidebar */}
-            <div className="lg:col-span-4 space-y-6">
+            <div className="lg:col-span-4 space-y-6 self-start">
               {/* Quick Actions */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
+                transition={{ delay: 0.35, duration: 0.3 }}
                 className="bg-[#1E2132] border border-[#2E313C] rounded-xl overflow-hidden"
               >
                 <div className="flex justify-between items-center p-5 border-b border-[#2E313C]">
@@ -637,82 +851,186 @@ const DashboardPage = () => {
                 </div>
               </motion.div>
 
-              {/* Templates Showcase */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.9, duration: 0.5 }}
-                className="bg-[#1E2132] border border-[#2E313C] rounded-xl overflow-hidden"
-              >
-                <div className="flex justify-between items-center p-5 border-b border-[#2E313C]">
-                  <h2 className="text-lg font-bold text-white flex items-center">
-                    <LayoutTemplate
-                      className="text-purple-400 mr-2"
-                      size={18}
-                    />
-                    Featured Templates
-                  </h2>
-                  <Link
-                    href="/templates"
-                    className="text-sm font-medium text-purple-400 hover:text-purple-300"
-                  >
-                    View All
-                  </Link>
-                </div>
-
-                <div className="p-5">
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      {
-                        name: "Modern",
-                        color: "bg-gradient-to-br from-purple-500 to-pink-500",
-                      },
-                      {
-                        name: "Professional",
-                        color: "bg-gradient-to-br from-blue-500 to-cyan-500",
-                      },
-                      {
-                        name: "Minimal",
-                        color: "bg-gradient-to-br from-gray-700 to-gray-900",
-                      },
-                      {
-                        name: "Creative",
-                        color: "bg-gradient-to-br from-amber-500 to-red-500",
-                      },
-                    ].map((template, i) => (
-                      <Link
-                        key={i}
-                        href={`/templates?filter=${template.name.toLowerCase()}`}
-                        className="group cursor-pointer relative overflow-hidden rounded-lg"
-                      >
-                        <motion.div
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.98 }}
-                          className={`${template.color} h-26 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all`}
-                        >
-                          <span className="text-white font-medium text-sm relative z-10">
-                            {template.name}
-                          </span>
-                          <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity"></div>
-                          <div className="absolute right-2 bottom-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <ArrowUpRight size={14} className="text-white" />
-                          </div>
-                        </motion.div>
-                      </Link>
-                    ))}
+              {/* Portfolio Statistics Detail */}
+              {portfolioStats && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35, duration: 0.3 }}
+                  className="bg-[#1E2132] border border-[#2E313C] rounded-xl overflow-hidden"
+                >
+                  <div className="flex justify-between items-center p-5 border-b border-[#2E313C]">
+                    <h2 className="text-lg font-bold text-white flex items-center">
+                      <BarChart3 className="text-purple-400 mr-2" size={18} />
+                      Portfolio Analytics
+                    </h2>
                   </div>
 
-                  <Link
-                    href="/templates"
-                    className="block w-full mt-4 text-sm text-center text-purple-400 font-medium hover:text-purple-300 py-2 border border-[#3E4154] hover:border-purple-500/30 rounded-lg transition-colors"
-                  >
-                    <div className="flex items-center justify-center">
-                      <Eye size={14} className="mr-1.5" />
-                      Browse All Templates
+                  <div className="p-5 space-y-4">
+                    {/* Recent Activity */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-medium text-gray-300">
+                        Recent Activity
+                      </h3>
+
+                      {portfolioStats.mostRecentUpdate && (
+                        <div className="flex items-center justify-between p-3 bg-[#262A3E] rounded-lg">
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                            <div>
+                              <p className="text-sm text-gray-200">
+                                Last Updated
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                {new Date(
+                                  portfolioStats.mostRecentUpdate
+                                ).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                          <Clock size={16} className="text-gray-400" />
+                        </div>
+                      )}
+
+                      {portfolioStats.oldestPortfolio && (
+                        <div className="flex items-center justify-between p-3 bg-[#262A3E] rounded-lg">
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                            <div>
+                              <p className="text-sm text-gray-200">
+                                First Portfolio
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                {new Date(
+                                  portfolioStats.oldestPortfolio
+                                ).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                          <Sparkles size={16} className="text-gray-400" />
+                        </div>
+                      )}
                     </div>
-                  </Link>
-                </div>
-              </motion.div>
+
+                    {/* Template Breakdown */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-medium text-gray-300">
+                        Template Usage
+                      </h3>
+
+                      {portfolioStats.portfolio1Stats && (
+                        <div className="flex items-center justify-between p-3 bg-[#262A3E] rounded-lg">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center mr-3">
+                              <span className="text-xs font-bold text-purple-400">
+                                1
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-200">
+                                Template One
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                {portfolioStats.portfolio1Stats.views} views •
+                                {portfolioStats.portfolio1Stats.isPublic
+                                  ? " Public"
+                                  : " Private"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div
+                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+                                portfolioStats.portfolio1Stats.isPublic
+                                  ? "bg-green-900/50 text-green-300"
+                                  : "bg-gray-900/50 text-gray-300"
+                              }`}
+                            >
+                              {portfolioStats.portfolio1Stats.isPublic ? (
+                                <Globe size={10} className="mr-1" />
+                              ) : (
+                                <Lock size={10} className="mr-1" />
+                              )}
+                              {portfolioStats.portfolio1Stats.isPublic
+                                ? "Live"
+                                : "Draft"}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {portfolioStats.portfolio2Stats && (
+                        <div className="flex items-center justify-between p-3 bg-[#262A3E] rounded-lg">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3">
+                              <span className="text-xs font-bold text-blue-400">
+                                2
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-200">
+                                Template Two
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                {portfolioStats.portfolio2Stats.views} views •
+                                {portfolioStats.portfolio2Stats.isPublic
+                                  ? " Public"
+                                  : " Private"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div
+                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+                                portfolioStats.portfolio2Stats.isPublic
+                                  ? "bg-green-900/50 text-green-300"
+                                  : "bg-gray-900/50 text-gray-300"
+                              }`}
+                            >
+                              {portfolioStats.portfolio2Stats.isPublic ? (
+                                <Globe size={10} className="mr-1" />
+                              ) : (
+                                <Lock size={10} className="mr-1" />
+                              )}
+                              {portfolioStats.portfolio2Stats.isPublic
+                                ? "Live"
+                                : "Draft"}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="flex space-x-2 pt-2">
+                      <Link
+                        href="/analytics"
+                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+                      >
+                        <Eye size={14} />
+                        <span>View All</span>
+                      </Link>
+                      <Link
+                        href="/templates"
+                        className="flex-1 bg-[#2A2D3A] hover:bg-[#363A4B] text-gray-200 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+                      >
+                        <Plus size={14} />
+                        <span>Create</span>
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </div>
           </div>
         </div>

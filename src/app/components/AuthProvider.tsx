@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useEffect, useState, createContext, useContext } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuthStore } from '../../../store/useAuthStore';
+import React, { useEffect, useState, createContext, useContext } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -18,45 +18,93 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
-export default function AuthProvider({ children }: { children: React.ReactNode }) {
+export default function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [isLoading, setIsLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  
+
   // Get auth state directly from store
   const authState = useAuthStore();
-  const { isAuthenticated, user, token, checkAuthState } = authState;
+  const { isAuthenticated, user, token, checkAuthState, signIn } = authState;
+
+  // Listen for token changes
+  useEffect(() => {
+    console.log("🔄 AuthProvider: Token state updated", {
+      hasToken: !!token,
+      isAuthenticated: isAuthenticated,
+    });
+
+    // If we have a token but not authenticated, validate the token
+    if (token && !isAuthenticated) {
+      checkAuthState()
+        .then((isValid) => {
+          if (isValid) {
+            setIsLoading(false);
+            setAuthChecked(true);
+          }
+        })
+        .catch((error) => {
+          console.error("❌ Token validation error:", error);
+          setIsLoading(false);
+          setAuthChecked(true);
+        });
+    }
+
+    // If we don't have a token but we're marked as authenticated, fix the state
+    if (!token && isAuthenticated) {
+      setIsLoading(false);
+      setAuthChecked(true);
+    }
+  }, [token, isAuthenticated, checkAuthState]);
 
   // Define routes
-  const publicRoutes = ['/', '/signin', '/signup', '/verification', '/forgotpassword', '/reset-password'];
-  const authRoutes = ['/signin', '/signup', '/verification', '/forgotpassword', '/reset-password'];
+  const publicRoutes = [
+    "/",
+    "/signin",
+    "/signup",
+    "/verification",
+    "/forgotpassword",
+    "/reset-password",
+  ];
+  const authRoutes = [
+    "/signin",
+    "/signup",
+    "/verification",
+    "/forgotpassword",
+    "/reset-password",
+  ];
+  const templateInfoRoutes = ["/templates"]; // Allow template info pages for unauthenticated users
+  const verificationRoutes = ["/verification"];
 
   // Initialize auth check
   useEffect(() => {
     const initAuth = async () => {
-      console.log('🔄 AuthProvider: Initializing auth check...');
-      console.log('🔍 Initial auth state:', {
+      console.log("🔄 AuthProvider: Initializing auth check...");
+      console.log("🔍 Initial auth state:", {
         hasToken: !!token,
         isAuthenticated,
         hasUser: !!user,
-        pathname
+        pathname,
       });
-      
+
       try {
         // Only check auth state if we have a token
         if (token) {
-          console.log('🔑 Token found, verifying with server...');
           const isValid = await checkAuthState();
-          console.log('🔍 Auth check result:', isValid);
+          console.log("🔍 Auth check result:", isValid);
         } else {
-          console.log('❌ No token found');
+          console.log("❌ No token found");
         }
-        
+
         setAuthChecked(true);
         setIsLoading(false);
       } catch (error) {
-        console.error('❌ Auth initialization error:', error);
+        console.error("❌ Auth initialization error:", error);
         setAuthChecked(true);
         setIsLoading(false);
       }
@@ -71,35 +119,55 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
     // Small delay to prevent race conditions
     const timeoutId = setTimeout(() => {
-      console.log('🔄 AuthProvider: Handling redirects...', {
-        pathname,
-        isAuthenticated,
-        hasToken: !!token,
-        hasUser: !!user,
-        isAuthRoute: authRoutes.includes(pathname),
-        isPublicRoute: publicRoutes.includes(pathname)
-      });
-
       // Check if user is truly authenticated (has all required data)
       const isFullyAuthenticated = isAuthenticated && token && user;
 
       if (isFullyAuthenticated) {
         // User is authenticated
         if (authRoutes.includes(pathname)) {
-          console.log('🔄 Authenticated user on auth route, redirecting to dashboard');
-          router.replace('/dashboard');
+          router.replace("/dashboard");
         }
       } else {
         // User is not authenticated
+        // Don't redirect from verification page if user has email stored (coming from sign-in)
+        if (pathname === "/verification") {
+          const storedEmail =
+            typeof window !== "undefined"
+              ? localStorage.getItem("userEmail")
+              : null;
+          if (storedEmail) {
+            return;
+          }
+        }
+
+        // Allow unauthenticated users to view template info pages
+        if (pathname.startsWith("/templates/")) {
+          return;
+        }
+
+        // Allow unauthenticated users to preview actual templates
+        if (pathname.startsWith("/allTemplates/")) {
+          return;
+        }
+
         if (!publicRoutes.includes(pathname)) {
-          console.log('🔄 Unauthenticated user on protected route, redirecting to signin');
-          router.replace('/signin');
+          router.replace("/signin");
         }
       }
     }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [authChecked, isLoading, isAuthenticated, token, user, pathname, router, authRoutes, publicRoutes]);
+  }, [
+    authChecked,
+    isLoading,
+    isAuthenticated,
+    token,
+    user,
+    pathname,
+    router,
+    authRoutes,
+    publicRoutes,
+  ]);
 
   // Show loading screen during initialization
   if (!authChecked || isLoading) {
@@ -120,8 +188,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }

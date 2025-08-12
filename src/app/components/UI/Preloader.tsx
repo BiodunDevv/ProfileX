@@ -2,7 +2,12 @@ import React from "react";
 import { motion } from "framer-motion";
 import { LayoutGrid } from "lucide-react";
 
-const Preloader = () => {
+interface PreloaderProps {
+  loadingText?: string;
+  loadingSubtitle?: string;
+}
+
+const Preloader: React.FC<PreloaderProps> = ({ loadingText, loadingSubtitle }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#17181E] via-[#1F2029] to-[#2A2D3A]">
       <div className="relative flex flex-col items-center gap-16">
@@ -26,7 +31,7 @@ const Preloader = () => {
           className="text-center"
         >
           <p className="text-sm font-medium text-gray-300 whitespace-nowrap">
-            Loading Dashboard
+            {loadingText}
             <motion.span
               animate={{ opacity: [0, 1, 0] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
@@ -35,7 +40,9 @@ const Preloader = () => {
             </motion.span>
           </p>
           <p className="text-xs text-purple-400/80 mt-1">
-            Preparing your workspace
+            {
+              loadingSubtitle
+            }
           </p>
         </motion.div>
       </div>

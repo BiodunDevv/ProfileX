@@ -1,7 +1,14 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, AlertCircle, Loader2, CheckCircle, Shield } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  AlertCircle,
+  Loader2,
+  CheckCircle,
+  Shield,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -92,7 +99,7 @@ const SignInPage = () => {
 
     try {
       console.log("🔐 Attempting to sign in with:", data.email);
-      
+
       const response = await signIn({
         email: data.email,
         password: data.password,
@@ -109,13 +116,33 @@ const SignInPage = () => {
 
       if (!response.ok) {
         console.log("🔐 Response not ok, status:", response.status);
-        
+
         // Handle verification error specifically
+        if (
+          responseData.needsVerification ||
+          responseData.message?.toLowerCase().includes("verify")
+        ) {
+          console.log(
+            "� User needs email verification, redirecting to verification page"
+          );
+
+          // Store email in localStorage for verification process
+          const emailToStore = responseData.email || data.email;
+          if (emailToStore) {
+            localStorage.setItem("userEmail", emailToStore);
+          }
+
+          // Redirect to verification page with email parameter
+          router.push(
+            `/verification?email=${encodeURIComponent(emailToStore)}`
+          );
+          return;
+        }
+
+        // Handle other authentication errors
         if (response.status === 403 && responseData.verified === false) {
           console.log("🔐 User not verified, redirecting to verification");
-          // Store email in localStorage for verification process
           localStorage.setItem("userEmail", data.email);
-          // Redirect to verification page
           router.push(`/verification?email=${encodeURIComponent(data.email)}`);
           return;
         }
@@ -130,7 +157,7 @@ const SignInPage = () => {
         isAuthenticated: authState.isAuthenticated,
         hasToken: !!authState.token,
         hasUser: !!authState.user,
-        userName: authState.user?.name
+        userName: authState.user?.name,
       });
 
       if (authState.isAuthenticated && authState.token && authState.user) {

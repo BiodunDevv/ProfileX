@@ -12,6 +12,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import HeroPicture from "./images/Hero picture.svg";
 import { StaticImageData } from "next/image";
+import type { Variants } from "framer-motion";
+
 
 interface SocialLink {
   platform:
@@ -68,7 +70,8 @@ const Hero = ({
   };
 
   // Animation variants
-  const containerVariants = {
+
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -88,13 +91,13 @@ const Hero = ({
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 100,
         damping: 10,
       },
@@ -108,13 +111,13 @@ const Hero = ({
     },
   };
 
-  const socialVariants = {
+  const socialVariants: Variants = {
     hidden: { scale: 0, opacity: 0 },
-    visible: (i: number) => ({
+    visible: (i: number = 0) => ({
       scale: 1,
       opacity: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 260,
         damping: 20,
         delay: 0.8 + i * 0.1,
@@ -126,7 +129,7 @@ const Hero = ({
       borderColor: "rgb(245, 158, 11)",
       color: "rgb(251, 191, 36)",
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 400,
         damping: 10,
       },
@@ -254,8 +257,6 @@ const Hero = ({
                   />
                 </div>
               </motion.div>
-
-             
 
               {/* Floating accent circles */}
               <motion.div

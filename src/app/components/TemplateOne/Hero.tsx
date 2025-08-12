@@ -63,7 +63,7 @@ const Hero = ({
               <AnimatePresence mode="wait">
                 <motion.h1
                   key="title"
-                  className="raleway text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-white to-gray-400 text-transparent bg-clip-text"
+                  className="raleway text-3xl sm:text-4xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-white to-gray-400 text-transparent bg-clip-text"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
@@ -76,7 +76,7 @@ const Hero = ({
               <AnimatePresence mode="wait">
                 <motion.p
                   key="description"
-                  className="ibm text-sm sm:text-base lg:text-lg mb-4 md:mb-6 text-[#9C9C9C] max-w-[700px] leading-relaxed"
+                  className="ibm text-sm sm:text-base lg:text-md mb-4 md:mb-6 text-[#9C9C9C] max-w-[700px] leading-relaxed"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
@@ -96,6 +96,9 @@ const Hero = ({
                   boxShadow: "0px 12px 30px 0px rgba(63,142,0,0.65)",
                 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  window.location.href = "#getintouch";
+                }}
               >
                 Get in Touch
               </motion.button>

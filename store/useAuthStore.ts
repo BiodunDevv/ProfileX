@@ -3,29 +3,37 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-const API_BASE_URL = "https://profilexbackend.onrender.com/api";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   token: string | null;
-  refreshToken: string | null;
   lastLogin: number | null;
   signUp: (userData: SignUpData) => Promise<Response | undefined>;
   signIn: (credentials: SignInCredentials) => Promise<Response | undefined>;
   signOut: () => void;
-  verifyCode: (verificationData: VerificationData) => Promise<Response | undefined>;
+  verifyCode: (
+    verificationData: VerificationData
+  ) => Promise<Response | undefined>;
   resendVerificationCode: (email?: string) => Promise<Response | undefined>;
-  resetPassword: (resetData: ResetPasswordData) => Promise<Response | undefined>;
+  resetPassword: (
+    resetData: ResetPasswordData
+  ) => Promise<Response | undefined>;
   forgotPassword: (email: string) => Promise<Response | undefined>;
   checkAuthState: () => Promise<boolean>;
+  getUserProfile: () => Promise<Response | undefined>;
+  getAllUserPortfolios: () => Promise<PortfolioResponse | undefined>;
+  getPortfolioStats: () => Promise<PortfolioStatsResponse | undefined>;
 }
 
 interface User {
   id: string;
   name: string;
   email: string;
+  isEmailVerified: boolean;
 }
 
 interface SignUpData {
@@ -48,6 +56,67 @@ interface ResetPasswordData {
   email?: string;
   password: string;
   token?: string;
+}
+
+interface Portfolio {
+  id: string;
+  type: string;
+  templateType: string;
+  title: string;
+  brandName?: string;
+  name?: string;
+  devName?: string;
+  slug: string;
+  isPublic: boolean;
+  views: number;
+  createdAt: string;
+  updatedAt: string;
+  apiEndpoint: string;
+  editEndpoint: string;
+  publicUrl: string;
+}
+
+interface PortfolioStats {
+  totalPortfolios: number;
+  totalViews: number;
+  publicPortfolios: number;
+  privatePortfolios: number;
+  mostRecentUpdate: string;
+  oldestPortfolio: string;
+  portfolio1Stats?: {
+    views: number;
+    isPublic: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  portfolio2Stats?: {
+    views: number;
+    isPublic: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
+interface PortfolioResponse {
+  success: boolean;
+  message: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  data: {
+    totalPortfolios: number;
+    hasPortfolio1: boolean;
+    hasPortfolio2: boolean;
+    portfolios: Portfolio[];
+  };
+}
+
+interface PortfolioStatsResponse {
+  success: boolean;
+  message: string;
+  data: PortfolioStats;
 }
 
 const isClient = typeof window !== "undefined";
@@ -95,13 +164,10 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       token: null,
-      refreshToken: null,
       lastLogin: null,
 
       signUp: async (userData: SignUpData) => {
         try {
-          console.log("📝 SignUp attempt with:", userData.email);
-          
           const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: "POST",
             headers: {
@@ -110,14 +176,11 @@ export const useAuthStore = create<AuthState>()(
             body: JSON.stringify(userData),
           });
 
-          console.log("📝 SignUp response status:", response.status);
-          console.log("📝 SignUp response ok:", response.ok);
-          
           // Store email for verification process
           if (response.ok && isClient) {
             localStorage.setItem("userEmail", userData.email);
           }
-          
+
           return response;
         } catch (error) {
           console.error("❌ Signup error:", error);
@@ -127,8 +190,6 @@ export const useAuthStore = create<AuthState>()(
 
       verifyCode: async (verificationData: VerificationData) => {
         try {
-          console.log("🔍 Attempting email verification for:", verificationData.email);
-          
           const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
             method: "POST",
             headers: {
@@ -140,9 +201,6 @@ export const useAuthStore = create<AuthState>()(
             }),
           });
 
-          console.log("🔍 Verification response status:", response.status);
-          console.log("🔍 Verification response ok:", response.ok);
-          
           return response;
         } catch (error) {
           console.error("❌ Email verification error:", error);
@@ -152,69 +210,35 @@ export const useAuthStore = create<AuthState>()(
 
       resendVerificationCode: async (email?: string) => {
         try {
-          const emailToUse = email || (isClient ? localStorage.getItem("userEmail") : null);
+          const emailToUse =
+            email || (isClient ? localStorage.getItem("userEmail") : null);
 
           if (!emailToUse) {
             throw new Error("Email address is missing");
           }
 
-          console.log("🔄 Attempting to resend verification code for:", emailToUse);
-
-          // Try common resend verification endpoint names
-          const possibleEndpoints = [
+          const response = await fetch(
             `${API_BASE_URL}/auth/resend-verification`,
-            `${API_BASE_URL}/auth/resend-verification-email`,
-            `${API_BASE_URL}/auth/resend-code`,
-            `${API_BASE_URL}/auth/resend-email`,
-            `${API_BASE_URL}/auth/send-verification`,
-            `${API_BASE_URL}/auth/resend`,
-          ];
-
-          for (const endpoint of possibleEndpoints) {
-            try {
-              console.log("🔄 Trying resend endpoint:", endpoint);
-              
-              const response = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email: emailToUse }),
-              });
-
-              console.log("🔄 Response status for", endpoint, ":", response.status);
-              
-              if (response.status !== 404) {
-                console.log("✅ Found working resend endpoint:", endpoint);
-                return response;
-              }
-            } catch (endpointError) {
-              console.log("❌ Error with resend endpoint", endpoint, ":", endpointError);
-              continue;
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email: emailToUse }),
             }
-          }
+          );
 
-          // If all endpoints fail, return a 404 response
-          console.error("❌ All resend verification endpoints failed");
-          return new Response(JSON.stringify({ 
-            success: false, 
-            message: "Resend verification endpoint not found" 
-          }), {
-            status: 404,
-            headers: { "Content-Type": "application/json" }
-          });
-
+          return response;
         } catch (error) {
           console.error("❌ Error resending verification code:", error);
           return undefined;
         }
       },
+
       signIn: async (credentials: SignInCredentials) => {
         try {
           set({ isLoading: true });
-          
-          console.log("🔐 SignIn attempt with:", credentials.email);
-          
+
           const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: "POST",
             headers: {
@@ -222,69 +246,73 @@ export const useAuthStore = create<AuthState>()(
             },
             body: JSON.stringify(credentials),
           });
-      
+
           const data = await response.json();
-          
-          console.log("🔐 SignIn response status:", response.status);
-          console.log("🔐 SignIn response ok:", response.ok);
-          console.log("🔐 Full response data:", data);
-          console.log("🔐 Response data keys:", Object.keys(data));
-          
-          // Check different possible data structures from your backend
-          const userData = data.user || data.data?.user || data;
-          const token = data.token || data.accessToken || data.data?.token || data.data?.accessToken;
-          const refreshToken = data.refreshToken || data.data?.refreshToken;
-          
-          console.log("🔍 Parsed data:", {
-            userData,
-            token: token ? token.substring(0, 20) + "..." : "none",
-            refreshToken: refreshToken ? "present" : "none"
-          });
-      
-          if (response.ok && userData && token) {
-            console.log("✅ SignIn successful - updating auth state");
-            
+
+          // Handle successful login based on backend response structure
+          if (response.ok && data.success && data.data) {
+            const { user: userData, token } = data.data;
+            console.log("Token:", token);
+
             set({
               user: {
-                id: userData.id || userData._id,
-                name: userData.name || userData.username,
+                id: userData.id,
+                name: userData.name,
                 email: userData.email,
+                isEmailVerified: userData.isEmailVerified,
               },
               isAuthenticated: true,
               token: token,
-              refreshToken: refreshToken || null,
               lastLogin: Date.now(),
               isLoading: false,
             });
-      
-            console.log("✅ Auth state updated successfully");
-            console.log("🔍 Current auth state:", {
-              isAuthenticated: get().isAuthenticated,
-              hasToken: !!get().token,
-              hasUser: !!get().user,
-              userName: get().user?.name
-            });
-            
+
             return new Response(JSON.stringify(data), {
               status: 200,
               statusText: "OK",
               headers: { "Content-Type": "application/json" },
             });
           }
-      
-          console.error("❌ SignIn failed - missing required data");
-          console.error("❌ Message:", data.message || "Unknown error");
-          console.error("❌ Has user data:", !!userData);
-          console.error("❌ Has token:", !!token);
-          
+
+          // Check if this is a verification error
+          if (
+            !response.ok &&
+            (data.needsVerification ||
+              data.message?.toLowerCase().includes("verify"))
+          ) {
+            // Store email for verification process if available
+            if (data.email && isClient) {
+              localStorage.setItem("userEmail", data.email);
+            }
+
+            set({
+              user: null,
+              isAuthenticated: false,
+              token: null,
+              isLoading: false,
+            });
+
+            return new Response(
+              JSON.stringify({
+                ...data,
+                needsVerification: true,
+                email: data.email || credentials.email,
+              }),
+              {
+                status: response.status,
+                statusText: response.statusText,
+                headers: { "Content-Type": "application/json" },
+              }
+            );
+          }
+
           set({
             user: null,
             isAuthenticated: false,
             token: null,
-            refreshToken: null,
             isLoading: false,
           });
-          
+
           return new Response(JSON.stringify(data), {
             status: response.status,
             statusText: response.statusText,
@@ -296,7 +324,6 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             isAuthenticated: false,
             token: null,
-            refreshToken: null,
             isLoading: false,
           });
           return undefined;
@@ -307,13 +334,8 @@ export const useAuthStore = create<AuthState>()(
         try {
           const { token } = get();
 
-          console.log("🔍 Checking auth state:", {
-            hasToken: !!token,
-            tokenPreview: token ? token.substring(0, 20) + "..." : "none"
-          });
-
+          // If no token, user is definitely not authenticated
           if (!token) {
-            console.log("❌ No token found - user not authenticated");
             set({
               isAuthenticated: false,
               user: null,
@@ -321,53 +343,48 @@ export const useAuthStore = create<AuthState>()(
             return false;
           }
 
-          console.log("🔑 Token found, verifying with server...");
-          
           try {
-            const response = await fetch(`${API_BASE_URL}/auth/check`, {
+            const response = await fetch(`${API_BASE_URL}/auth/me`, {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
               },
             });
 
-            console.log("📡 Auth check response status:", response.status);
-            
             if (response.ok) {
-              const userData = await response.json();
-              console.log("✅ Token is valid - user is authenticated");
-              console.log("👤 User data from server:", userData);
-              
-              // Update user data and ensure isAuthenticated is true
+              const result = await response.json();
+              const userData = result.data?.user || result.user || result;
+
+              // Update user data with complete profile information
               set({
-                user: userData.user || userData,
+                user: {
+                  id: userData.id || userData._id,
+                  name: userData.name,
+                  email: userData.email,
+                  isEmailVerified: userData.isEmailVerified,
+                },
                 isAuthenticated: true,
               });
-              
+
               return true;
             } else if (response.status === 401) {
-              console.log("❌ Token is invalid/expired - clearing auth state");
               set({
                 isAuthenticated: false,
                 token: null,
-                refreshToken: null,
                 user: null,
               });
               return false;
             } else {
-              console.log("❌ Auth check failed with status:", response.status);
               set({
                 isAuthenticated: false,
                 token: null,
-                refreshToken: null,
                 user: null,
               });
               return false;
             }
           } catch (networkError) {
             console.error("❌ Network error during auth check:", networkError);
-            // Don't clear auth state on network errors, just return false
             return false;
           }
         } catch (error) {
@@ -375,10 +392,47 @@ export const useAuthStore = create<AuthState>()(
           set({
             isAuthenticated: false,
             token: null,
-            refreshToken: null,
             user: null,
           });
           return false;
+        }
+      },
+
+      getUserProfile: async () => {
+        try {
+          const { token } = get();
+
+          if (!token) {
+            return undefined;
+          }
+
+          const response = await fetch(`${API_BASE_URL}/auth/me`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            const userData = result.data?.user || result.user || result;
+
+            // Update user data in store
+            set({
+              user: {
+                id: userData.id || userData._id,
+                name: userData.name,
+                email: userData.email,
+                isEmailVerified: userData.isEmailVerified,
+              },
+            });
+          }
+
+          return response;
+        } catch (error) {
+          console.error("❌ Error fetching user profile:", error);
+          return undefined;
         }
       },
 
@@ -411,10 +465,10 @@ export const useAuthStore = create<AuthState>()(
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ 
-              password, 
+            body: JSON.stringify({
+              password,
               token,
-              userId: resetData.email
+              userId: resetData.email,
             }),
           });
           return response;
@@ -424,10 +478,69 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      getAllUserPortfolios: async () => {
+        try {
+          const { token } = get();
+
+          if (!token) {
+            return undefined;
+          }
+
+          const response = await fetch(`${API_BASE_URL}/user/portfolios`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            return result as PortfolioResponse;
+          }
+
+          return undefined;
+        } catch (error) {
+          console.error("❌ Error fetching user portfolios:", error);
+          return undefined;
+        }
+      },
+
+      getPortfolioStats: async () => {
+        try {
+          const { token } = get();
+
+          if (!token) {
+            return undefined;
+          }
+
+          const response = await fetch(
+            `${API_BASE_URL}/user/portfolios/stats`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (response.ok) {
+            const result = await response.json();
+            return result as PortfolioStatsResponse;
+          }
+
+          return undefined;
+        } catch (error) {
+          console.error("❌ Error fetching portfolio stats:", error);
+          return undefined;
+        }
+      },
+
+      // Simplified sign out - just clear local state, no API call
       signOut: () => {
         try {
-          console.log("🔓 Signing out user...");
-          
+          // Clear any stored email from localStorage
           if (isClient) {
             localStorage.removeItem("userEmail");
           }
@@ -437,11 +550,8 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             isAuthenticated: false,
             token: null,
-            refreshToken: null,
             lastLogin: null,
           });
-
-          console.log("✅ User signed out successfully - all tokens cleared");
         } catch (error) {
           console.error("❌ Logout error:", error);
           // Force clear auth state even if there's an error
@@ -449,7 +559,6 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             isAuthenticated: false,
             token: null,
-            refreshToken: null,
             lastLogin: null,
           });
         }
@@ -461,7 +570,6 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         token: state.token,
-        refreshToken: state.refreshToken,
         lastLogin: state.lastLogin,
       }),
       storage: createSafeStorage(),
@@ -477,10 +585,23 @@ export async function checkIfUserExists(identifier: string) {
       body: JSON.stringify({ identifier: identifier.toLowerCase() }),
     });
 
+    if (!response.ok) {
+      console.error("❌ Check user failed with status:", response.status);
+      return false;
+    }
+
     const result = await response.json();
-    return result.exists;
+
+    return result.exists || result.success;
   } catch (error) {
-    console.error("Error checking user:", error);
+    console.error("❌ Error checking user:", error);
     return false;
   }
 }
+
+export type {
+  Portfolio,
+  PortfolioStats,
+  PortfolioResponse,
+  PortfolioStatsResponse,
+};

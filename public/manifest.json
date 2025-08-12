@@ -1,0 +1,113 @@
+{
+  "name": "ProfileX - Professional Portfolio Builder",
+  "short_name": "ProfileX",
+  "description": "Create and manage your professional portfolio with ProfileX",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1b24",
+  "theme_color": "#1a1b24E6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/next.svg",
+      "sizes": "72x72",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/next.svg",
+      "sizes": "96x96",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/next.svg",
+      "sizes": "128x128",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/next.svg",
+      "sizes": "144x144",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/next.svg",
+      "sizes": "152x152",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/next.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/next.svg",
+      "sizes": "384x384",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/next.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "business", "professional"],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-1.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshots/mobile-1.jpg",
+      "sizes": "375x812",
+      "type": "image/jpeg",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Access your dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/next.svg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Templates",
+      "short_name": "Templates",
+      "description": "Browse portfolio templates",
+      "url": "/templates",
+      "icons": [
+        {
+          "src": "/next.svg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Create Portfolio",
+      "short_name": "Create",
+      "description": "Create a new portfolio",
+      "url": "/templates",
+      "icons": [
+        {
+          "src": "/next.svg",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

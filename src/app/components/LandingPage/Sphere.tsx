@@ -9,8 +9,8 @@ const Sphere = () => {
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, x: -60 }}
-        animate={{ opacity: 0.7, x: 0 }}
+        initial={{ x: -60 }}
+        animate={{ x: 0 }}
         transition={{
           type: "spring",
           stiffness: 50,
@@ -33,8 +33,8 @@ const Sphere = () => {
 
       {/* Black sphere - desktop only, matching AuthLayout positioning */}
       <motion.div
-        initial={{ opacity: 0, x: 60 }}
-        animate={{ opacity: 0.5, x: 0 }}
+        initial={{ opacity: 0, y: 60 }}
+        animate={{ opacity: 0.5, y: 0 }}
         transition={{
           type: "spring",
           stiffness: 50,
