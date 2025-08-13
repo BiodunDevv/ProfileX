@@ -27,7 +27,6 @@ export default function NotFound() {
         >
           404
         </motion.div>
-
         <h1 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#711381] to-purple-500">
           Page Not Found
         </h1>

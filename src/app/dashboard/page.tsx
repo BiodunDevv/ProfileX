@@ -54,6 +54,7 @@ interface Portfolio {
   apiEndpoint: string;
   editEndpoint: string;
   publicUrl: string;
+  customSlug?: string; // Added customSlug field
 }
 
 interface PortfolioStats {
@@ -270,8 +271,17 @@ const DashboardPage = () => {
     }
   };
 
+  // Update the handleViewPortfolio function
   const handleViewPortfolio = (portfolio: Portfolio) => {
-    window.open(portfolio.publicUrl, "_blank");
+    // If portfolio has a custom slug, use it, otherwise fall back to the default URL
+    if (portfolio.customSlug) {
+      window.open(
+        `${window.location.origin}/portfolio/${portfolio.customSlug}`,
+        "_blank"
+      );
+    } else {
+      window.open(portfolio.publicUrl, "_blank");
+    }
   };
 
   const handlePortfolioInfo = (portfolio: Portfolio) => {
@@ -590,6 +600,19 @@ const DashboardPage = () => {
                                 </span>
                               </div>
                             </div>
+
+                            {/* Portfolio URL Display */}
+                            {portfolio.customSlug && (
+                              <div className="mb-3 p-2 bg-[#1E2132] rounded-lg border border-[#2E313C]">
+                                <p className="text-xs text-gray-400 mb-1">
+                                  Custom URL:
+                                </p>
+                                <p className="text-xs text-purple-400 truncate">
+                                  {window.location.origin}/portfolio/
+                                  {portfolio.customSlug}
+                                </p>
+                              </div>
+                            )}
 
                             {/* Portfolio Stats */}
                             <div className="flex items-center justify-between text-xs text-gray-400 mb-4">

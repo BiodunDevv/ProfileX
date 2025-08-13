@@ -3,25 +3,21 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   token: string | null;
+  refreshToken: string | null;
   lastLogin: number | null;
   signUp: (userData: SignUpData) => Promise<Response | undefined>;
   signIn: (credentials: SignInCredentials) => Promise<Response | undefined>;
   signOut: () => void;
-  verifyCode: (
-    verificationData: VerificationData
-  ) => Promise<Response | undefined>;
+  verifyCode: (verificationData: VerificationData) => Promise<Response | undefined>;
   resendVerificationCode: (email?: string) => Promise<Response | undefined>;
-  resetPassword: (
-    resetData: ResetPasswordData
-  ) => Promise<Response | undefined>;
+  resetPassword: (resetData: ResetPasswordData) => Promise<Response | undefined>;
   forgotPassword: (email: string) => Promise<Response | undefined>;
   checkAuthState: () => Promise<boolean>;
   getUserProfile: () => Promise<Response | undefined>;
@@ -33,7 +29,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  isEmailVerified: boolean;
+  isEmailVerified?: boolean;
 }
 
 interface SignUpData {
@@ -164,10 +160,13 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       token: null,
+      refreshToken: null,
       lastLogin: null,
 
       signUp: async (userData: SignUpData) => {
         try {
+          console.log("📝 SignUp attempt with:", userData.email);
+          
           const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: "POST",
             headers: {
@@ -537,7 +536,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Simplified sign out - just clear local state, no API call
       signOut: () => {
         try {
           // Clear any stored email from localStorage
@@ -550,6 +548,7 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             isAuthenticated: false,
             token: null,
+            refreshToken: null,
             lastLogin: null,
           });
         } catch (error) {
@@ -559,6 +558,7 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             isAuthenticated: false,
             token: null,
+            refreshToken: null,
             lastLogin: null,
           });
         }
@@ -570,6 +570,7 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         token: state.token,
+        refreshToken: state.refreshToken,
         lastLogin: state.lastLogin,
       }),
       storage: createSafeStorage(),

@@ -6,18 +6,19 @@ import AuthProvider from "./components/AuthProvider";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: 'swap',
 });
 
 const dmSerif = DM_Serif_Display({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-dm-serif",
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: "ProfileX - Your Professional Portfolio",
   description: "Create and manage your professional portfolio with ProfileX",
-  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -30,22 +31,18 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "ProfileX",
     title: "ProfileX - Professional Portfolio Builder",
-    description:
-      "Create stunning professional portfolios with our easy-to-use templates",
+    description: "Create stunning professional portfolios with our easy-to-use templates",
   },
   icons: {
-    icon: "/next.svg",
-    shortcut: "/next.svg",
-    apple: "/next.svg",
+    icon: "/favicon.ico",
+    apple: "/favicon.ico",
   },
 };
 
 export const viewport: Viewport = {
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: "#1a1b24",
 };
 
 export default function RootLayout({
@@ -56,18 +53,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="ProfileX" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/next.svg" />
-        <link rel="apple-touch-icon" href="/next.svg" />
+        <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body
-        className={`${inter.variable} ${dmSerif.variable} font-sans antialiased`}
+      <body 
+        className={`${inter.variable} ${dmSerif.variable} antialiased`}
         suppressHydrationWarning
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

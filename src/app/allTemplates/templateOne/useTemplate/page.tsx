@@ -15,14 +15,17 @@ import {
   Check,
   Loader2,
   Eye,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 import { uploadToCloudinary } from "@/app/api/cloudinary";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Dialog, Transition } from "@headlessui/react";
-import usePortfolioOneStore from "../../../../../store/portfolioOneStore";
+import usePortfolioOneStore, { PortfolioData } from "../../../../../store/portfolioOneStore";
 import { useAuthStore } from "../../../../../store/useAuthStore";
 import ImageUploader from "./ImageUploader";
+import PublishModal from '../../../components/UI/PublishModal';
 
 interface HeroSection {
   devName: string;
@@ -163,6 +166,8 @@ const Page = () => {
   const [formIsValid, setFormIsValid] = useState(false);
   const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(false);
   const [hasExistingPortfolio, setHasExistingPortfolio] = useState(false);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
 
   const colorOptions = [
     { value: "purple", label: "Purple", bgClass: "bg-purple-500" },
@@ -640,12 +645,31 @@ const Page = () => {
       const { createPortfolio, updatePortfolio, getMyPortfolio } =
         usePortfolioOneStore.getState();
 
-      // Ensure we're following the exact structure required by the API
+      // Generate slug from user's name
+      const generateSlug = (name: string): string => {
+        return name
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/--+/g, '-')
+          .trim()
+          .replace(/^-+|-+$/g, '')
+          .substring(0, 50);
+      };
+
+      // Prepare the API payload according to the new structure
       const apiPortfolioData = {
         templateType: "template1",
+        personalInfo: {
+          fullName: formData.hero.devName,
+          email: formData.contact.email,
+          phone: formData.contact.phone,
+          bio: formData.about.description,
+          tagline: formData.hero.title
+        },
+        title: `${formData.hero.devName}'s Portfolio`,
         brandName: formData.hero.devName,
         heroImage: formData.hero.heroImage,
-        title: formData.hero.title,
         description: formData.hero.description,
         companies: formData.hero.companies.filter(
           (company) => company && company.trim() !== ""
@@ -706,9 +730,11 @@ const Page = () => {
           })),
         theme: "blue",
         isPublic: true,
+        // Add slug suggestion based on user's name
+        suggestedSlug: generateSlug(formData.hero.devName)
       };
 
-      let result;
+      let result: PortfolioData | null = null;
 
       console.log("Sending portfolio data to API:", apiPortfolioData);
 
@@ -727,29 +753,37 @@ const Page = () => {
       } else {
         const existingPortfolio = await getMyPortfolio();
 
-        if (existingPortfolio) {
-        
-          result = await updatePortfolio(
-            existingPortfolio._id as string,
-            apiPortfolioData as any
-          );
-          setPortfolioId(existingPortfolio._id as string);
+        if (existingPortfolio && (existingPortfolio._id || existingPortfolio.id)) {
+          // Update existing portfolio
+          const existingId = (existingPortfolio._id || existingPortfolio.id) as string;
+          result = await updatePortfolio(existingId, apiPortfolioData as any);
+          setPortfolioId(existingId);
           if (result) {
             setPreviewStatus("success");
-            setPreviewPortfolioId(existingPortfolio._id as string);
+            setPreviewPortfolioId(existingId);
             setIsUpdate(true);
             toast.success("Portfolio updated successfully!");
           } else {
             throw new Error("Failed to update existing portfolio");
           }
         } else {
-          // Create a new portfolio
+          // Create a new portfolio using the new API
           result = await createPortfolio(apiPortfolioData as any);
           if (result) {
-            setPortfolioId(result._id || null);
+            const newId = result.id || result._id || null;
+            setPortfolioId(newId);
             setPreviewStatus("success");
-            setPreviewPortfolioId(result._id || null);
+            setPreviewPortfolioId(newId);
             toast.success("Portfolio created successfully!");
+            
+            // Show the generated link
+            if (result.slug) {
+              const portfolioUrl = `${window.location.origin}/portfolio1/${result.slug}`;
+              toast.success(`Portfolio available at: ${portfolioUrl}`, {
+                autoClose: 10000,
+                onClick: () => window.open(portfolioUrl, '_blank')
+              });
+            }
           } else {
             throw new Error("Failed to create new portfolio");
           }
@@ -759,15 +793,25 @@ const Page = () => {
       if (!result) {
         throw new Error("Failed to save portfolio");
       }
+
+      // Close the preview modal and optionally show the portfolio URL
+      setIsPreviewModalOpen(false);
+      
+      // If we have a slug from the result, show success with URL
+      if (result.slug) {
+        const portfolioUrl = `${window.location.origin}/portfolio1/${result.slug}`;
+        setPublishedUrl(portfolioUrl);
+      }
+      
     } catch (error: any) {
       console.error("Error saving portfolio:", error);
       setPreviewStatus("error");
       setIsPreviewModalOpen(false);
 
       // Specific error handling for common issues
-      if (error.message === "Portfolio with this title already exists") {
+      if (error.message.includes("already exists")) {
         toast.error(
-          "A portfolio with this title already exists. Please choose a different title."
+          "A portfolio with this name already exists. Please choose a different name."
         );
       } else if (error.message === "Authentication required") {
         toast.error("You need to be logged in. Please sign in and try again.");
@@ -777,6 +821,13 @@ const Page = () => {
         toast.error("Failed to save portfolio. Please try again later.");
       }
     }
+  };
+
+  const handlePublishSuccess = (customUrl: string) => {
+    setPublishedUrl(customUrl);
+    toast.success('Portfolio published successfully!');
+    // Optionally redirect to the published portfolio
+    // window.open(customUrl, '_blank');
   };
 
   const handleFileChange = async (
@@ -951,8 +1002,8 @@ const Page = () => {
                 <h3 className="text-white font-medium text-lg mb-2">
                   Loading Your Portfolio
                 </h3>
-                <p className="text-gray-400 text-sm">
-                  Fetching your existing portfolio data...
+                <p className="text-gray-400">
+                  Please wait while we fetch your portfolio data...
                 </p>
               </div>
             </div>
@@ -1768,7 +1819,7 @@ const Page = () => {
                       </motion.button>
                     )}
 
-                    {/* Save & Preview button - prominent when form is ready */}
+                    {/* Save & Publish button - prominent when form is ready */}
                     {formIsValid && (
                       <motion.button
                         type="button"
@@ -1781,7 +1832,6 @@ const Page = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
                       >
-                        {/* Animated background */}
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-indigo-400 opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
 
                         {isPortfolioLoading ? (
@@ -1791,13 +1841,8 @@ const Page = () => {
                           </>
                         ) : (
                           <>
-                            <Eye
-                              size={18}
-                              className="group-hover:scale-110 transition-transform"
-                            />
-                            <span>
-                              {isUpdate ? "Update & Preview" : "Save & Preview"}
-                            </span>
+                            <Globe size={18} className="group-hover:scale-110 transition-transform" />
+                            <span>Save & Publish</span>
                           </>
                         )}
                       </motion.button>
@@ -2033,6 +2078,136 @@ const Page = () => {
             </div>
           </Dialog>
         </Transition>
+
+        {/* Publish Modal */}
+        <PublishModal
+          isOpen={isPublishModalOpen}
+          onClose={() => setIsPublishModalOpen(false)}
+          portfolioId={portfolioId || ''}
+          portfolioTitle={formData.hero.devName || 'User Portfolio'}
+          onPublishSuccess={handlePublishSuccess}
+        />
+
+        {/* Published Success Modal - Enhanced with auto-generated URL */}
+        {publishedUrl && (
+          <Transition appear show={!!publishedUrl} as={Fragment}>
+            <Dialog
+              as="div"
+              className="relative z-50"
+              onClose={() => setPublishedUrl(null)}
+            >
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-black bg-opacity-75" />
+              </Transition.Child>
+
+              <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-center justify-center p-4 text-center">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-[#171826] border border-[#2E313C] p-6 text-left align-middle shadow-xl transition-all">
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Check size={32} className="text-green-400" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-white mb-2">
+                          🎉 Portfolio Published Successfully!
+                        </h3>
+                        <p className="text-gray-400 mb-6">
+                          Your portfolio is now live and accessible to everyone at your personalized URL.
+                        </p>
+                        
+                        {/* URL Display */}
+                        <div className="bg-[#1E2132] rounded-lg p-4 mb-6 border border-[#2E313C]">
+                          <p className="text-sm text-gray-400 mb-2">Your Portfolio URL:</p>
+                          <div className="flex items-center justify-between bg-[#0F1114] rounded-lg p-3 border border-[#2E313C]">
+                            <span className="text-purple-400 font-mono text-sm truncate mr-2">
+                              {publishedUrl}
+                            </span>
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(publishedUrl);
+                                  toast.success('URL copied to clipboard!');
+                                } catch (error) {
+                                  toast.error('Failed to copy URL');
+                                }
+                              }}
+                              className="flex items-center text-purple-400 hover:text-purple-300 transition-colors p-1"
+                              title="Copy URL"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => window.open(publishedUrl, '_blank')}
+                            className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
+                          >
+                            <ExternalLink size={16} />
+                            View Live Portfolio
+                          </button>
+                          <button
+                            onClick={() => setPublishedUrl(null)}
+                            className="flex-1 bg-[#2E313C] hover:bg-[#3E4154] text-gray-200 py-3 px-4 rounded-lg transition-colors font-medium"
+                          >
+                            Close
+                          </button>
+                        </div>
+                        
+                        {/* Additional Actions */}
+                        <div className="mt-4 pt-4 border-t border-[#2E313C]/50">
+                          <p className="text-xs text-gray-500 mb-3">
+                            Share your portfolio on social media or send the link to potential employers!
+                          </p>
+                          <div className="flex gap-2 justify-center">
+                            <button
+                              onClick={() => {
+                                const shareText = `Check out my portfolio: ${publishedUrl}`;
+                                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+                                window.open(twitterUrl, '_blank');
+                              }}
+                              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                            >
+                              Share on Twitter
+                            </button>
+                            <button
+                              onClick={() => {
+                                const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(publishedUrl)}`;
+                                window.open(linkedinUrl, '_blank');
+                              }}
+                              className="px-3 py-1 bg-blue-800 hover:bg-blue-900 text-white text-xs rounded transition-colors"
+                            >
+                              Share on LinkedIn
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
+              </div>
+            </Dialog>
+          </Transition>
+        )}
       </div>
       <ToastContainer position="bottom-right" theme="dark" />
     </>

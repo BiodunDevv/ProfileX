@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 interface SocialLink {
   platform: string;
