@@ -1,3 +1,4 @@
+"use client"
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -7,7 +8,6 @@ import Preloader from '../../components/UI/Preloader';
 import { toast } from 'react-toastify';
 import { Metadata } from 'next';
 import PortfolioViewer from './PortfolioViewer';
-
 
 interface ComponentPortfolioData {
   hero: {
@@ -42,17 +42,26 @@ interface ComponentPortfolioData {
 }
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>; // Changed to Promise
 }
 
 const PortfolioBySlug = ({ params }: PageProps) => {
-  const slug = params.slug as string;
+  const [slug, setSlug] = useState<string>('');
   const [portfolioData, setPortfolioData] = useState<ComponentPortfolioData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [portfolioInfo, setPortfolioInfo] = useState<any>(null);
 
   const { getPortfolioBySlug } = usePortfolioOneStore();
+
+  // Extract slug from params Promise
+  useEffect(() => {
+    const extractSlug = async () => {
+      const resolvedParams = await params;
+      setSlug(resolvedParams.slug);
+    };
+    extractSlug();
+  }, [params]);
 
   useEffect(() => {
     const fetchPortfolio = async () => {

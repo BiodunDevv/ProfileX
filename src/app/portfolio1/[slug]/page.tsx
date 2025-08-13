@@ -1,15 +1,10 @@
 "use client"
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import TemplateOne from '../../components/TemplateOne/TemplateOne';
 import { usePortfolioOneStore } from '../../../../store/portfolioOneStore';
 import Preloader from '../../components/UI/Preloader';
 import { toast } from 'react-toastify';
-import { Metadata } from 'next';
-import PortfolioViewer from './PortfolioViewer';
-
-
 
 // Define the portfolio data interface for the component
 interface ComponentPortfolioData {
@@ -45,18 +40,26 @@ interface ComponentPortfolioData {
 }
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>; 
 }
 
 const PortfolioPage = ({ params }: PageProps) => {
-  const slug = params.slug as string;
+  const [slug, setSlug] = useState<string>('');
   const [portfolioData, setPortfolioData] = useState<ComponentPortfolioData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [portfolioInfo, setPortfolioInfo] = useState<any>(null);
-  const [debugInfo, setDebugInfo] = useState<string>('');
 
   const { getPortfolioBySlug } = usePortfolioOneStore();
+
+  // Extract slug from params Promise
+  useEffect(() => {
+    const extractSlug = async () => {
+      const resolvedParams = await params;
+      setSlug(resolvedParams.slug);
+    };
+    extractSlug();
+  }, [params]);
 
   useEffect(() => {
     const fetchPortfolio = async () => {
@@ -65,18 +68,15 @@ const PortfolioPage = ({ params }: PageProps) => {
       try {
         setLoading(true);
         setError(null);
-        setDebugInfo(`Fetching portfolio with slug: ${slug}`);
 
         console.log('Fetching portfolio with slug:', slug);
         console.log('API URL:', process.env.NEXT_PUBLIC_API_URL);
-        console.log('Environment:', process.env.NODE_ENV);
         
         const portfolio = await getPortfolioBySlug(slug);
         
         if (portfolio) {
           console.log('Portfolio data received:', portfolio);
           setPortfolioInfo(portfolio);
-          setDebugInfo(`Portfolio found: ${portfolio.title || portfolio.brandName || 'Unknown'}`);
 
           // Transform the API data to match your component structure
           const transformedData: ComponentPortfolioData = {
@@ -132,14 +132,12 @@ const PortfolioPage = ({ params }: PageProps) => {
           }
         } else {
           setError('Portfolio not found');
-          setDebugInfo(`No portfolio found for slug: ${slug}`);
         }
       } catch (err: any) {
         console.error('Error fetching portfolio:', err);
         setError(err.message || 'Failed to load portfolio');
-        setDebugInfo(`Error: ${err.message} | API: ${process.env.NEXT_PUBLIC_API_URL}`);
         
-        // Don't show toast error for 404s in public view
+        // Only show toast for unexpected errors
         if (!err.message?.includes('not found')) {
           toast.error('Failed to load portfolio');
         }
@@ -180,20 +178,9 @@ const PortfolioPage = ({ params }: PageProps) => {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-white mb-4">Portfolio Not Found</h1>
-          <p className="text-gray-400 mb-4">
+          <p className="text-gray-400 mb-8">
             The portfolio you're looking for doesn't exist or is not publicly accessible.
           </p>
-          
-          {/* Debug Information */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="bg-gray-800 rounded-lg p-4 mb-6 text-left">
-              <h3 className="text-white font-medium mb-2">Debug Info:</h3>
-              <p className="text-gray-300 text-sm mb-1">Slug: {slug}</p>
-              <p className="text-gray-300 text-sm mb-1">API URL: {process.env.NEXT_PUBLIC_API_URL}</p>
-              <p className="text-gray-300 text-sm mb-1">Status: {debugInfo}</p>
-              <p className="text-gray-300 text-sm">Error: {error}</p>
-            </div>
-          )}
           
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
@@ -203,7 +190,7 @@ const PortfolioPage = ({ params }: PageProps) => {
               Go Home
             </a>
             <a
-              href="/templates"
+              href="/allTemplates"
               className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
             >
               Create Portfolio
