@@ -9,13 +9,6 @@ const inter = Inter({
   display: 'swap',
 });
 
-const dmSerif = DM_Serif_Display({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-dm-serif",
-  display: 'swap',
-});
-
 export const metadata: Metadata = {
   title: "ProfileX - Your Professional Portfolio",
   description: "Create and manage your professional portfolio with ProfileX",
@@ -56,7 +49,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body 
-        className={`${inter.variable} ${dmSerif.variable} antialiased`}
+        className={`${inter.variable} antialiased`}
         suppressHydrationWarning
       >
         <AuthProvider>
